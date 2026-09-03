@@ -190,16 +190,55 @@ export class MockLlmProvider implements LlmProvider {
   }
 }
 
-async function openaiChat(system: string, user: string): Promise<string> {
+function isOpenRouter(): boolean {
+  return (process.env.LLM_PROVIDER || '').toLowerCase() === 'openrouter';
+}
+
+function openaiCompatibleApiKey(): string {
+  if (isOpenRouter()) {
+    const key = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY;
+    if (!key) throw new Error('OPENROUTER_API_KEY or OPENAI_API_KEY missing');
+    return key;
+  }
   const key = process.env.OPENAI_API_KEY;
   if (!key) throw new Error('OPENAI_API_KEY missing');
-  const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+  return key;
+}
+
+function openaiCompatibleBaseUrl(): string {
+  if (process.env.OPENAI_BASE_URL) {
+    return process.env.OPENAI_BASE_URL.replace(/\/$/, '');
+  }
+  if (isOpenRouter()) return 'https://openrouter.ai/api/v1';
+  return 'https://api.openai.com/v1';
+}
+
+function openaiCompatibleModel(): string {
+  if (process.env.OPENAI_MODEL) return process.env.OPENAI_MODEL;
+  if (isOpenRouter()) return 'openai/gpt-oss-120b';
+  return 'gpt-4o-mini';
+}
+
+function openaiCompatibleHeaders(apiKey: string): Record<string, string> {
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${apiKey}`,
+    'Content-Type': 'application/json',
+  };
+  if (isOpenRouter() || openaiCompatibleBaseUrl().includes('openrouter.ai')) {
+    headers['HTTP-Referer'] =
+      process.env.OPENROUTER_HTTP_REFERER || 'https://github.com/jaewonkyoung-alt/wise-faq-bot';
+    headers['X-Title'] = process.env.OPENROUTER_X_TITLE || 'WISE FAQ Bot';
+  }
+  return headers;
+}
+
+async function openaiChat(system: string, user: string): Promise<string> {
+  const key = openaiCompatibleApiKey();
+  const model = openaiCompatibleModel();
+  const base = openaiCompatibleBaseUrl();
+  const res = await fetch(`${base}/chat/completions`, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${key}`,
-      'Content-Type': 'application/json',
-    },
+    headers: openaiCompatibleHeaders(key),
     body: JSON.stringify({
       model,
       temperature: 0,
@@ -212,7 +251,7 @@ async function openaiChat(system: string, user: string): Promise<string> {
   });
   if (!res.ok) {
     const body = await res.text();
-    throw new Error(`OpenAI chat failed: ${res.status} ${body}`);
+    throw new Error(`OpenAI-compatible chat failed: ${res.status} ${body}`);
   }
   const data = (await res.json()) as {
     choices: Array<{ message: { content: string } }>;
@@ -344,6 +383,14 @@ export class GeminiLlmProvider implements LlmProvider {
 
 export function createLlmProvider(): LlmProvider {
   const p = (process.env.LLM_PROVIDER || 'mock').toLowerCase();
+  if (p === 'openrouter') {
+    if (process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY) {
+      const provider = new OpenAILlmProvider();
+      provider.name = 'openrouter';
+      return provider;
+    }
+    return new MockLlmProvider();
+  }
   if (p === 'openai' && process.env.OPENAI_API_KEY) return new OpenAILlmProvider();
   if (p === 'gemini' && process.env.GEMINI_API_KEY) return new GeminiLlmProvider();
   return new MockLlmProvider();

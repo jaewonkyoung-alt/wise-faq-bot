@@ -2,6 +2,9 @@
  * Embedding provider interface.
  * Mock: deterministic bag-of-char n-gram hash vectors (no network).
  * OpenAI / Gemini: real embedding APIs when keys are set.
+ *
+ * When LLM_PROVIDER=openrouter, embeddings default to mock (chat-only models
+ * like openai/gpt-oss-120b). Override with EMBED_PROVIDER=mock|openai|gemini.
  */
 
 const MOCK_DIM = 256;
@@ -58,7 +61,11 @@ async function openaiEmbed(text: string): Promise<number[]> {
   const key = process.env.OPENAI_API_KEY;
   if (!key) throw new Error('OPENAI_API_KEY missing');
   const model = process.env.OPENAI_EMBEDDING_MODEL || 'text-embedding-3-small';
-  const res = await fetch('https://api.openai.com/v1/embeddings', {
+  const base = (process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(
+    /\/$/,
+    ''
+  );
+  const res = await fetch(`${base}/embeddings`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${key}`,
@@ -104,7 +111,15 @@ async function geminiEmbed(text: string): Promise<number[]> {
 export type EmbedProvider = 'mock' | 'openai' | 'gemini';
 
 export function getEmbedProvider(): EmbedProvider {
+  // Explicit override: chat (e.g. openrouter) can stay separate from embeddings.
+  const override = (process.env.EMBED_PROVIDER || '').toLowerCase();
+  if (override === 'mock') return 'mock';
+  if (override === 'openai' && process.env.OPENAI_API_KEY) return 'openai';
+  if (override === 'gemini' && process.env.GEMINI_API_KEY) return 'gemini';
+
   const p = (process.env.LLM_PROVIDER || 'mock').toLowerCase();
+  // OpenRouter default chat model (gpt-oss-120b) is chat-only — keep mock embeddings.
+  if (p === 'openrouter') return 'mock';
   if (p === 'openai' && process.env.OPENAI_API_KEY) return 'openai';
   if (p === 'gemini' && process.env.GEMINI_API_KEY) return 'gemini';
   return 'mock';

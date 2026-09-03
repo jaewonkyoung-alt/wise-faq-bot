@@ -30,7 +30,7 @@ Client / Kakao Skill
         ▼
  ask()
    ├─ LLM provider.decideRoute(question)
-   │    mock | openai | gemini
+   │    mock | openai | gemini | openrouter
    ├─ structured_query → clubs SQL (LIKE / list)
    ├─ semantic_search  → embeddings cosine
    └─ refuse / low-sim → "확인되지 않음" + log
@@ -49,6 +49,13 @@ Client / Kakao Skill
 | refuse | 학사/장학/학식 등 동아리 외 | unanswered 로그 |
 
 Mock 모드에서는 API 키 없이 휴리스틱 라우터 + hash n-gram 임베딩으로 동일 파이프라인이 동작합니다.
+
+### OpenRouter
+
+- `LLM_PROVIDER=openrouter` 는 OpenAI-compatible 클라이언트 + `OPENAI_BASE_URL`(기본 `https://openrouter.ai/api/v1`) 사용
+- 키: `OPENROUTER_API_KEY` 우선, 없으면 `OPENAI_API_KEY`
+- 기본 채팅 모델: `openai/gpt-oss-120b` (채팅 전용)
+- **임베딩은 기본 mock** — gpt-oss-120b 는 임베딩 API가 없음. `EMBED_PROVIDER=mock|openai|gemini` 로 분리 가능
 
 ## 임베딩 저장
 
