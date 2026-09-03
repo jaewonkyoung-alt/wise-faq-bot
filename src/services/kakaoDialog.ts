@@ -25,7 +25,7 @@ import {
 } from '../kakao/responseBuilder';
 import { ask } from './askService';
 
-const MENU_UTTERANCES = /^(메뉴|시작|처음으로|home|menu)$/i;
+const MENU_UTTERANCES = /^(메뉴|시작|처음으로|home|menu|웰컴|환영|첫인사|입장|welcome)$/i;
 const GRAD_UTTERANCES = /^(졸업요건|졸업\s*요건|졸업학점|졸업)$/i;
 const CLUB_UTTERANCES = /^(동아리|클럽|club)$/i;
 const MAP_UTTERANCES = /^(지도|캠퍼스\s*지도|map)$/i;

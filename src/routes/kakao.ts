@@ -11,11 +11,22 @@ export const kakaoRouter = Router();
 kakaoRouter.post('/skill', async (req, res) => {
   try {
     const body = req.body as KakaoSkillRequest;
-    const utterance =
+    let utterance =
       body?.userRequest?.utterance?.trim() ||
       body?.action?.params?.query?.trim() ||
       body?.action?.params?.q?.trim() ||
       '';
+
+    if (!utterance) {
+      const intentName = body?.intent?.name?.trim() || '';
+      const actionName = body?.action?.name?.trim() || '';
+      const welcomeLike =
+        /welcome|시작|봇\s*시작|첫인사|웰컴/i.test(intentName) ||
+        /welcome|시작|봇\s*시작|첫인사|웰컴/i.test(actionName);
+      if (welcomeLike) {
+        utterance = '메뉴';
+      }
+    }
 
     const userKey =
       body?.userRequest?.user?.id?.trim() ||
