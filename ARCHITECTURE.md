@@ -1,17 +1,19 @@
 # WISE FAQ Bot — Phase-1 Hybrid RAG Architecture
 
-동국대학교 WISE 캠퍼스 Q&A (졸업작품 Phase-1). MVP 도메인은 **동아리(클럽)** 만 다룹니다.
+동국대학교 WISE 캠퍼스 Q&A (졸업작품 Phase-1).
+
+## 도메인 우선순위
+
+1. **졸업요건 (primary)** — 카카오 버튼 + 슬롯필링 → SQLite exact lookup
+2. **동아리 (secondary)** — Hybrid RAG (SQL 구조화 + 임베딩 서술)
+3. **온디바이스 / 지도 등** — later (지도는 stub)
 
 ## 목표
 
-- 키워드 FAQ JSON을 제거하고, **Hybrid RAG** 로 전환
-- 구조화 필드(연락처/시간/장소/분과) → **SQL**
-- 소개/활동 서술 → **임베딩 + 코사인 유사도**
-- LLM Tool Calling(또는 mock 휴리스틱)이 라우팅: `structured_query` / `semantic_search` / `refuse`
-- 답변에 **source_url + updated_at** 인용
-- 유사도 낮음/도메인 외 → **"확인되지 않음"** + unanswered 로그
-- Admin CRUD → **증분 재임베딩**(배포 없이 검색 반영, ~60s 목표)
-- Kakao `/api/kakao/skill` 은 core `ask()` 의 thin adapter
+- 졸업요건 답변은 **DB lookup only** (admission_year + department). 학점·규칙 환각 금지.
+- 행 없으면 **"확인되지 않음 / 데이터 없음"** + unanswered 로그.
+- 동아리: 구조화 필드 → SQL, 소개/활동 → 임베딩; LLM tool routing.
+- Kakao `/api/kakao/skill` 은 `kakaoDialog` 슬롯 플로우 (졸업) + `ask()` (동아리).
 
 ## 구성도
 
@@ -20,27 +22,33 @@ Client / Kakao Skill
         │
         ▼
  Express (TypeScript)
-   ├─ POST /api/ask          → ask()
-   ├─ POST /api/kakao/skill  → ask() → Kakao JSON
-   ├─ /api/admin/clubs CRUD  → SQLite + reindex
-   ├─ POST /api/admin/reindex
-   ├─ GET  /api/unanswered
-   └─ GET  /admin            → static Admin UI
+   ├─ POST /api/kakao/skill  → kakaoDialog (session + slots)
+   ├─ GET  /api/graduation   → SQL exact lookup
+   ├─ POST /api/ask          → ask() clubs RAG
+   ├─ /api/admin/graduation  CRUD
+   ├─ /api/admin/clubs       CRUD + reindex
+   └─ GET  /admin
         │
         ▼
- ask()
-   ├─ LLM provider.decideRoute(question)
-   │    mock | openai | gemini | openrouter
-   ├─ structured_query → clubs SQL (LIKE / list)
-   ├─ semantic_search  → embeddings cosine
-   └─ refuse / low-sim → "확인되지 않음" + log
-        │
-        ▼
- SQLite (better-sqlite3)
+ SQLite
+   graduation_requirements | kakao_sessions
    clubs | embeddings | unanswered_questions
 ```
 
-## Hybrid 라우팅
+## 졸업요건 플로우 (Kakao)
+
+| Step | Utterance / state | Action |
+|------|-------------------|--------|
+| menu | empty / 메뉴 / 시작 | quickReplies: 졸업요건, 동아리, 지도 |
+| grad_year | 졸업요건 | ask admission year |
+| grad_dept | year (2022 / 22학번 …) | store session, ask department |
+| done | department | **SQL lookup** → answer + citations; reset session |
+| clubs | 동아리 | ask() free text |
+| map | 지도 | stub only |
+
+Session: table `kakao_sessions` keyed by Kakao `userRequest.user.id`.
+
+## Hybrid 라우팅 (clubs)
 
 | Tool | 언제 | 데이터 |
 |------|------|--------|
@@ -48,38 +56,21 @@ Client / Kakao Skill
 | semantic_search | 소개/활동/분위기/모집 서술 | embeddings |
 | refuse | 학사/장학/학식 등 동아리 외 | unanswered 로그 |
 
-Mock 모드에서는 API 키 없이 휴리스틱 라우터 + hash n-gram 임베딩으로 동일 파이프라인이 동작합니다.
-
 ### OpenRouter
 
-- `LLM_PROVIDER=openrouter` 는 OpenAI-compatible 클라이언트 + `OPENAI_BASE_URL`(기본 `https://openrouter.ai/api/v1`) 사용
-- 키: `OPENROUTER_API_KEY` 우선, 없으면 `OPENAI_API_KEY`
-- 기본 채팅 모델: `openai/gpt-oss-120b` (채팅 전용)
-- **임베딩은 기본 mock** — gpt-oss-120b 는 임베딩 API가 없음. `EMBED_PROVIDER=mock|openai|gemini` 로 분리 가능
+- `LLM_PROVIDER=openrouter` → OpenAI-compatible + OpenRouter base URL
+- 임베딩 기본 mock (`EMBED_PROVIDER` 로 분리 가능)
 
-## 임베딩 저장
+## 확장 노트
 
-- `embeddings` 테이블에 club 당 intro / activities / combined 청크
-- `embedding_json` 에 float 배열 JSON 저장 (외부 벡터DB 없이 SQLite)
-- 검색 시 전 청크 로드 후 JS 코사인 유사도, club 단위 max score
-- `SEMANTIC_MIN_SCORE`(기본 0.35) 미만이면 미확인 처리
-
-## Admin / 재인덱싱
-
-1. Admin UI (`/admin`) 또는 `POST /api/admin/clubs`
-2. 저장 시 해당 club만 `reindexClub` (증분)
-3. `POST /api/admin/reindex` 로 전체 재생성 가능
-4. 코드 재배포 없이 DB·임베딩만 갱신
-
-## 확장 노트 (Out of scope for Phase-1)
-
-- 학사일정, 장학, 증명서 등 도메인 테이블 추가 + 라우터 확장
-- 로컬 sLLM / Ollama
-- Kakao 채널 실연동·알림톡
+- 실제 졸업요건 카탈로그로 PLACEHOLDER 시드 교체
+- 복수전공/부전공 major_type 확장
+- 온디바이스 sLLM / Ollama
+- 지도·학사일정 등 추가 슬롯 도메인
 
 ## 주요 경로
 
-- Core: `src/services/askService.ts`
-- LLM: `src/llm/provider.ts`
-- Embed: `src/embeddings/embedder.ts`
+- Graduation: `src/services/graduationService.ts`
+- Kakao dialog: `src/services/kakaoDialog.ts`
+- Clubs ask: `src/services/askService.ts`
 - DB: `src/db/database.ts`

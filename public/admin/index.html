@@ -3,86 +3,149 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WISE 동아리 Admin</title>
+  <title>WISE FAQ Admin</title>
   <style>
     :root { font-family: system-ui, sans-serif; color: #1a1a1a; }
-    body { max-width: 960px; margin: 24px auto; padding: 0 16px; background: #f6f7fb; }
+    body { max-width: 980px; margin: 24px auto; padding: 0 16px; background: #f6f7fb; }
     h1 { font-size: 1.4rem; }
+    h2 { margin-top: 0; font-size: 1.1rem; }
     .card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
     label { display: block; font-size: .85rem; margin-top: 8px; color: #444; }
     input, textarea, select { width: 100%; box-sizing: border-box; padding: 8px; margin-top: 4px; border: 1px solid #ccd; border-radius: 8px; }
     textarea { min-height: 72px; }
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
     button { margin-top: 12px; margin-right: 8px; padding: 8px 14px; border: 0; border-radius: 8px; background: #2f5bea; color: #fff; cursor: pointer; }
     button.secondary { background: #667; }
     button.danger { background: #c0392b; }
     table { width: 100%; border-collapse: collapse; font-size: .9rem; }
     th, td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; vertical-align: top; }
     .muted { color: #666; font-size: .85rem; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+    .tabs button { margin-top: 0; background: #dde; color: #223; }
+    .tabs button.active { background: #2f5bea; color: #fff; }
     #status { white-space: pre-wrap; font-family: ui-monospace, monospace; font-size: .8rem; background: #111; color: #d8ffd8; padding: 12px; border-radius: 8px; min-height: 48px; }
-    @media (max-width: 700px) { .row { grid-template-columns: 1fr; } }
+    .badge { display: inline-block; background: #ffe08a; color: #664; font-size: .75rem; padding: 2px 6px; border-radius: 4px; }
+    @media (max-width: 700px) { .row, .row3 { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-  <h1>WISE Phase-1 · 동아리 Admin</h1>
-  <p class="muted">CRUD 후 자동/수동 재임베딩. 배포 없이 검색 반영 (목표 ~60s).</p>
+  <h1>WISE FAQ Admin · 졸업요건 + 동아리</h1>
+  <p class="muted">졸업요건이 1차 UX입니다. 학점·규칙은 DB에 있는 값만 노출합니다 (PLACEHOLDER 시드 주의).</p>
 
   <div class="card">
     <label>Admin Token (선택, .env ADMIN_TOKEN)</label>
     <input id="token" type="password" placeholder="x-admin-token" />
-    <button type="button" onclick="loadClubs()">목록 새로고침</button>
-    <button type="button" class="secondary" onclick="reindexAll()">전체 재인덱싱</button>
+    <div class="tabs">
+      <button type="button" id="tabGrad" class="active" onclick="showTab('grad')">졸업요건</button>
+      <button type="button" id="tabClubs" onclick="showTab('clubs')">동아리</button>
+    </div>
     <button type="button" class="secondary" onclick="loadUnanswered()">미답변 로그</button>
   </div>
 
-  <div class="card">
-    <h2 style="margin-top:0;font-size:1.1rem">동아리 추가 / 수정</h2>
-    <input type="hidden" id="editId" />
-    <div class="row">
-      <div>
-        <label>이름 *</label>
-        <input id="name" />
+  <div id="panelGrad">
+    <div class="card">
+      <h2>졸업요건 추가 / 수정</h2>
+      <input type="hidden" id="g_editId" />
+      <div class="row">
+        <div>
+          <label>입학연도 *</label>
+          <input id="g_year" type="number" placeholder="2022" />
+        </div>
+        <div>
+          <label>학과 *</label>
+          <input id="g_department" placeholder="컴퓨터공학과" />
+        </div>
       </div>
-      <div>
-        <label>분과 *</label>
-        <input id="category" placeholder="학술/IT, 공연/음악, 봉사…" />
+      <div class="row">
+        <div>
+          <label>전공구분</label>
+          <input id="g_major_type" placeholder="전공" value="전공" />
+        </div>
+        <div>
+          <label>출처 URL</label>
+          <input id="g_source_url" placeholder="https://…" />
+        </div>
       </div>
+      <div class="row3">
+        <div>
+          <label>총 학점</label>
+          <input id="g_total" type="number" />
+        </div>
+        <div>
+          <label>전공학점</label>
+          <input id="g_major" type="number" />
+        </div>
+        <div>
+          <label>교양학점</label>
+          <input id="g_general" type="number" />
+        </div>
+      </div>
+      <label>비고 / 추가 규칙</label>
+      <textarea id="g_notes" placeholder="[PLACEHOLDER] …"></textarea>
+      <label>verified_at (ISO)</label>
+      <input id="g_verified" placeholder="2026-01-01T00:00:00.000Z" />
+      <button type="button" onclick="saveGrad()">저장</button>
+      <button type="button" class="secondary" onclick="resetGradForm()">초기화</button>
+      <button type="button" class="secondary" onclick="loadGrads()">목록 새로고침</button>
     </div>
-    <div class="row">
-      <div>
-        <label>연락처</label>
-        <input id="contact" />
-      </div>
-      <div>
-        <label>정기 모임</label>
-        <input id="meeting_time" />
-      </div>
+    <div class="card">
+      <h2>등록된 졸업요건</h2>
+      <div id="g_list"></div>
     </div>
-    <div class="row">
-      <div>
-        <label>장소</label>
-        <input id="location" />
+  </div>
+
+  <div id="panelClubs" style="display:none">
+    <div class="card">
+      <h2>동아리 추가 / 수정</h2>
+      <input type="hidden" id="editId" />
+      <div class="row">
+        <div>
+          <label>이름 *</label>
+          <input id="name" />
+        </div>
+        <div>
+          <label>분과 *</label>
+          <input id="category" placeholder="학술/IT, 공연/음악, 봉사…" />
+        </div>
       </div>
-      <div>
-        <label>출처 URL *</label>
-        <input id="source_url" placeholder="https://…" />
+      <div class="row">
+        <div>
+          <label>연락처</label>
+          <input id="contact" />
+        </div>
+        <div>
+          <label>정기 모임</label>
+          <input id="meeting_time" />
+        </div>
       </div>
+      <div class="row">
+        <div>
+          <label>장소</label>
+          <input id="location" />
+        </div>
+        <div>
+          <label>출처 URL *</label>
+          <input id="source_url" placeholder="https://…" />
+        </div>
+      </div>
+      <label>소개 * (semantic)</label>
+      <textarea id="intro"></textarea>
+      <label>활동 * (semantic)</label>
+      <textarea id="activities"></textarea>
+      <button type="button" onclick="saveClub()">저장 + 재임베딩</button>
+      <button type="button" class="secondary" onclick="resetForm()">초기화</button>
+      <button type="button" class="secondary" onclick="reindexAll()">전체 재인덱싱</button>
+      <button type="button" class="secondary" onclick="loadClubs()">목록 새로고침</button>
     </div>
-    <label>소개 * (semantic)</label>
-    <textarea id="intro"></textarea>
-    <label>활동 * (semantic)</label>
-    <textarea id="activities"></textarea>
-    <button type="button" onclick="saveClub()">저장 + 재임베딩</button>
-    <button type="button" class="secondary" onclick="resetForm()">초기화</button>
+    <div class="card">
+      <h2>등록된 동아리</h2>
+      <div id="list"></div>
+    </div>
   </div>
 
   <div class="card">
-    <h2 style="margin-top:0;font-size:1.1rem">등록된 동아리</h2>
-    <div id="list"></div>
-  </div>
-
-  <div class="card">
-    <h2 style="margin-top:0;font-size:1.1rem">상태 / 로그</h2>
+    <h2>상태 / 로그</h2>
     <div id="status">ready</div>
   </div>
 
@@ -97,6 +160,91 @@
     function log(x) {
       $('status').textContent = typeof x === 'string' ? x : JSON.stringify(x, null, 2);
     }
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (ch) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    }
+    function showTab(which) {
+      $('panelGrad').style.display = which === 'grad' ? '' : 'none';
+      $('panelClubs').style.display = which === 'clubs' ? '' : 'none';
+      $('tabGrad').classList.toggle('active', which === 'grad');
+      $('tabClubs').classList.toggle('active', which === 'clubs');
+    }
+
+    /* Graduation */
+    function resetGradForm() {
+      $('g_editId').value = '';
+      $('g_year').value = '';
+      $('g_department').value = '';
+      $('g_major_type').value = '전공';
+      $('g_total').value = '';
+      $('g_major').value = '';
+      $('g_general').value = '';
+      $('g_notes').value = '';
+      $('g_source_url').value = '';
+      $('g_verified').value = '';
+    }
+    function fillGrad(r) {
+      $('g_editId').value = r.id;
+      $('g_year').value = r.admission_year;
+      $('g_department').value = r.department || '';
+      $('g_major_type').value = r.major_type || '전공';
+      $('g_total').value = r.total_credits ?? '';
+      $('g_major').value = r.major_credits ?? '';
+      $('g_general').value = r.general_credits ?? '';
+      $('g_notes').value = r.notes || '';
+      $('g_source_url').value = r.source_url || '';
+      $('g_verified').value = r.verified_at || '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    async function loadGrads() {
+      const res = await fetch('/api/admin/graduation', { headers: headers() });
+      const data = await res.json();
+      if (!res.ok) return log(data);
+      const rows = (data.requirements || []).map((r) => {
+        const ph = (r.notes || '').includes('PLACEHOLDER') ? ' <span class="badge">PLACEHOLDER</span>' : '';
+        return `<tr>
+          <td><strong>${escapeHtml(r.department)}</strong>${ph}
+            <div class="muted">${r.admission_year} · ${escapeHtml(r.major_type || '')}</div></td>
+          <td class="muted">총 ${r.total_credits ?? '-'} / 전공 ${r.major_credits ?? '-'} / 교양 ${r.general_credits ?? '-'}</td>
+          <td>
+            <button type="button" onclick='fillGrad(${JSON.stringify(r).replace(/'/g, "&#39;")})'>수정</button>
+            <button type="button" class="danger" onclick="removeGrad('${r.id}')">삭제</button>
+          </td>
+        </tr>`;
+      }).join('');
+      $('g_list').innerHTML = `<table><thead><tr><th>학과</th><th>학점</th><th></th></tr></thead><tbody>${rows || '<tr><td colspan="3">없음</td></tr>'}</tbody></table>`;
+      log({ loaded_graduation: data.count });
+    }
+    async function saveGrad() {
+      const body = {
+        admission_year: Number($('g_year').value),
+        department: $('g_department').value,
+        major_type: $('g_major_type').value,
+        total_credits: $('g_total').value === '' ? null : Number($('g_total').value),
+        major_credits: $('g_major').value === '' ? null : Number($('g_major').value),
+        general_credits: $('g_general').value === '' ? null : Number($('g_general').value),
+        notes: $('g_notes').value,
+        source_url: $('g_source_url').value,
+        verified_at: $('g_verified').value || null,
+      };
+      const id = $('g_editId').value;
+      const res = await fetch(id ? `/api/admin/graduation/${id}` : '/api/admin/graduation', {
+        method: id ? 'PUT' : 'POST',
+        headers: headers(),
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      log(data);
+      if (res.ok) { resetGradForm(); loadGrads(); }
+    }
+    async function removeGrad(id) {
+      if (!confirm('삭제할까요?')) return;
+      const res = await fetch(`/api/admin/graduation/${id}`, { method: 'DELETE', headers: headers() });
+      log(await res.json());
+      loadGrads();
+    }
+
+    /* Clubs (unchanged) */
     function resetForm() {
       $('editId').value = '';
       ['name','category','contact','meeting_time','location','source_url','intro','activities']
@@ -129,9 +277,6 @@
         </tr>`).join('');
       $('list').innerHTML = `<table><thead><tr><th>동아리</th><th>모임/장소</th><th></th></tr></thead><tbody>${rows || '<tr><td colspan="3">없음</td></tr>'}</tbody></table>`;
       log({ loaded: data.count });
-    }
-    function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, (ch) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     }
     async function saveClub() {
       const body = {
@@ -168,7 +313,7 @@
       const res = await fetch('/api/unanswered');
       log(await res.json());
     }
-    loadClubs().catch((e) => log(String(e)));
+    loadGrads().catch((e) => log(String(e)));
   </script>
 </body>
 </html>

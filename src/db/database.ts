@@ -72,5 +72,31 @@ function migrate(database: Database.Database): void {
     );
 
     CREATE INDEX IF NOT EXISTS idx_unanswered_created ON unanswered_questions(created_at);
+
+    CREATE TABLE IF NOT EXISTS graduation_requirements (
+      id TEXT PRIMARY KEY,
+      admission_year INTEGER NOT NULL,
+      department TEXT NOT NULL,
+      major_type TEXT,
+      total_credits INTEGER,
+      major_credits INTEGER,
+      general_credits INTEGER,
+      notes TEXT,
+      source_url TEXT,
+      verified_at TEXT,
+      updated_at TEXT NOT NULL,
+      UNIQUE(admission_year, department, major_type)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_grad_year ON graduation_requirements(admission_year);
+    CREATE INDEX IF NOT EXISTS idx_grad_dept ON graduation_requirements(department);
+
+    CREATE TABLE IF NOT EXISTS kakao_sessions (
+      user_key TEXT PRIMARY KEY,
+      flow TEXT NOT NULL DEFAULT 'menu',
+      admission_year INTEGER,
+      department TEXT,
+      updated_at TEXT NOT NULL
+    );
   `);
 }

@@ -1,7 +1,7 @@
 {
   "name": "wise-faq-bot",
   "version": "0.2.0",
-  "description": "Dongguk University WISE Phase-1 hybrid RAG campus Q&A (clubs MVP)",
+  "description": "Dongguk University WISE Phase-1: graduation requirements (primary) + clubs hybrid RAG",
   "private": true,
   "main": "dist/index.js",
   "scripts": {
@@ -12,7 +12,9 @@
     "seed": "tsx scripts/seed.ts",
     "reindex": "tsx scripts/reindex.ts",
     "eval": "tsx scripts/run-eval.ts",
-    "smoke": "tsx scripts/smoke.ts"
+    "smoke": "tsx scripts/smoke.ts",
+    "test:graduation": "tsx scripts/test-graduation.ts",
+    "test:kakao-grad": "tsx scripts/test-kakao-grad.ts"
   },
   "engines": {
     "node": ">=18"

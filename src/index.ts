@@ -9,14 +9,17 @@ import { listClubs } from './services/clubStore';
 import { reindexAll } from './services/reindex';
 import { createLlmProvider } from './llm/provider';
 import { getEmbedProvider } from './embeddings/embedder';
+import {
+  listGraduation,
+  upsertGraduationByKey,
+} from './services/graduationService';
 
 const PORT = Number(process.env.PORT) || 3000;
 
-async function ensureSeeded(): Promise<void> {
+async function ensureClubsSeeded(): Promise<void> {
   getDb();
   const clubs = listClubs();
   if (clubs.length > 0) {
-    // Ensure embeddings exist
     const row = getDb()
       .prepare('SELECT COUNT(*) AS c FROM embeddings')
       .get() as { c: number };
@@ -57,21 +60,55 @@ async function ensureSeeded(): Promise<void> {
   );
 }
 
+function ensureGraduationSeeded(): void {
+  getDb();
+  if (listGraduation().length > 0) return;
+
+  const seedPath = path.resolve(process.cwd(), 'data/seed/graduation.json');
+  if (!fs.existsSync(seedPath)) {
+    console.warn('[wise-faq-bot] no graduation seed at', seedPath);
+    return;
+  }
+  console.log('[wise-faq-bot] seeding graduation placeholders from', seedPath);
+  const raw = JSON.parse(fs.readFileSync(seedPath, 'utf-8')) as Array<{
+    admission_year: number;
+    department: string;
+    major_type?: string;
+    total_credits?: number;
+    major_credits?: number;
+    general_credits?: number;
+    notes?: string;
+    source_url?: string;
+    verified_at?: string;
+  }>;
+  for (const item of raw) {
+    upsertGraduationByKey(item);
+  }
+  console.log(
+    `[wise-faq-bot] graduation rows: ${listGraduation().length} (PLACEHOLDER)`
+  );
+}
+
 async function main() {
-  await ensureSeeded();
+  await ensureClubsSeeded();
+  ensureGraduationSeeded();
 
   const app = createApp();
   const clubs = listClubs().length;
+  const grads = listGraduation().length;
 
   app.listen(PORT, () => {
-    console.log(`[wise-faq-bot] Phase-1 hybrid RAG (clubs MVP)`);
+    console.log(`[wise-faq-bot] Phase-1: graduation (primary) + clubs`);
     console.log(`[wise-faq-bot] db: ${getDbPath()}`);
-    console.log(`[wise-faq-bot] llm=${createLlmProvider().name} embed=${getEmbedProvider()} clubs=${clubs}`);
+    console.log(
+      `[wise-faq-bot] llm=${createLlmProvider().name} embed=${getEmbedProvider()} clubs=${clubs} graduation=${grads}`
+    );
     console.log(`[wise-faq-bot] listening on http://localhost:${PORT}`);
-    console.log(`[wise-faq-bot] health:  GET /health`);
-    console.log(`[wise-faq-bot] ask:     POST /api/ask`);
-    console.log(`[wise-faq-bot] admin:   GET /admin`);
-    console.log(`[wise-faq-bot] kakao:   POST /api/kakao/skill`);
+    console.log(`[wise-faq-bot] health:      GET /health`);
+    console.log(`[wise-faq-bot] graduation:  GET /api/graduation`);
+    console.log(`[wise-faq-bot] ask:         POST /api/ask`);
+    console.log(`[wise-faq-bot] admin:       GET /admin`);
+    console.log(`[wise-faq-bot] kakao:       POST /api/kakao/skill`);
   });
 }
 

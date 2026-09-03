@@ -8,6 +8,14 @@ import {
 } from '../services/clubStore';
 import { reindexAll, reindexClub } from '../services/reindex';
 import type { ClubInput } from '../types/club';
+import type { GraduationInput } from '../types/graduation';
+import {
+  createGraduation,
+  deleteGraduation,
+  getGraduationById,
+  listGraduation,
+  updateGraduation,
+} from '../services/graduationService';
 
 export const adminRouter = Router();
 
@@ -40,6 +48,31 @@ function bodyToInput(body: Record<string, unknown>): ClubInput | null {
     intro,
     activities,
     source_url,
+  };
+}
+
+function bodyToGrad(body: Record<string, unknown>): GraduationInput | null {
+  const admission_year = Number(body.admission_year);
+  const department = String(body.department ?? '').trim();
+  if (!Number.isFinite(admission_year) || !department) return null;
+  const numOrNull = (v: unknown): number | null => {
+    if (v == null || v === '') return null;
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+  };
+  return {
+    admission_year,
+    department,
+    major_type:
+      body.major_type == null || body.major_type === ''
+        ? '전공'
+        : String(body.major_type),
+    total_credits: numOrNull(body.total_credits),
+    major_credits: numOrNull(body.major_credits),
+    general_credits: numOrNull(body.general_credits),
+    notes: body.notes == null ? null : String(body.notes),
+    source_url: body.source_url == null ? null : String(body.source_url),
+    verified_at: body.verified_at == null ? null : String(body.verified_at),
   };
 }
 
@@ -117,4 +150,74 @@ adminRouter.post('/reindex', async (req, res) => {
       message: err instanceof Error ? err.message : String(err),
     });
   }
+});
+
+/* ── Graduation requirements CRUD ── */
+
+adminRouter.get('/graduation', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const rows = listGraduation();
+  res.json({ count: rows.length, requirements: rows });
+});
+
+adminRouter.get('/graduation/:id', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const row = getGraduationById(req.params.id);
+  if (!row) {
+    res.status(404).json({ error: 'graduation requirement not found' });
+    return;
+  }
+  res.json(row);
+});
+
+adminRouter.post('/graduation', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const input = bodyToGrad(req.body || {});
+  if (!input) {
+    res.status(400).json({
+      error: 'admission_year and department are required',
+    });
+    return;
+  }
+  try {
+    const row = createGraduation(input);
+    res.status(201).json({ requirement: row });
+  } catch (err) {
+    res.status(409).json({
+      error: 'create failed (duplicate year+department+major_type?)',
+      message: err instanceof Error ? err.message : String(err),
+    });
+  }
+});
+
+adminRouter.put('/graduation/:id', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const existing = getGraduationById(req.params.id);
+  if (!existing) {
+    res.status(404).json({ error: 'graduation requirement not found' });
+    return;
+  }
+  const body = req.body || {};
+  const row = updateGraduation(req.params.id, {
+    admission_year: body.admission_year,
+    department: body.department,
+    major_type: body.major_type,
+    total_credits: body.total_credits,
+    major_credits: body.major_credits,
+    general_credits: body.general_credits,
+    notes: body.notes,
+    source_url: body.source_url,
+    verified_at: body.verified_at,
+  });
+  res.json({ requirement: row });
+});
+
+adminRouter.delete('/graduation/:id', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const ok = deleteGraduation(req.params.id);
+  if (!ok) {
+    res.status(404).json({ error: 'graduation requirement not found' });
+    return;
+  }
+  res.json({ deleted: true, id: req.params.id });
 });

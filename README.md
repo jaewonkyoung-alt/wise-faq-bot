@@ -1,35 +1,52 @@
 # WISE FAQ Bot (Phase-1 Hybrid RAG)
 
-Dongguk University WISE campus Q&A. MVP domain: clubs only.
+Dongguk University WISE campus Q&A.
 
-Replaces keyword FAQ with hybrid RAG (SQL + embeddings), LLM tool routing,
-citations, admin CRUD/reindex, unanswered log, Kakao thin adapter.
+**Primary UX: graduation requirements** — KakaoTalk button + slot-filling (admission year → department → SQL lookup only). Never invents credits/rules.
+
+**Secondary: clubs** — hybrid RAG via `/api/ask`.
 
 Details: ARCHITECTURE.md
 
 ## How to run
 
-Use package scripts: install, seed, build, start, dev, smoke, eval.
-Admin UI at /admin. Ask endpoint at /api/ask. Kakao at /api/kakao/skill.
-See .env.example for configuration.
+```bash
+npm install
+npm run seed
+npm run build
+npm start
+```
+
+- Admin UI: `/admin`
+- Graduation: `GET /api/graduation?year=&department=`
+- Departments: `GET /api/graduation/departments`
+- Years: `GET /api/graduation/years`
+- Ask (clubs): `POST /api/ask`
+- Kakao: `POST /api/kakao/skill`
+- Config: `.env.example`
+
+## Graduation rules
+
+- Facts only from DB by admission_year + department.
+- Missing row -> clear not-found message (+ unanswered log).
+- Seed rows marked PLACEHOLDER.
+
+## Kakao slot flow
+
+1. Empty / menu / start -> graduation, clubs, map buttons
+2. Graduation -> ask year
+3. Year -> ask department
+4. Department -> SQL answer with source_url / verified_at
+5. Clubs -> ask(); map -> stub
 
 ## LLM providers
 
-| `LLM_PROVIDER` | Chat | Embeddings (default) |
-|----------------|------|----------------------|
-| `mock` | Heuristic router | Mock hash vectors |
-| `openai` | OpenAI chat | OpenAI embeddings |
-| `gemini` | Gemini | Gemini embeddings |
-| `openrouter` | OpenAI-compatible via OpenRouter (`openai/gpt-oss-120b`) | **Mock** (chat-only model) |
+mock | openai | gemini | openrouter (embeddings mock by default for openrouter).
 
-OpenRouter setup:
+## Tests
 
 ```bash
-LLM_PROVIDER=openrouter
-OPENROUTER_API_KEY=sk-or-...   # or OPENAI_API_KEY
-# optional:
-# OPENAI_BASE_URL=https://openrouter.ai/api/v1
-# OPENAI_MODEL=openai/gpt-oss-120b
+npm run build
+npm run test:graduation
+npm run smoke
 ```
-
-To use real embeddings while chatting via OpenRouter, set e.g. `EMBED_PROVIDER=openai` and `OPENAI_API_KEY` (and optionally `OPENAI_BASE_URL` for embeddings).
