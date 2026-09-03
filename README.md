@@ -1,12 +1,14 @@
-# WISE FAQ Bot
+# WISE FAQ Bot (Phase-1 Hybrid RAG)
 
-Dongguk University WISE campus school FAQ chatbot MVP skeleton.
-REST API + Kakao Skill webhook. FAQ content lives in JSON files.
+Dongguk University WISE campus Q&A. MVP domain: clubs only.
 
-## Quick start
+Replaces keyword FAQ with hybrid RAG (SQL + embeddings), LLM tool routing,
+citations, admin CRUD/reindex, unanswered log, Kakao thin adapter.
 
-see package.json scripts: install, build, start, dev
+Details: ARCHITECTURE.md
 
-See docs/kakao-setup.md and docs/mvp-scope.md.
-Architecture: Express+TS API, data/faq JSON, kakao responseBuilder.
-Add FAQ by editing JSON under data/faq without code changes.
+## How to run
+
+Use package scripts: install, seed, build, start, dev, smoke, eval.
+Admin UI at /admin. Ask endpoint at /api/ask. Kakao at /api/kakao/skill.
+See .env.example for configuration.

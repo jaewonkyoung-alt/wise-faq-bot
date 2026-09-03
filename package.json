@@ -1,24 +1,30 @@
 {
   "name": "wise-faq-bot",
-  "version": "0.1.0",
-  "description": "Dongguk University WISE campus school FAQ bot (Kakao Open Builder Skill + REST API)",
+  "version": "0.2.0",
+  "description": "Dongguk University WISE Phase-1 hybrid RAG campus Q&A (clubs MVP)",
   "private": true,
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "seed": "tsx scripts/seed.ts",
+    "reindex": "tsx scripts/reindex.ts",
+    "eval": "tsx scripts/run-eval.ts",
+    "smoke": "tsx scripts/smoke.ts"
   },
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
+    "better-sqlite3": "^11.7.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/node": "^22.10.5",

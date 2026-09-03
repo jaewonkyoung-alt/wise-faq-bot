@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WISE 동아리 Admin</title>
+  <style>
+    :root { font-family: system-ui, sans-serif; color: #1a1a1a; }
+    body { max-width: 960px; margin: 24px auto; padding: 0 16px; background: #f6f7fb; }
+    h1 { font-size: 1.4rem; }
+    .card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+    label { display: block; font-size: .85rem; margin-top: 8px; color: #444; }
+    input, textarea, select { width: 100%; box-sizing: border-box; padding: 8px; margin-top: 4px; border: 1px solid #ccd; border-radius: 8px; }
+    textarea { min-height: 72px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    button { margin-top: 12px; margin-right: 8px; padding: 8px 14px; border: 0; border-radius: 8px; background: #2f5bea; color: #fff; cursor: pointer; }
+    button.secondary { background: #667; }
+    button.danger { background: #c0392b; }
+    table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+    th, td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; vertical-align: top; }
+    .muted { color: #666; font-size: .85rem; }
+    #status { white-space: pre-wrap; font-family: ui-monospace, monospace; font-size: .8rem; background: #111; color: #d8ffd8; padding: 12px; border-radius: 8px; min-height: 48px; }
+    @media (max-width: 700px) { .row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <h1>WISE Phase-1 · 동아리 Admin</h1>
+  <p class="muted">CRUD 후 자동/수동 재임베딩. 배포 없이 검색 반영 (목표 ~60s).</p>
+
+  <div class="card">
+    <label>Admin Token (선택, .env ADMIN_TOKEN)</label>
+    <input id="token" type="password" placeholder="x-admin-token" />
+    <button type="button" onclick="loadClubs()">목록 새로고침</button>
+    <button type="button" class="secondary" onclick="reindexAll()">전체 재인덱싱</button>
+    <button type="button" class="secondary" onclick="loadUnanswered()">미답변 로그</button>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0;font-size:1.1rem">동아리 추가 / 수정</h2>
+    <input type="hidden" id="editId" />
+    <div class="row">
+      <div>
+        <label>이름 *</label>
+        <input id="name" />
+      </div>
+      <div>
+        <label>분과 *</label>
+        <input id="category" placeholder="학술/IT, 공연/음악, 봉사…" />
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>연락처</label>
+        <input id="contact" />
+      </div>
+      <div>
+        <label>정기 모임</label>
+        <input id="meeting_time" />
+      </div>
+    </div>
+    <div class="row">
+      <div>
+        <label>장소</label>
+        <input id="location" />
+      </div>
+      <div>
+        <label>출처 URL *</label>
+        <input id="source_url" placeholder="https://…" />
+      </div>
+    </div>
+    <label>소개 * (semantic)</label>
+    <textarea id="intro"></textarea>
+    <label>활동 * (semantic)</label>
+    <textarea id="activities"></textarea>
+    <button type="button" onclick="saveClub()">저장 + 재임베딩</button>
+    <button type="button" class="secondary" onclick="resetForm()">초기화</button>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0;font-size:1.1rem">등록된 동아리</h2>
+    <div id="list"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0;font-size:1.1rem">상태 / 로그</h2>
+    <div id="status">ready</div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    function headers() {
+      const h = { 'Content-Type': 'application/json' };
+      const t = $('token').value.trim();
+      if (t) h['x-admin-token'] = t;
+      return h;
+    }
+    function log(x) {
+      $('status').textContent = typeof x === 'string' ? x : JSON.stringify(x, null, 2);
+    }
+    function resetForm() {
+      $('editId').value = '';
+      ['name','category','contact','meeting_time','location','source_url','intro','activities']
+        .forEach((id) => $(id).value = '');
+    }
+    function fillForm(c) {
+      $('editId').value = c.id;
+      $('name').value = c.name || '';
+      $('category').value = c.category || '';
+      $('contact').value = c.contact || '';
+      $('meeting_time').value = c.meeting_time || '';
+      $('location').value = c.location || '';
+      $('source_url').value = c.source_url || '';
+      $('intro').value = c.intro || '';
+      $('activities').value = c.activities || '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    async function loadClubs() {
+      const res = await fetch('/api/admin/clubs', { headers: headers() });
+      const data = await res.json();
+      if (!res.ok) return log(data);
+      const rows = (data.clubs || []).map((c) => `
+        <tr>
+          <td><strong>${escapeHtml(c.name)}</strong><div class="muted">${escapeHtml(c.category)}</div></td>
+          <td class="muted">${escapeHtml(c.meeting_time || '-')} / ${escapeHtml(c.location || '-')}</td>
+          <td>
+            <button type="button" onclick='fillForm(${JSON.stringify(c).replace(/'/g, "&#39;")})'>수정</button>
+            <button type="button" class="danger" onclick="removeClub('${c.id}')">삭제</button>
+          </td>
+        </tr>`).join('');
+      $('list').innerHTML = `<table><thead><tr><th>동아리</th><th>모임/장소</th><th></th></tr></thead><tbody>${rows || '<tr><td colspan="3">없음</td></tr>'}</tbody></table>`;
+      log({ loaded: data.count });
+    }
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (ch) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    }
+    async function saveClub() {
+      const body = {
+        name: $('name').value,
+        category: $('category').value,
+        contact: $('contact').value,
+        meeting_time: $('meeting_time').value,
+        location: $('location').value,
+        source_url: $('source_url').value,
+        intro: $('intro').value,
+        activities: $('activities').value,
+      };
+      const id = $('editId').value;
+      const res = await fetch(id ? `/api/admin/clubs/${id}` : '/api/admin/clubs', {
+        method: id ? 'PUT' : 'POST',
+        headers: headers(),
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      log(data);
+      if (res.ok) { resetForm(); loadClubs(); }
+    }
+    async function removeClub(id) {
+      if (!confirm('삭제할까요?')) return;
+      const res = await fetch(`/api/admin/clubs/${id}`, { method: 'DELETE', headers: headers() });
+      log(await res.json());
+      loadClubs();
+    }
+    async function reindexAll() {
+      const res = await fetch('/api/admin/reindex', { method: 'POST', headers: headers(), body: '{}' });
+      log(await res.json());
+    }
+    async function loadUnanswered() {
+      const res = await fetch('/api/unanswered');
+      log(await res.json());
+    }
+    loadClubs().catch((e) => log(String(e)));
+  </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+[
+  {
+    "id": "struct-contact",
+    "question": "와이즈코딩 동아리 연락처 알려줘",
+    "expectRoute": "structured_query",
+    "expectVerified": true,
+    "expectAnswerIncludes": [
+      "wisecoding@example.dongguk.ac.kr"
+    ],
+    "expectCitationName": "와이즈코딩"
+  },
+  {
+    "id": "struct-time",
+    "question": "사운드웨이브 정기 모임 시간?",
+    "expectRoute": "structured_query",
+    "expectVerified": true,
+    "expectAnswerIncludes": [
+      "화",
+      "목"
+    ],
+    "expectCitationName": "사운드웨이브"
+  },
+  {
+    "id": "struct-list",
+    "question": "학술 동아리 목록 알려줘",
+    "expectRoute": "structured_query",
+    "expectVerified": true,
+    "expectAnswerIncludes": [
+      "북커넥트"
+    ]
+  },
+  {
+    "id": "semantic-intro",
+    "question": "게임 개발 배우는 동아리 소개해줘",
+    "expectRoute": "semantic_search",
+    "expectVerified": true,
+    "expectCitationName": "유니티게임즈"
+  },
+  {
+    "id": "semantic-volunteer",
+    "question": "환경 봉사 활동하는 동아리 뭐 있어?",
+    "expectRoute": "semantic_search",
+    "expectVerified": true,
+    "expectCitationName": "그린봉사단"
+  },
+  {
+    "id": "refuse-tuition",
+    "question": "등록금 납부 방법 알려줘",
+    "expectRoute": "refuse",
+    "expectVerified": false,
+    "expectAnswerIncludes": [
+      "확인되지 않음"
+    ]
+  },
+  {
+    "id": "refuse-meal",
+    "question": "학식 메뉴 뭐야?",
+    "expectRoute": "refuse",
+    "expectVerified": false,
+    "expectAnswerIncludes": [
+      "확인되지 않음"
+    ]
+  },
+  {
+    "id": "miss-unknown",
+    "question": "존재하지않는환상동아리 연락처",
+    "expectRoute": "structured_query",
+    "expectVerified": false,
+    "expectAnswerIncludes": [
+      "확인되지 않음"
+    ]
+  }
+]

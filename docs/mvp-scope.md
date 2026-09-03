@@ -1,28 +1,22 @@
-# MVP Scope
+# MVP Scope (Phase-1)
 
 ## In scope
 
-- FAQ JSON Q&A (WISE campus samples)
-- REST API: search / categories / get by id / health
-- Kakao Open Builder Skill webhook (response JSON v2.0, simpleText + quickReplies)
-- Add/edit FAQ via data/faq/*.json only (no code change)
-- Placeholder answers marked with [PLACEHOLDER]
+- Hybrid RAG for clubs only
+- SQLite structured fields + embeddings table
+- ask() routes: structured_query / semantic_search / refuse
+- Citations: source_url + updated_at
+- Low similarity / OOD -> unverified + unanswered log
+- Admin web CRUD + reindex without redeploy
+- Kakao skill thin adapter
+- Mock LLM/embed mode
+- Small Korean eval script
 
-## Out of scope (NOT in this MVP)
+## Out of scope
 
-| Item | Note |
-|------|------|
-| Alimtalk | No template notification sends |
-| Counseling talk (sangdam-talk) | No agent handoff / ticketing |
-| Push notifications | No app/web push |
-| Login / academic system link | No uDRIMS personalization |
-| Vector / LLM search | Keyword scoring only |
-| Admin UI | Edit JSON files instead |
-| i18n | Korean FAQ first |
+- Kakao channel production setup
+- Ollama / local sLLM
+- Non-club domains (extension notes only)
+- Alimtalk / counseling / uDRIMS
 
-## Later ideas (reference only)
-
-- Replace placeholders with real calendar / contacts
-- Kakao Skill auth / rate limit
-- Simple FAQ CMS
-- Alimtalk / counseling talk as a SEPARATE project — not this MVP
+Seed club contacts/URLs are demo placeholders.

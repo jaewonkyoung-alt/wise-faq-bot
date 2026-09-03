@@ -1,20 +1,81 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+import fs from 'fs';
+import path from 'path';
 import { createApp } from './app';
-import { loadAllFaqs } from './services/faqStore';
+import { getDb, getDbPath } from './db/database';
+import { listClubs } from './services/clubStore';
+import { reindexAll } from './services/reindex';
+import { createLlmProvider } from './llm/provider';
+import { getEmbedProvider } from './embeddings/embedder';
 
 const PORT = Number(process.env.PORT) || 3000;
 
-const app = createApp();
+async function ensureSeeded(): Promise<void> {
+  getDb();
+  const clubs = listClubs();
+  if (clubs.length > 0) {
+    // Ensure embeddings exist
+    const row = getDb()
+      .prepare('SELECT COUNT(*) AS c FROM embeddings')
+      .get() as { c: number };
+    if (row.c === 0) {
+      console.log('[wise-faq-bot] embeddings empty — reindexing…');
+      const result = await reindexAll();
+      console.log(
+        `[wise-faq-bot] reindex: ${result.clubs} clubs, ${result.chunks} chunks in ${result.ms}ms (${result.provider})`
+      );
+    }
+    return;
+  }
 
-// Eager-load FAQ data so startup fails fast if JSON is broken
-const faqs = loadAllFaqs();
-console.log(`[wise-faq-bot] loaded ${faqs.length} FAQ items`);
+  const seedPath = path.resolve(process.cwd(), 'data/seed/clubs.json');
+  if (!fs.existsSync(seedPath)) {
+    console.warn('[wise-faq-bot] no clubs and no seed file at', seedPath);
+    return;
+  }
 
-app.listen(PORT, () => {
-  console.log(`[wise-faq-bot] listening on http://localhost:${PORT}`);
-  console.log(`[wise-faq-bot] health: GET /health`);
-  console.log(`[wise-faq-bot] search: GET /api/faq/search?q=`);
-  console.log(`[wise-faq-bot] kakao:  POST /api/kakao/skill`);
+  console.log('[wise-faq-bot] seeding clubs from', seedPath);
+  const { upsertClubByName } = await import('./services/clubStore');
+  const raw = JSON.parse(fs.readFileSync(seedPath, 'utf-8')) as Array<{
+    name: string;
+    category: string;
+    contact?: string;
+    meeting_time?: string;
+    location?: string;
+    intro: string;
+    activities: string;
+    source_url: string;
+  }>;
+  for (const item of raw) {
+    upsertClubByName(item);
+  }
+  const result = await reindexAll();
+  console.log(
+    `[wise-faq-bot] seeded+reindex: ${result.clubs} clubs, ${result.chunks} chunks in ${result.ms}ms`
+  );
+}
+
+async function main() {
+  await ensureSeeded();
+
+  const app = createApp();
+  const clubs = listClubs().length;
+
+  app.listen(PORT, () => {
+    console.log(`[wise-faq-bot] Phase-1 hybrid RAG (clubs MVP)`);
+    console.log(`[wise-faq-bot] db: ${getDbPath()}`);
+    console.log(`[wise-faq-bot] llm=${createLlmProvider().name} embed=${getEmbedProvider()} clubs=${clubs}`);
+    console.log(`[wise-faq-bot] listening on http://localhost:${PORT}`);
+    console.log(`[wise-faq-bot] health:  GET /health`);
+    console.log(`[wise-faq-bot] ask:     POST /api/ask`);
+    console.log(`[wise-faq-bot] admin:   GET /admin`);
+    console.log(`[wise-faq-bot] kakao:   POST /api/kakao/skill`);
+  });
+}
+
+main().catch((err) => {
+  console.error('[wise-faq-bot] fatal', err);
+  process.exit(1);
 });

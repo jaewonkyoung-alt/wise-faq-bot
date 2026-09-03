@@ -1,4 +1,4 @@
-/** Kakao Open Builder Skill request (simplified for MVP) */
+/** Kakao Open Builder Skill request (simplified) */
 export interface KakaoSkillRequest {
   intent?: {
     id?: string;

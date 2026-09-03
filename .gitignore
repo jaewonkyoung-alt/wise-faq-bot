@@ -9,3 +9,6 @@ coverage/
 .idea/
 .vscode/
 *.tsbuildinfo
+data/*.db
+data/*.db-*
+data/wise.db

@@ -1,0 +1,82 @@
+[
+  {
+    "name": "와이즈코딩",
+    "category": "학술/IT",
+    "contact": "wisecoding@example.dongguk.ac.kr / 동아리방 문의",
+    "meeting_time": "매주 수요일 19:00",
+    "location": "학생회관 3층 동아리실 A-12",
+    "intro": "동국대학교 WISE 캠퍼스 소프트웨어·알고리즘 학술 동아리입니다. 입문부터 프로젝트까지 함께 성장합니다.",
+    "activities": "주간 알고리즘 스터디, 웹/앱 미니 프로젝트, 교내 해커톤 참가, 신입생 코딩 멘토링.",
+    "source_url": "https://wise.dongguk.ac.kr/clubs/wisecoding"
+  },
+  {
+    "name": "그린봉사단",
+    "category": "봉사",
+    "contact": "green.volunteer@example.dongguk.ac.kr",
+    "meeting_time": "격주 토요일 10:00",
+    "location": "학생회관 2층 회의실 B",
+    "intro": "지역사회와 함께하는 WISE 캠퍼스 봉사 동아리입니다. 환경·교육 봉사를 중심으로 활동합니다.",
+    "activities": "지역 환경정화, 학습멘토링 봉사, 헌혈 캠페인, 학기말 봉사 리포트 공유회.",
+    "source_url": "https://wise.dongguk.ac.kr/clubs/green-volunteer"
+  },
+  {
+    "name": "사운드웨이브",
+    "category": "공연/음악",
+    "contact": "soundwave.band@example.com / Instagram @wise_soundwave",
+    "meeting_time": "매주 화·목 18:30",
+    "location": "예술관 연습실 201",
+    "intro": "밴드·합주를 즐기는 WISE 공연 동아리입니다. 록·팝·인디 장르를 자유롭게 연주합니다.",
+    "activities": "정기 합주, 개강·종강 공연, 버스킹, 신입 악기 워크숍.",
+    "source_url": "https://wise.dongguk.ac.kr/clubs/soundwave"
+  },
+  {
+    "name": "필름포럼",
+    "category": "문화/예술",
+    "contact": "filmforum@example.dongguk.ac.kr",
+    "meeting_time": "매주 금요일 19:30",
+    "location": "도서관 세미나실 3",
+    "intro": "영화 감상과 비평, 단편 제작을 하는 문화 동아리입니다.",
+    "activities": "주간 상영회, 감독론 스터디, 교내 단편영화제, 시나리오 워크숍.",
+    "source_url": "https://wise.dongguk.ac.kr/clubs/filmforum"
+  },
+  {
+    "name": "하이점프",
+    "category": "체육",
+    "contact": "동아리 연합회 체육분과 게시판 / highjump@example.com",
+    "meeting_time": "매주 월·수 07:00 / 저녁 20:00",
+    "location": "체육관 농구코트",
+    "intro": "농구를 사랑하는 WISE 체육 동아리입니다. 초보·숙련자 모두 환영합니다.",
+    "activities": "정기 연습, 교내 리그, 타대학 친선경기, 체력 트레이닝.",
+    "source_url": "https://wise.dongguk.ac.kr/clubs/highjump"
+  },
+  {
+    "name": "북커넥트",
+    "category": "학술",
+    "contact": "bookconnect@example.dongguk.ac.kr",
+    "meeting_time": "매주 화요일 17:00",
+    "location": "중앙도서관 스터디룸 5",
+    "intro": "독서와 토론으로 사유를 넓히는 학술 동아리입니다. 인문·사회·과학 도서를 번갈아 읽습니다.",
+    "activities": "주간 북클럽, 학기별 테마 독서, 초청 강연 청취, 에세이 공유.",
+    "source_url": "https://wise.dongguk.ac.kr/clubs/bookconnect"
+  },
+  {
+    "name": "댄스온",
+    "category": "공연/무용",
+    "contact": "danceon.wise@example.com",
+    "meeting_time": "매주 수·금 19:00",
+    "location": "학생회관 댄스스튜디오",
+    "intro": "커버 댄스와 창작 안무를 함께하는 공연 동아리입니다.",
+    "activities": "안무 연습, 커버 영상 제작, 축제 무대, 신입 베이직 클래스.",
+    "source_url": "https://wise.dongguk.ac.kr/clubs/danceon"
+  },
+  {
+    "name": "유니티게임즈",
+    "category": "학술/IT",
+    "contact": "unitygames@example.dongguk.ac.kr",
+    "meeting_time": "매주 목요일 20:00",
+    "location": "공학관 실습실 104",
+    "intro": "게임 기획·개발을 배우는 IT 동아리입니다. Unity 엔진을 중심으로 팀 프로젝트를 진행합니다.",
+    "activities": "Unity 스터디, 게임잼, 포트폴리오 리뷰, 교내 전시.",
+    "source_url": "https://wise.dongguk.ac.kr/clubs/unitygames"
+  }
+]
