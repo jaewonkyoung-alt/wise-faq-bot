@@ -18,7 +18,6 @@ function assert(cond: boolean, msg: string): void {
 }
 
 function seedIfNeeded(): void {
-  if (listGraduation().length > 0) return;
   const seedPath = path.resolve(process.cwd(), 'data/seed/graduation.json');
   const raw = JSON.parse(fs.readFileSync(seedPath, 'utf-8')) as Array<{
     admission_year: number;
@@ -27,6 +26,10 @@ function seedIfNeeded(): void {
     total_credits?: number;
     major_credits?: number;
     general_credits?: number;
+    thesis_required?: boolean | null;
+    english_requirement?: string | null;
+    license_requirement?: string | null;
+    track?: string | null;
     notes?: string;
     source_url?: string;
     verified_at?: string;
@@ -50,6 +53,10 @@ function main(): void {
   const ans = formatGraduationAnswer(hit!);
   assert(ans.includes('130'), 'answer has credits');
   assert(ans.includes('source_url') || ans.includes('http'), 'answer has source');
+  assert(hit!.thesis_required === true, 'thesis flag from DB');
+  assert(ans.includes('졸업논문/작품'), 'answer shows thesis line');
+  assert((hit!.track || '').length > 0, 'track stored');
+  assert(ans.includes('트랙'), 'answer shows track line');
 
   const miss = lookupGraduation(2099, '존재하지않는학과');
   assert(!miss, 'lookup miss');

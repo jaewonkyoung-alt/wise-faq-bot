@@ -51,6 +51,10 @@ function seedGraduation() {
     total_credits?: number;
     major_credits?: number;
     general_credits?: number;
+    thesis_required?: boolean;
+    english_requirement?: string;
+    license_requirement?: string;
+    track?: string;
     notes?: string;
     source_url?: string;
     verified_at?: string;

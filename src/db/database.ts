@@ -99,4 +99,23 @@ function migrate(database: Database.Database): void {
       updated_at TEXT NOT NULL
     );
   `);
+
+  ensureGradColumns(database);
+}
+
+function ensureGradColumns(database: Database.Database): void {
+  const cols = (
+    database.prepare(`PRAGMA table_info(graduation_requirements)`).all() as Array<{
+      name: string;
+    }>
+  ).map((c) => c.name);
+  const add = (name: string, ddl: string) => {
+    if (!cols.includes(name)) {
+      database.exec(`ALTER TABLE graduation_requirements ADD COLUMN ${ddl}`);
+    }
+  };
+  add('thesis_required', 'thesis_required INTEGER');
+  add('english_requirement', 'english_requirement TEXT');
+  add('license_requirement', 'license_requirement TEXT');
+  add('track', 'track TEXT');
 }

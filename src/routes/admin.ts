@@ -22,8 +22,11 @@ export const adminRouter = Router();
 function checkAdmin(req: { header: (n: string) => string | undefined }, res: {
   status: (c: number) => { json: (b: unknown) => void };
 }): boolean {
-  const token = process.env.ADMIN_TOKEN;
-  if (!token) return true;
+  const token = (process.env.ADMIN_TOKEN || '').trim();
+  if (!token) {
+    res.status(401).json({ error: 'admin_token_not_configured' });
+    return false;
+  }
   const got = req.header('x-admin-token');
   if (got !== token) {
     res.status(401).json({ error: 'unauthorized' });
@@ -70,6 +73,18 @@ function bodyToGrad(body: Record<string, unknown>): GraduationInput | null {
     total_credits: numOrNull(body.total_credits),
     major_credits: numOrNull(body.major_credits),
     general_credits: numOrNull(body.general_credits),
+    thesis_required:
+      body.thesis_required == null || body.thesis_required === ''
+        ? null
+        : body.thesis_required === true ||
+          body.thesis_required === 1 ||
+          body.thesis_required === '1' ||
+          body.thesis_required === 'true',
+    english_requirement:
+      body.english_requirement == null ? null : String(body.english_requirement),
+    license_requirement:
+      body.license_requirement == null ? null : String(body.license_requirement),
+    track: body.track == null ? null : String(body.track),
     notes: body.notes == null ? null : String(body.notes),
     source_url: body.source_url == null ? null : String(body.source_url),
     verified_at: body.verified_at == null ? null : String(body.verified_at),
@@ -205,6 +220,10 @@ adminRouter.put('/graduation/:id', (req, res) => {
     total_credits: body.total_credits,
     major_credits: body.major_credits,
     general_credits: body.general_credits,
+    thesis_required: body.thesis_required,
+    english_requirement: body.english_requirement,
+    license_requirement: body.license_requirement,
+    track: body.track,
     notes: body.notes,
     source_url: body.source_url,
     verified_at: body.verified_at,

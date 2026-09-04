@@ -34,8 +34,8 @@
   <p class="muted">졸업요건이 1차 UX입니다. 학점·규칙은 DB에 있는 값만 노출합니다 (PLACEHOLDER 시드 주의).</p>
 
   <div class="card">
-    <label>Admin Token (선택, .env ADMIN_TOKEN)</label>
-    <input id="token" type="password" placeholder="x-admin-token" />
+    <label>Admin Token * (.env ADMIN_TOKEN — 없으면 모든 관리 API가 401)</label>
+    <input id="token" type="password" placeholder="x-admin-token (필수)" />
     <div class="tabs">
       <button type="button" id="tabGrad" class="active" onclick="showTab('grad')">졸업요건</button>
       <button type="button" id="tabClubs" onclick="showTab('clubs')">동아리</button>
@@ -79,6 +79,30 @@
         <div>
           <label>교양학점</label>
           <input id="g_general" type="number" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>트랙 / 세부전공</label>
+          <input id="g_track" placeholder="심화과정, 소프트웨어트랙 …" />
+        </div>
+        <div>
+          <label>졸업논문/작품</label>
+          <select id="g_thesis">
+            <option value="">미지정</option>
+            <option value="true">필수</option>
+            <option value="false">해당 없음</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>영어 / 외국어 요건</label>
+          <input id="g_english" placeholder="TOEIC 700 이상 등" />
+        </div>
+        <div>
+          <label>자격 / 면허 요건</label>
+          <input id="g_license" placeholder="국가고시 응시자격 등" />
         </div>
       </div>
       <label>비고 / 추가 규칙</label>
@@ -182,6 +206,10 @@
       $('g_notes').value = '';
       $('g_source_url').value = '';
       $('g_verified').value = '';
+      $('g_track').value = '';
+      $('g_thesis').value = '';
+      $('g_english').value = '';
+      $('g_license').value = '';
     }
     function fillGrad(r) {
       $('g_editId').value = r.id;
@@ -194,6 +222,10 @@
       $('g_notes').value = r.notes || '';
       $('g_source_url').value = r.source_url || '';
       $('g_verified').value = r.verified_at || '';
+      $('g_track').value = r.track || '';
+      $('g_thesis').value = r.thesis_required === null || r.thesis_required === undefined ? '' : String(r.thesis_required);
+      $('g_english').value = r.english_requirement || '';
+      $('g_license').value = r.license_requirement || '';
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     async function loadGrads() {
@@ -223,6 +255,10 @@
         total_credits: $('g_total').value === '' ? null : Number($('g_total').value),
         major_credits: $('g_major').value === '' ? null : Number($('g_major').value),
         general_credits: $('g_general').value === '' ? null : Number($('g_general').value),
+        track: $('g_track').value || null,
+        thesis_required: $('g_thesis').value === '' ? null : $('g_thesis').value === 'true',
+        english_requirement: $('g_english').value || null,
+        license_requirement: $('g_license').value || null,
         notes: $('g_notes').value,
         source_url: $('g_source_url').value,
         verified_at: $('g_verified').value || null,

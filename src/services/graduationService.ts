@@ -18,6 +18,13 @@ function rowToGrad(row: Record<string, unknown>): GraduationRequirement {
       row.major_credits == null ? null : Number(row.major_credits),
     general_credits:
       row.general_credits == null ? null : Number(row.general_credits),
+    thesis_required:
+      row.thesis_required == null ? null : Number(row.thesis_required) === 1,
+    english_requirement:
+      row.english_requirement == null ? null : String(row.english_requirement),
+    license_requirement:
+      row.license_requirement == null ? null : String(row.license_requirement),
+    track: row.track == null ? null : String(row.track),
     notes: row.notes == null ? null : String(row.notes),
     source_url: row.source_url == null ? null : String(row.source_url),
     verified_at: row.verified_at == null ? null : String(row.verified_at),
@@ -26,6 +33,16 @@ function rowToGrad(row: Record<string, unknown>): GraduationRequirement {
 }
 
 /** Normalize major_type for UNIQUE key (NULL → empty string in SQLite UNIQUE). */
+
+function boolOrNull(v: boolean | null | undefined): boolean | null {
+  if (v === undefined || v === null) return null;
+  return Boolean(v);
+}
+
+function boolToSql(v: boolean | null): number | null {
+  if (v == null) return null;
+  return v ? 1 : 0;
+}
 function normalizeMajorType(v: string | null | undefined): string {
   const t = (v ?? '').trim();
   return t || '전공';
@@ -142,6 +159,12 @@ export function formatGraduationAnswer(
     row.total_credits != null ? `· 총 이수학점: ${row.total_credits}` : null,
     row.major_credits != null ? `· 전공 학점: ${row.major_credits}` : null,
     row.general_credits != null ? `· 교양 학점: ${row.general_credits}` : null,
+    row.track ? `· 트랙: ${row.track}` : null,
+    row.thesis_required == null
+      ? null
+      : `· 졸업논문/작품: ${row.thesis_required ? '필수' : '해당 없음'}`,
+    row.english_requirement ? `· 영어/외국어: ${row.english_requirement}` : null,
+    row.license_requirement ? `· 자격/면허: ${row.license_requirement}` : null,
     row.notes ? `· 비고: ${row.notes}` : null,
     '',
     '[출처]',
@@ -214,6 +237,10 @@ export function createGraduation(
       input.general_credits === ('' as unknown)
         ? null
         : Number(input.general_credits),
+    thesis_required: boolOrNull(input.thesis_required),
+    english_requirement: input.english_requirement?.trim() || null,
+    license_requirement: input.license_requirement?.trim() || null,
+    track: input.track?.trim() || null,
     notes: input.notes?.trim() || null,
     source_url: input.source_url?.trim() || null,
     verified_at: input.verified_at?.trim() || null,
@@ -225,8 +252,9 @@ export function createGraduation(
       `INSERT INTO graduation_requirements (
         id, admission_year, department, major_type,
         total_credits, major_credits, general_credits,
+        thesis_required, english_requirement, license_requirement, track,
         notes, source_url, verified_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .run(
       row.id,
@@ -236,6 +264,10 @@ export function createGraduation(
       row.total_credits,
       row.major_credits,
       row.general_credits,
+      boolToSql(row.thesis_required),
+      row.english_requirement,
+      row.license_requirement,
+      row.track,
       row.notes,
       row.source_url,
       row.verified_at,
@@ -283,6 +315,20 @@ export function updateGraduation(
           ? null
           : Number(patch.general_credits)
         : existing.general_credits,
+    thesis_required:
+      patch.thesis_required !== undefined
+        ? boolOrNull(patch.thesis_required)
+        : existing.thesis_required,
+    english_requirement:
+      patch.english_requirement !== undefined
+        ? patch.english_requirement?.trim() || null
+        : existing.english_requirement,
+    license_requirement:
+      patch.license_requirement !== undefined
+        ? patch.license_requirement?.trim() || null
+        : existing.license_requirement,
+    track:
+      patch.track !== undefined ? patch.track?.trim() || null : existing.track,
     notes:
       patch.notes !== undefined
         ? patch.notes?.trim() || null
@@ -303,6 +349,7 @@ export function updateGraduation(
       `UPDATE graduation_requirements SET
         admission_year = ?, department = ?, major_type = ?,
         total_credits = ?, major_credits = ?, general_credits = ?,
+        thesis_required = ?, english_requirement = ?, license_requirement = ?, track = ?,
         notes = ?, source_url = ?, verified_at = ?, updated_at = ?
        WHERE id = ?`
     )
@@ -313,6 +360,10 @@ export function updateGraduation(
       next.total_credits,
       next.major_credits,
       next.general_credits,
+      boolToSql(next.thesis_required),
+      next.english_requirement,
+      next.license_requirement,
+      next.track,
       next.notes,
       next.source_url,
       next.verified_at,

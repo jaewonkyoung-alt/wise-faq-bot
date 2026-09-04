@@ -6,6 +6,10 @@ export interface GraduationRequirement {
   total_credits: number | null;
   major_credits: number | null;
   general_credits: number | null;
+  thesis_required: boolean | null;
+  english_requirement: string | null;
+  license_requirement: string | null;
+  track: string | null;
   notes: string | null;
   source_url: string | null;
   verified_at: string | null;
@@ -19,6 +23,10 @@ export interface GraduationInput {
   total_credits?: number | null;
   major_credits?: number | null;
   general_credits?: number | null;
+  thesis_required?: boolean | null;
+  english_requirement?: string | null;
+  license_requirement?: string | null;
+  track?: string | null;
   notes?: string | null;
   source_url?: string | null;
   verified_at?: string | null;
