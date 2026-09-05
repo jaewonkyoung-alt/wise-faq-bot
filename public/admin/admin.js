@@ -151,6 +151,24 @@
     }
   }
 
+  async function scanKb() {
+    var status = $('kb-scan-status');
+    if (status) status.textContent = '스캔 중…';
+    try {
+      var r = await api('/api/admin/kb/scan');
+      var g = r.data && r.data.graduation;
+      var msg = g
+        ? ('OK · 졸업요건 ' + g.entryCount + '건 · 학과 ' + (g.departments || []).join(', '))
+        : 'OK';
+      if (status) status.textContent = msg;
+      if ($('health-box')) {
+        $('health-box').textContent = JSON.stringify(r.data, null, 2);
+      }
+    } catch (e) {
+      if (status) status.textContent = '실패: ' + e;
+    }
+  }
+
   /* ── Graduation format (mirrors server formatGraduationAnswer) ── */
   function formatGraduationAnswer(row) {
     var lines = [
@@ -610,6 +628,8 @@
     });
 
     $('btn-refresh-health').addEventListener('click', loadHealth);
+    var kbScanBtn = document.getElementById('btn-kb-scan');
+    if (kbScanBtn) kbScanBtn.addEventListener('click', function () { scanKb(); });
     $('btn-grad-save').addEventListener('click', saveGrad);
     $('btn-grad-reset').addEventListener('click', resetGradForm);
     $('btn-grad-preview').addEventListener('click', previewKakao);
@@ -660,4 +680,5 @@
   } else {
     init();
   }
+
 })();

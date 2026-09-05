@@ -1,5 +1,6 @@
 import type { AskResult } from '../types/ask';
 import type {
+  KakaoButton,
   KakaoQuickReply,
   KakaoSkillResponse,
 } from '../types/kakao';
@@ -77,4 +78,54 @@ export function buildAskSkillResponse(
   void utterance;
   const text = result.answer.slice(0, 900);
   return simpleText(text, defaultClubReplies());
+}
+
+/**
+ * Text + optional PDF webLink button (Kakao cannot attach raw PDF bytes).
+ * Uses basicCard when an absolute URL is available; otherwise simpleText with a tip.
+ */
+export function textWithPdfLink(opts: {
+  text: string;
+  pdfPublicPath?: string | null;
+  absolutePdfUrl?: string | null;
+  buttonLabel?: string;
+  quickReplies?: KakaoQuickReply[];
+}): KakaoSkillResponse {
+  const label = (opts.buttonLabel || '졸업요건 PDF').slice(0, 14);
+  const abs = opts.absolutePdfUrl || null;
+  const rel = opts.pdfPublicPath || null;
+
+  if (abs) {
+    const buttons: KakaoButton[] = [
+      { label, action: 'webLink', webLinkUrl: abs },
+    ];
+    const response: KakaoSkillResponse = {
+      version: '2.0',
+      template: {
+        outputs: [
+          {
+            basicCard: {
+              description: opts.text.slice(0, 200),
+              buttons,
+            },
+          },
+          // Also include full text for readability (Kakao basicCard desc is short)
+          { simpleText: { text: opts.text.slice(0, 900) } },
+        ],
+      },
+    };
+    if (opts.quickReplies && opts.quickReplies.length > 0) {
+      response.template.quickReplies = opts.quickReplies;
+    }
+    return response;
+  }
+
+  // No PUBLIC_BASE_URL — show path tip so admins know how to configure
+  let text = opts.text;
+  if (rel) {
+    text +=
+      `\n\n[PDF] ${rel}` +
+      `\n(절대 URL 버튼: .env PUBLIC_BASE_URL 설정 후 재시작. 로컬: http://localhost:PORT${rel})`;
+  }
+  return simpleText(text.slice(0, 1000), opts.quickReplies);
 }

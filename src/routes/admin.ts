@@ -16,6 +16,8 @@ import {
   listGraduation,
   updateGraduation,
 } from '../services/graduationService';
+import { reloadGraduationKb, scanGraduationKb } from '../services/kbGraduation';
+import { reloadRoomMaps, listBuildingCodes } from '../services/roomCode';
 
 export const adminRouter = Router();
 
@@ -239,4 +241,44 @@ adminRouter.delete('/graduation/:id', (req, res) => {
     return;
   }
   res.json({ deleted: true, id: req.params.id });
+});
+
+/* ── Folder KB scan ── */
+
+adminRouter.get('/kb/scan', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const grad = reloadGraduationKb();
+  reloadRoomMaps();
+  const buildings = listBuildingCodes();
+  res.json({
+    ok: true,
+    scannedAt: grad.scannedAt,
+    graduation: {
+      departments: grad.departments,
+      years: grad.years,
+      entryCount: grad.entries.length,
+      entries: grad.entries.map((e) => ({
+        department: e.department,
+        year: e.year,
+        hasPdf: !!e.pdfPublicPath,
+        pdfPublicPath: e.pdfPublicPath,
+      })),
+    },
+    map: {
+      buildingCount: buildings.length,
+      buildings,
+    },
+    tip: '폴더 변경은 이 스캔 또는 서버 재시작 후 반영됩니다. 경로: data/kb/',
+  });
+});
+
+adminRouter.get('/kb/status', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const grad = scanGraduationKb();
+  res.json({
+    scannedAt: grad.scannedAt,
+    entryCount: grad.entries.length,
+    departments: grad.departments,
+    years: grad.years,
+  });
 });

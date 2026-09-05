@@ -17,6 +17,15 @@ export function createApp() {
 
   app.use(express.static(path.resolve(process.cwd(), 'public')));
 
+  // Folder knowledge base: data/kb → /kb (PDFs, md, buildings.json)
+  app.use(
+    '/kb',
+    express.static(path.resolve(process.cwd(), 'data/kb'), {
+      fallthrough: true,
+      index: false,
+    })
+  );
+
   app.use(healthRouter);
   app.use('/api', askRouter);
   app.use('/api', graduationRouter);

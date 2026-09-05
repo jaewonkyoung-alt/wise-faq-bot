@@ -32,7 +32,7 @@ export interface GraduationInput {
   verified_at?: string | null;
 }
 
-export type KakaoFlow = 'menu' | 'grad_year' | 'grad_dept' | 'done' | 'clubs';
+export type KakaoFlow = 'menu' | 'grad_year' | 'grad_dept' | 'done' | 'clubs' | 'map_room';
 
 export interface KakaoSession {
   user_key: string;

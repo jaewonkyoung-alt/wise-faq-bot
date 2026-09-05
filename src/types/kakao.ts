@@ -27,9 +27,36 @@ export interface KakaoSkillResponse {
   };
 }
 
+export interface KakaoButton {
+  label: string;
+  action: 'webLink' | 'message' | 'block';
+  webLinkUrl?: string;
+  messageText?: string;
+  blockId?: string;
+}
+
 export type KakaoOutput =
   | { simpleText: { text: string } }
-  | { simpleImage: { imageUrl: string; altText?: string } };
+  | { simpleImage: { imageUrl: string; altText?: string } }
+  | {
+      basicCard: {
+        title?: string;
+        description?: string;
+        thumbnail?: { imageUrl: string };
+        buttons?: KakaoButton[];
+      };
+    }
+  | {
+      listCard: {
+        header: { title: string };
+        items?: Array<{
+          title: string;
+          description?: string;
+          link?: { web?: string };
+        }>;
+        buttons?: KakaoButton[];
+      };
+    };
 
 export interface KakaoQuickReply {
   label: string;

@@ -62,6 +62,17 @@
           졸업요건을 저장하면 <strong>카카오톡 답변이 즉시</strong> 반영됩니다. (재인덱싱 불필요)
           동아리는 저장 시 자동 재임베딩되며, 필요 시 전체 재인덱싱을 실행하세요.
         </div>
+        <div class="alert alert-info">
+          <strong>폴더 지식베이스</strong> — 경로 <code>data/kb/</code>
+          (졸업요건 / 동아리 / 지도). 폴더·파일을 추가한 뒤
+          <strong>KB 재스캔</strong>을 누르거나 서버를 재시작하면 반영됩니다.
+          PDF는 <code>/kb/...</code> 로 제공되며, 카카오 버튼용 절대 URL은
+          <code>PUBLIC_BASE_URL</code>을 설정하세요.
+          <div style="margin-top:0.75rem;display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
+            <button type="button" class="btn btn-sm" id="btn-kb-scan">KB 재스캔</button>
+            <span id="kb-scan-status" class="muted" style="font-size:0.85rem"></span>
+          </div>
+        </div>
 
         <div class="stats">
           <div class="stat">

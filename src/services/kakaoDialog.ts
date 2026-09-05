@@ -1,13 +1,21 @@
-import type { KakaoQuickReply, KakaoSkillResponse } from '../types/kakao';
+import type { KakaoSkillResponse } from '../types/kakao';
 import {
   formatGraduationAnswer,
   formatGraduationMiss,
-  listDepartments,
-  listYears,
+  listDepartments as listSqlDepartments,
+  listYears as listSqlYears,
   lookupGraduation,
   parseAdmissionYear,
   resolveDepartment,
 } from './graduationService';
+import {
+  absoluteKbUrl,
+  hasKbGraduationData,
+  listKbDepartments,
+  listKbYears,
+  lookupKbGraduation,
+} from './kbGraduation';
+import { answerRoomCode, parseRoomCode } from './roomCode';
 import { logUnanswered } from './unanswered';
 import {
   clearSession,
@@ -20,6 +28,7 @@ import {
   menuReplies,
   quickMessage,
   simpleText,
+  textWithPdfLink,
   yearReplies,
   departmentReplies,
 } from '../kakao/responseBuilder';
@@ -34,9 +43,77 @@ function isEmpty(u: string): boolean {
   return !u || !u.trim();
 }
 
+/** Departments: folder KB first, then SQLite union. */
+function listDepartments(): string[] {
+  const kb = listKbDepartments();
+  const sql = listSqlDepartments();
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const d of [...kb, ...sql]) {
+    if (!seen.has(d)) {
+      seen.add(d);
+      out.push(d);
+    }
+  }
+  return out;
+}
+
+function listYears(): number[] {
+  const set = new Set<number>([...listKbYears(), ...listSqlYears()]);
+  return [...set].sort((a, b) => b - a);
+}
+
+function respondGraduationHit(
+  year: number,
+  department: string
+): KakaoSkillResponse {
+  // Prefer folder KB when present for this year+dept
+  const kb = lookupKbGraduation(year, department);
+  if (kb) {
+    const abs = kb.pdfPublicPath
+      ? absoluteKbUrl(kb.pdfPublicPath)
+      : null;
+    return textWithPdfLink({
+      text: kb.text,
+      pdfPublicPath: kb.pdfPublicPath,
+      absolutePdfUrl: abs,
+      quickReplies: menuReplies(),
+    });
+  }
+
+  const row = lookupGraduation(year, department);
+  if (!row) {
+    logUnanswered(
+      `졸업요건 ${year} ${department}`,
+      `graduation_miss:${year}:${department}`,
+      'graduation'
+    );
+    return simpleText(formatGraduationMiss(year, department), menuReplies());
+  }
+
+  // SQLite hit — if source_url looks like a PDF link, expose as button
+  const src = row.source_url;
+  const looksPdf =
+    !!src && (/\.pdf($|\?)/i.test(src) || src.includes('/kb/'));
+  if (looksPdf && src) {
+    const abs =
+      src.startsWith('http://') || src.startsWith('https://')
+        ? src
+        : absoluteKbUrl(src.startsWith('/') ? src : `/${src}`);
+    return textWithPdfLink({
+      text: formatGraduationAnswer(row),
+      pdfPublicPath: src.startsWith('/') ? src : null,
+      absolutePdfUrl: abs,
+      quickReplies: menuReplies(),
+    });
+  }
+
+  return simpleText(formatGraduationAnswer(row), menuReplies());
+}
+
 /**
- * Primary Kakao dialog: graduation slot-filling (year → dept → SQL).
- * Clubs secondary via ask(); map is a stub.
+ * Primary Kakao dialog: graduation slot-filling (year → dept → KB/SQL).
+ * Map: room-code parse. Clubs secondary via ask().
  */
 export async function handleKakaoDialog(
   userKey: string,
@@ -62,8 +139,12 @@ export async function handleKakaoDialog(
       department: null,
     });
     const years = listYears();
+    const kbHint = hasKbGraduationData()
+      ? '\n(폴더 지식베이스 data/kb/졸업요건 우선)'
+      : '';
     return simpleText(
-      '졸업요건을 조회합니다.\n입학연도(학번)를 선택하거나 입력해 주세요.\n예: 2022, 22학번, 2022년 입학',
+      '졸업요건을 조회합니다.\n입학연도(학번)를 선택하거나 입력해 주세요.\n예: 2022, 22학번, 2022년 입학' +
+        kbHint,
       yearReplies(years)
     );
   }
@@ -84,8 +165,41 @@ export async function handleKakaoDialog(
   }
 
   if (MAP_UTTERANCES.test(utterance)) {
+    // If utterance already contains a room code (e.g. "지도 S504"), answer now
+    if (parseRoomCode(utterance)) {
+      clearSession(userKey);
+      resetToMenu(userKey);
+      const ans = answerRoomCode(utterance)!;
+      return simpleText(ans.text, menuReplies());
+    }
+    upsertSession(userKey, {
+      flow: 'map_room',
+      admission_year: null,
+      department: null,
+    });
+    return simpleText(
+      '호실 코드를 입력해 주세요.\n예: S504, A207, s-504\n(앞 글자=건물, 숫자 첫 자리=층)',
+      [
+        quickMessage('S504', 'S504'),
+        quickMessage('A207', 'A207'),
+        quickMessage('메뉴', '메뉴'),
+      ]
+    );
+  }
+
+  // Slot: map room code follow-up
+  if (session.flow === 'map_room') {
+    const ans = answerRoomCode(utterance);
+    clearSession(userKey);
     resetToMenu(userKey);
-    return simpleText('지도 기능은 준비 중입니다.', menuReplies());
+    if (!ans) {
+      logUnanswered(utterance, 'map_room_unparsed', 'map');
+      return simpleText(
+        '호실 코드를 이해하지 못했습니다.\n예: S504, A207, BST101',
+        menuReplies()
+      );
+    }
+    return simpleText(ans.text, menuReplies());
   }
 
   // Slot: waiting for year
@@ -105,7 +219,7 @@ export async function handleKakaoDialog(
     );
   }
 
-  // Slot: waiting for department → SQL lookup
+  // Slot: waiting for department → KB then SQL lookup
   if (session.flow === 'grad_dept') {
     const year = session.admission_year;
     if (year == null) {
@@ -133,20 +247,9 @@ export async function handleKakaoDialog(
     }
 
     const department = resolved.department;
-    const row = lookupGraduation(year, department);
     clearSession(userKey);
     resetToMenu(userKey);
-
-    if (!row) {
-      logUnanswered(
-        `졸업요건 ${year} ${department}`,
-        `graduation_miss:${year}:${department}`,
-        'graduation'
-      );
-      return simpleText(formatGraduationMiss(year, department), menuReplies());
-    }
-
-    return simpleText(formatGraduationAnswer(row), menuReplies());
+    return respondGraduationHit(year, department);
   }
 
   // Clubs free-text mode (or leftover after 동아리 prompt)
@@ -155,8 +258,15 @@ export async function handleKakaoDialog(
     return buildAskSkillResponse(result, utterance);
   }
 
+  // Opportunistic room-code anywhere (e.g. user types S504 on menu)
+  if (parseRoomCode(utterance) && /^[A-Za-z]{1,5}\s*[-–—]?\s*\d{2,4}$/.test(utterance)) {
+    clearSession(userKey);
+    resetToMenu(userKey);
+    const ans = answerRoomCode(utterance)!;
+    return simpleText(ans.text, menuReplies());
+  }
+
   // Default: treat as free-text clubs ask if looks club-related, else show menu
-  // Keep clubs working for arbitrary questions without breaking openrouter path
   if (
     /동아리|클럽|분과|연락처|모임|소개|활동/.test(utterance) ||
     session.flow === 'menu' ||
@@ -168,20 +278,8 @@ export async function handleKakaoDialog(
       const known = listDepartments();
       const resolved = resolveDepartment(utterance, known);
       if (resolved.kind === 'exact' || resolved.kind === 'contains') {
-        const row = lookupGraduation(year, resolved.department);
         resetToMenu(userKey);
-        if (!row) {
-          logUnanswered(
-            utterance,
-            `graduation_miss:${year}:${resolved.department}`,
-            'graduation'
-          );
-          return simpleText(
-            formatGraduationMiss(year, resolved.department),
-            menuReplies()
-          );
-        }
-        return simpleText(formatGraduationAnswer(row), menuReplies());
+        return respondGraduationHit(year, resolved.department);
       }
       // year known but dept missing → start slot at dept
       upsertSession(userKey, {
@@ -212,4 +310,8 @@ export async function handleKakaoDialog(
 export const __test = {
   MENU_UTTERANCES,
   GRAD_UTTERANCES,
+  respondGraduationHit,
+  listDepartments,
+  listYears,
 };
+

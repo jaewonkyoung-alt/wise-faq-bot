@@ -41,11 +41,22 @@ async function postSkill(base: string, utterance: string) {
     body: JSON.stringify(kakaoBody(utterance)),
   });
   const json = await res.json();
-  const text = json?.template?.outputs?.[0]?.simpleText?.text || '';
+  const outputs = json?.template?.outputs || [];
+  const parts: string[] = [];
+  for (const o of outputs) {
+    if (o?.simpleText?.text) parts.push(o.simpleText.text);
+    if (o?.basicCard?.description) parts.push(o.basicCard.description);
+    const btns = o?.basicCard?.buttons || o?.listCard?.buttons || [];
+    for (const b of btns) {
+      if (b?.webLinkUrl) parts.push('PDF_LINK:' + b.webLinkUrl);
+      if (b?.label) parts.push('BTN:' + b.label);
+    }
+  }
+  const text = parts.join('\n') || '';
   const qrs = (json?.template?.quickReplies || []).map(
     (q: { label: string }) => q.label
   );
-  return { status: res.status, text, qrs };
+  return { status: res.status, text, qrs, json };
 }
 
 async function main() {
@@ -69,7 +80,7 @@ async function main() {
     { u: '메뉴', expect: /졸업요건|선택/ },
     { u: '졸업요건', expect: /입학연도|학번/ },
     { u: '2022', expect: /학과|2022/ },
-    { u: '컴퓨터공학과', expect: /졸업요건|130|PLACEHOLDER|학점/ },
+    { u: '컴퓨터공학과', expect: /졸업요건|130|PLACEHOLDER|학점|PDF/ },
   ];
 
   for (const step of steps) {
@@ -90,7 +101,19 @@ async function main() {
   if (!/확인되지 않음|데이터 없음/.test(miss.text)) {
     throw new Error('expected miss message: ' + miss.text.slice(0, 120));
   }
-  console.log('PASS test-kakao-grad miss+hit');
+  // map room code flow
+  clearSession(USER);
+  const mapPrompt = await postSkill(base, '지도');
+  if (!/호실|코드|S504/.test(mapPrompt.text)) {
+    throw new Error('expected map prompt: ' + mapPrompt.text.slice(0, 120));
+  }
+  const mapAns = await postSkill(base, 'S504');
+  if (!/자연과학관|5층/.test(mapAns.text)) {
+    throw new Error('expected S504 answer: ' + mapAns.text.slice(0, 160));
+  }
+  console.log('map S504 →', mapAns.text.slice(0, 120));
+
+  console.log('PASS test-kakao-grad miss+hit+map');
 
   if (server) {
     await new Promise<void>((resolve, reject) =>

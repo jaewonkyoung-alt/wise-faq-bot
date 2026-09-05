@@ -14,7 +14,8 @@
     "eval": "tsx scripts/run-eval.ts",
     "smoke": "tsx scripts/smoke.ts",
     "test:graduation": "tsx scripts/test-graduation.ts",
-    "test:kakao-grad": "tsx scripts/test-kakao-grad.ts"
+    "test:kakao-grad": "tsx scripts/test-kakao-grad.ts",
+    "test:room-code": "tsx scripts/test-room-code.ts"
   },
   "engines": {
     "node": ">=18"
