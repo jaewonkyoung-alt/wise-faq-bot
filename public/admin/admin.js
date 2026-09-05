@@ -595,9 +595,14 @@
   }
 
   async function loadUnanswered() {
-    var r = await api('/api/unanswered', { noAuth: true });
+    var r = await api('/api/unanswered');
     if (!r.ok) {
-      toast('미답변 로드 실패', 'error');
+      if (r.status === 401) {
+        lock();
+        showLogin(koreanAuthError(r.data, r.status));
+        return;
+      }
+      toast(koreanAuthError(r.data, r.status) || '미답변 로드 실패', 'error');
       return;
     }
     state.unanswered = (r.data && r.data.items) || [];

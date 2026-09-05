@@ -19,23 +19,9 @@ import {
 import { reloadGraduationKb, scanGraduationKb } from '../services/kbGraduation';
 import { reloadRoomMaps, listBuildingCodes } from '../services/roomCode';
 
-export const adminRouter = Router();
+import { checkAdmin } from '../middleware/adminAuth';
 
-function checkAdmin(req: { header: (n: string) => string | undefined }, res: {
-  status: (c: number) => { json: (b: unknown) => void };
-}): boolean {
-  const token = (process.env.ADMIN_TOKEN || '').trim();
-  if (!token) {
-    res.status(401).json({ error: 'admin_token_not_configured' });
-    return false;
-  }
-  const got = req.header('x-admin-token');
-  if (got !== token) {
-    res.status(401).json({ error: 'unauthorized' });
-    return false;
-  }
-  return true;
-}
+export const adminRouter = Router();
 
 function bodyToInput(body: Record<string, unknown>): ClubInput | null {
   const name = String(body.name ?? '').trim();

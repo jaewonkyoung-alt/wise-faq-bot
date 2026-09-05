@@ -10,7 +10,6 @@ import {
 } from './graduationService';
 import {
   absoluteKbUrl,
-  hasKbGraduationData,
   listKbDepartments,
   listKbYears,
   lookupKbGraduation,
@@ -139,12 +138,8 @@ export async function handleKakaoDialog(
       department: null,
     });
     const years = listYears();
-    const kbHint = hasKbGraduationData()
-      ? '\n(폴더 지식베이스 data/kb/졸업요건 우선)'
-      : '';
     return simpleText(
-      '졸업요건을 조회합니다.\n입학연도(학번)를 선택하거나 입력해 주세요.\n예: 2022, 22학번, 2022년 입학' +
-        kbHint,
+      '졸업요건을 조회합니다.\n입학연도(학번)를 선택하거나 입력해 주세요.\n예: 2022, 22학번, 2022년 입학',
       yearReplies(years)
     );
   }

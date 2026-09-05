@@ -1,76 +1,91 @@
-# WISE FAQ Bot — Phase-1 Hybrid RAG Architecture
+# WISE FAQ Bot — Architecture
 
-동국대학교 WISE 캠퍼스 Q&A (졸업작품 Phase-1).
+Dongguk University WISE campus Q&A (capstone Phase-1).
 
-## 도메인 우선순위
+## Domain priority
 
-1. **졸업요건 (primary)** — 카카오 버튼 + 슬롯필링 → SQLite exact lookup
-2. **동아리 (secondary)** — Hybrid RAG (SQL 구조화 + 임베딩 서술)
-3. **온디바이스 / 지도 등** — later (지도는 stub)
+1. **Graduation (primary)** — Kakao slot-filling → **folder KB `data/kb/졸업요건` first**, else SQLite exact lookup
+2. **Clubs (secondary)** — Hybrid RAG (SQL structured + embedding narrative); folder `data/kb/동아리` for seed/reference
+3. **Map** — **room-code parsing** (`data/kb/지도/buildings.json` + rules). Not a stub.
 
-## 목표
+## Goals
 
-- 졸업요건 답변은 **DB lookup only** (admission_year + department). 학점·규칙 환각 금지.
-- 행 없으면 **"확인되지 않음 / 데이터 없음"** + unanswered 로그.
-- 동아리: 구조화 필드 → SQL, 소개/활동 → 임베딩; LLM tool routing.
-- Kakao `/api/kakao/skill` 은 `kakaoDialog` 슬롯 플로우 (졸업) + `ask()` (동아리).
+- Graduation answers use **registered data only** (KB `info.md`/PDF or DB). No inventing credits/rules.
+- Missing row/folder → clear "not found" + unanswered log (admin-only read).
+- Clubs: structured fields → SQL; intro/activities → embeddings; LLM tool routing.
+- Kakao `POST /api/kakao/skill` → `kakaoDialog` (grad + map slots) + `ask()` (clubs).
 
-## 구성도
+## Diagram
 
 ```
 Client / Kakao Skill
-        │
-        ▼
+        |
+        v
  Express (TypeScript)
-   ├─ POST /api/kakao/skill  → kakaoDialog (session + slots)
-   ├─ GET  /api/graduation   → SQL exact lookup
-   ├─ POST /api/ask          → ask() clubs RAG
-   ├─ /api/admin/graduation  CRUD
-   ├─ /api/admin/clubs       CRUD + reindex
-   └─ GET  /admin
-        │
-        ▼
- SQLite
-   graduation_requirements | kakao_sessions
-   clubs | embeddings | unanswered_questions
+   |- POST /api/kakao/skill      -> kakaoDialog (session + slots)
+   |     optional x-kakao-skill-secret when KAKAO_SKILL_SECRET set
+   |- GET  /api/graduation       -> SQL (+ KB via dialog)
+   |- POST /api/ask              -> ask() clubs RAG
+   |- GET/DELETE /api/unanswered -> ADMIN_TOKEN (x-admin-token)
+   |- /api/admin/*               -> ADMIN_TOKEN
+   |- static /kb/*               -> data/kb (public PDFs / md)
+   +- GET  /admin                -> admin UI
+        |
+        v
+ SQLite                          Folder KB (data/kb)
+   graduation_requirements         졸업요건/<dept>/<year>/
+   kakao_sessions                  동아리/<category>/<name>/
+   clubs | embeddings              지도/buildings.json (+ rooms.json)
+   unanswered_questions
 ```
 
-## 졸업요건 플로우 (Kakao)
+## Graduation flow (Kakao)
 
 | Step | Utterance / state | Action |
 |------|-------------------|--------|
-| menu | empty / 메뉴 / 시작 | quickReplies: 졸업요건, 동아리, 지도 |
+| menu | empty / menu / start | quickReplies: graduation, clubs, map |
 | grad_year | 졸업요건 | ask admission year |
 | grad_dept | year (2022 / 22학번 …) | store session, ask department |
-| done | department | **SQL lookup** → answer + citations; reset session |
+| done | department | **KB lookup → else SQL** → text + optional PDF webLink; reset |
 | clubs | 동아리 | ask() free text |
-| map | 지도 | stub only |
+| map_room | 지도 / room code | `answerRoomCode` (building code + floor rule) |
 
 Session: table `kakao_sessions` keyed by Kakao `userRequest.user.id`.
 
-## Hybrid 라우팅 (clubs)
+PDF button: `PUBLIC_BASE_URL` + `/kb/...` absolute URL. If unset, short student-facing notice only.
 
-| Tool | 언제 | 데이터 |
-|------|------|--------|
-| structured_query | 연락처, 모임시간, 장소, 분과, 목록 | clubs 테이블 |
-| semantic_search | 소개/활동/분위기/모집 서술 | embeddings |
-| refuse | 학사/장학/학식 등 동아리 외 | unanswered 로그 |
+## Map / room codes
+
+- Parser: `src/services/roomCode.ts`
+- Building map: `data/kb/지도/buildings.json`
+- Example: `S504` → building name + floor 5 (unknown codes: no guessed building name)
+
+## Hybrid routing (clubs)
+
+| Tool | When | Data |
+|------|------|------|
+| structured_query | contact, meeting time, place, category, list | clubs table |
+| semantic_search | intro / activities / vibe | embeddings |
+| refuse | non-club topics | unanswered log |
 
 ### OpenRouter
 
 - `LLM_PROVIDER=openrouter` → OpenAI-compatible + OpenRouter base URL
-- 임베딩 기본 mock (`EMBED_PROVIDER` 로 분리 가능)
+- Embeddings default to mock (`EMBED_PROVIDER` can override)
 
-## 확장 노트
+## Extension notes
 
-- 실제 졸업요건 카탈로그로 PLACEHOLDER 시드 교체
-- 복수전공/부전공 major_type 확장
-- 온디바이스 sLLM / Ollama
-- 지도·학사일정 등 추가 슬롯 도메인
+- Replace PLACEHOLDER / sample KB with real catalogs
+- Expand major_type (double minor, etc.)
+- On-device sLLM / Ollama
+- More slot domains (academic calendar, …)
 
-## 주요 경로
+## Key paths
 
-- Graduation: `src/services/graduationService.ts`
+- Admin auth: `src/middleware/adminAuth.ts`
+- Graduation SQL: `src/services/graduationService.ts`
+- Graduation KB: `src/services/kbGraduation.ts`
+- Room codes: `src/services/roomCode.ts`
 - Kakao dialog: `src/services/kakaoDialog.ts`
 - Clubs ask: `src/services/askService.ts`
 - DB: `src/db/database.ts`

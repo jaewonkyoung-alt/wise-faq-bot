@@ -120,12 +120,11 @@ export function textWithPdfLink(opts: {
     return response;
   }
 
-  // No PUBLIC_BASE_URL — show path tip so admins know how to configure
+  // No PUBLIC_BASE_URL — student-facing message only (no paths / .env / localhost)
   let text = opts.text;
   if (rel) {
     text +=
-      `\n\n[PDF] ${rel}` +
-      `\n(절대 URL 버튼: .env PUBLIC_BASE_URL 설정 후 재시작. 로컬: http://localhost:PORT${rel})`;
+      '\n\nPDF는 등록되어 있으나, 공개 링크가 아직 설정되지 않았습니다. 관리자에게 문의해 주세요.';
   }
   return simpleText(text.slice(0, 1000), opts.quickReplies);
 }

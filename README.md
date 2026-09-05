@@ -1,52 +1,72 @@
-# WISE FAQ Bot (Phase-1 Hybrid RAG)
+# WISE FAQ Bot
 
-Dongguk University WISE campus Q&A.
+동국대학교 WISE 캠퍼스 FAQ 카카오톡 봇 (졸업작품 Phase-1).
 
-**Primary UX: graduation requirements** — KakaoTalk button + slot-filling (admission year → department → SQL lookup only). Never invents credits/rules.
+Kakao Open Builder Skill → Express가 **졸업요건 · 동아리 · 지도(호실 코드)** 를 답합니다.
 
-**Secondary: clubs** — hybrid RAG via `/api/ask`.
+## What it is
 
-Details: ARCHITECTURE.md
+| 메뉴 | 동작 |
+|------|------|
+| **졸업요건** (primary) | 입학연도 → 학과 슬롯. 폴더 KB `data/kb/졸업요건` 우선, 없으면 SQLite |
+| **동아리** | Hybrid RAG (`/api/ask`) |
+| **지도** | 호실 코드 파싱 (예: `S504`). stub 아님 |
 
-## How to run
+자세한 구조: [ARCHITECTURE.md](./ARCHITECTURE.md) · 보안: [SECURITY.md](./SECURITY.md)
+
+## Stack
+
+- Express + TypeScript
+- SQLite (`better-sqlite3`)
+- Folder KB `data/kb/` → `/kb/...`
+
+## Setup
 
 ```bash
 npm install
+cp .env.example .env
+# set a strong ADMIN_TOKEN
 npm run seed
 npm run build
 npm start
 ```
 
-- Admin UI: `/admin`
-- Graduation: `GET /api/graduation?year=&department=`
-- Departments: `GET /api/graduation/departments`
-- Years: `GET /api/graduation/years`
-- Ask (clubs): `POST /api/ask`
-- Kakao: `POST /api/kakao/skill`
-- Config: `.env.example`
+### Env
 
-## Graduation rules
+| 변수 | 필수 | 설명 |
+|------|------|------|
+| `ADMIN_TOKEN` | yes | `/api/admin/*`, `/api/unanswered` — header `x-admin-token` |
+| `PUBLIC_BASE_URL` | PDF buttons | HTTPS public URL, no trailing slash |
+| `KAKAO_SKILL_SECRET` | prod recommended | header `x-kakao-skill-secret` when set |
+| `LLM_PROVIDER` | no | default `mock`; see `.env.example` |
 
-- Facts only from DB by admission_year + department.
-- Missing row -> clear not-found message (+ unanswered log).
-- Seed rows marked PLACEHOLDER.
+Never commit `.env`. Rotate tokens if leaked.
 
-## Kakao slot flow
+## Folder KB (`data/kb`)
 
-1. Empty / menu / start -> graduation, clubs, map buttons
-2. Graduation -> ask year
-3. Year -> ask department
-4. Department -> SQL answer with source_url / verified_at
-5. Clubs -> ask(); map -> stub
+```
+data/kb/
+  졸업요건/<학과>/<입학연도>/info.md (+ optional *.pdf)
+  동아리/<분과>/<동아리명>/info.md
+  지도/buildings.json
+```
 
-## LLM providers
+- PDFs at `/kb/...`; Kakao webLink needs `PUBLIC_BASE_URL`.
+- `/kb` is public static — no private docs.
 
-mock | openai | gemini | openrouter (embeddings mock by default for openrouter).
+## Admin
+
+- UI `/admin`
+- Unanswered `GET/DELETE /api/unanswered` needs same admin gate
 
 ## Tests
 
 ```bash
 npm run build
-npm run test:graduation
-npm run smoke
+npm run test:room-code
+npm run test:kakao-grad
 ```
+
+## Security
+
+See [SECURITY.md](./SECURITY.md). Fail-closed admin; unanswered admin-gated.
