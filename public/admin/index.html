@@ -3,353 +3,308 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>WISE FAQ Admin</title>
-  <style>
-    :root { font-family: system-ui, sans-serif; color: #1a1a1a; }
-    body { max-width: 980px; margin: 24px auto; padding: 0 16px; background: #f6f7fb; }
-    h1 { font-size: 1.4rem; }
-    h2 { margin-top: 0; font-size: 1.1rem; }
-    .card { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
-    label { display: block; font-size: .85rem; margin-top: 8px; color: #444; }
-    input, textarea, select { width: 100%; box-sizing: border-box; padding: 8px; margin-top: 4px; border: 1px solid #ccd; border-radius: 8px; }
-    textarea { min-height: 72px; }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-    button { margin-top: 12px; margin-right: 8px; padding: 8px 14px; border: 0; border-radius: 8px; background: #2f5bea; color: #fff; cursor: pointer; }
-    button.secondary { background: #667; }
-    button.danger { background: #c0392b; }
-    table { width: 100%; border-collapse: collapse; font-size: .9rem; }
-    th, td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; vertical-align: top; }
-    .muted { color: #666; font-size: .85rem; }
-    .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
-    .tabs button { margin-top: 0; background: #dde; color: #223; }
-    .tabs button.active { background: #2f5bea; color: #fff; }
-    #status { white-space: pre-wrap; font-family: ui-monospace, monospace; font-size: .8rem; background: #111; color: #d8ffd8; padding: 12px; border-radius: 8px; min-height: 48px; }
-    .badge { display: inline-block; background: #ffe08a; color: #664; font-size: .75rem; padding: 2px 6px; border-radius: 4px; }
-    @media (max-width: 700px) { .row, .row3 { grid-template-columns: 1fr; } }
-  </style>
+  <title>WISE FAQ 관리자</title>
+  <link rel="stylesheet" href="/admin/admin.css" />
 </head>
 <body>
-  <h1>WISE FAQ Admin · 졸업요건 + 동아리</h1>
-  <p class="muted">졸업요건이 1차 UX입니다. 학점·규칙은 DB에 있는 값만 노출합니다 (PLACEHOLDER 시드 주의).</p>
-
-  <div class="card">
-    <label>Admin Token * (.env ADMIN_TOKEN — 없으면 모든 관리 API가 401)</label>
-    <input id="token" type="password" placeholder="x-admin-token (필수)" />
-    <div class="tabs">
-      <button type="button" id="tabGrad" class="active" onclick="showTab('grad')">졸업요건</button>
-      <button type="button" id="tabClubs" onclick="showTab('clubs')">동아리</button>
-    </div>
-    <button type="button" class="secondary" onclick="loadUnanswered()">미답변 로그</button>
-  </div>
-
-  <div id="panelGrad">
-    <div class="card">
-      <h2>졸업요건 추가 / 수정</h2>
-      <input type="hidden" id="g_editId" />
-      <div class="row">
-        <div>
-          <label>입학연도 *</label>
-          <input id="g_year" type="number" placeholder="2022" />
-        </div>
-        <div>
-          <label>학과 *</label>
-          <input id="g_department" placeholder="컴퓨터공학과" />
-        </div>
-      </div>
-      <div class="row">
-        <div>
-          <label>전공구분</label>
-          <input id="g_major_type" placeholder="전공" value="전공" />
-        </div>
-        <div>
-          <label>출처 URL</label>
-          <input id="g_source_url" placeholder="https://…" />
-        </div>
-      </div>
-      <div class="row3">
-        <div>
-          <label>총 학점</label>
-          <input id="g_total" type="number" />
-        </div>
-        <div>
-          <label>전공학점</label>
-          <input id="g_major" type="number" />
-        </div>
-        <div>
-          <label>교양학점</label>
-          <input id="g_general" type="number" />
-        </div>
-      </div>
-      <div class="row">
-        <div>
-          <label>트랙 / 세부전공</label>
-          <input id="g_track" placeholder="심화과정, 소프트웨어트랙 …" />
-        </div>
-        <div>
-          <label>졸업논문/작품</label>
-          <select id="g_thesis">
-            <option value="">미지정</option>
-            <option value="true">필수</option>
-            <option value="false">해당 없음</option>
-          </select>
-        </div>
-      </div>
-      <div class="row">
-        <div>
-          <label>영어 / 외국어 요건</label>
-          <input id="g_english" placeholder="TOEIC 700 이상 등" />
-        </div>
-        <div>
-          <label>자격 / 면허 요건</label>
-          <input id="g_license" placeholder="국가고시 응시자격 등" />
-        </div>
-      </div>
-      <label>비고 / 추가 규칙</label>
-      <textarea id="g_notes" placeholder="[PLACEHOLDER] …"></textarea>
-      <label>verified_at (ISO)</label>
-      <input id="g_verified" placeholder="2026-01-01T00:00:00.000Z" />
-      <button type="button" onclick="saveGrad()">저장</button>
-      <button type="button" class="secondary" onclick="resetGradForm()">초기화</button>
-      <button type="button" class="secondary" onclick="loadGrads()">목록 새로고침</button>
-    </div>
-    <div class="card">
-      <h2>등록된 졸업요건</h2>
-      <div id="g_list"></div>
+  <!-- Login gate -->
+  <div id="login-gate">
+    <div class="login-card">
+      <h1>WISE FAQ 관리자</h1>
+      <p class="sub">관리자 토큰으로 잠금을 해제하세요. (.env ADMIN_TOKEN)</p>
+      <label for="login-token">관리자 토큰</label>
+      <input id="login-token" type="password" autocomplete="current-password" placeholder="x-admin-token" />
+      <p id="login-error" class="login-error" role="alert"></p>
+      <button type="button" class="btn btn-block" id="btn-unlock">저장 · 잠금 해제</button>
     </div>
   </div>
 
-  <div id="panelClubs" style="display:none">
-    <div class="card">
-      <h2>동아리 추가 / 수정</h2>
-      <input type="hidden" id="editId" />
-      <div class="row">
-        <div>
-          <label>이름 *</label>
-          <input id="name" />
-        </div>
-        <div>
-          <label>분과 *</label>
-          <input id="category" placeholder="학술/IT, 공연/음악, 봉사…" />
-        </div>
+  <!-- App -->
+  <div id="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <strong>WISE FAQ</strong>
+        <span>관리자 대시보드</span>
       </div>
-      <div class="row">
-        <div>
-          <label>연락처</label>
-          <input id="contact" />
-        </div>
-        <div>
-          <label>정기 모임</label>
-          <input id="meeting_time" />
-        </div>
+      <nav>
+        <button type="button" class="nav-btn active" data-page="dashboard">대시보드</button>
+        <button type="button" class="nav-btn" data-page="graduation">졸업요건</button>
+        <button type="button" class="nav-btn" data-page="clubs">동아리</button>
+        <button type="button" class="nav-btn" data-page="unanswered">미답변</button>
+      </nav>
+      <div class="sidebar-foot">
+        <button type="button" id="btn-lock">토큰 잠금</button>
       </div>
-      <div class="row">
-        <div>
-          <label>장소</label>
-          <input id="location" />
-        </div>
-        <div>
-          <label>출처 URL *</label>
-          <input id="source_url" placeholder="https://…" />
-        </div>
-      </div>
-      <label>소개 * (semantic)</label>
-      <textarea id="intro"></textarea>
-      <label>활동 * (semantic)</label>
-      <textarea id="activities"></textarea>
-      <button type="button" onclick="saveClub()">저장 + 재임베딩</button>
-      <button type="button" class="secondary" onclick="resetForm()">초기화</button>
-      <button type="button" class="secondary" onclick="reindexAll()">전체 재인덱싱</button>
-      <button type="button" class="secondary" onclick="loadClubs()">목록 새로고침</button>
+    </aside>
+
+    <div class="mobile-bar">
+      <strong>WISE FAQ 관리자</strong>
+      <button type="button" class="btn btn-sm btn-ghost" id="btn-lock-mobile" style="color:#fff;border-color:rgba(255,255,255,.25)">잠금</button>
     </div>
-    <div class="card">
-      <h2>등록된 동아리</h2>
-      <div id="list"></div>
+    <div class="mobile-nav">
+      <button type="button" class="nav-btn active" data-page="dashboard">대시보드</button>
+      <button type="button" class="nav-btn" data-page="graduation">졸업요건</button>
+      <button type="button" class="nav-btn" data-page="clubs">동아리</button>
+      <button type="button" class="nav-btn" data-page="unanswered">미답변</button>
     </div>
+
+    <main class="main">
+      <!-- Dashboard -->
+      <section id="page-dashboard" class="page active">
+        <h1 class="page-title">대시보드</h1>
+        <p class="page-desc">동국대 WISE FAQ · 졸업요건(1차) + 동아리 RAG</p>
+
+        <div class="alert alert-warn">
+          <strong>PLACEHOLDER 주의</strong> — 시드 데이터에 [PLACEHOLDER]가 포함된 졸업요건이 있을 수 있습니다.
+          학생에게 노출되기 전에 실제 학칙·규칙을 확인하고 갱신하세요.
+        </div>
+        <div class="alert alert-info">
+          졸업요건을 저장하면 <strong>카카오톡 답변이 즉시</strong> 반영됩니다. (재인덱싱 불필요)
+          동아리는 저장 시 자동 재임베딩되며, 필요 시 전체 재인덱싱을 실행하세요.
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="label">졸업요건</div>
+            <div class="value" id="stat-grad">—</div>
+          </div>
+          <div class="stat">
+            <div class="label">동아리</div>
+            <div class="value" id="stat-clubs">—</div>
+          </div>
+          <div class="stat">
+            <div class="label">미답변</div>
+            <div class="value" id="stat-unanswered">—</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>서버 상태 (/health)</h2>
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-refresh-health">새로고침</button>
+          </div>
+          <pre class="health-box" id="health-box">로딩 중…</pre>
+        </div>
+      </section>
+
+      <!-- Graduation -->
+      <section id="page-graduation" class="page">
+        <h1 class="page-title">졸업요건</h1>
+        <p class="page-desc">입학연도·학과별 학점·규칙을 등록합니다. DB에 있는 값만 학생에게 노출됩니다.</p>
+
+        <div class="split">
+          <div>
+            <div class="card">
+              <h2 id="grad-form-title">졸업요건 추가</h2>
+              <input type="hidden" id="g_editId" />
+              <div class="grid grid-2">
+                <div class="field-wrap">
+                  <label class="field" for="g_year">입학연도 *</label>
+                  <input id="g_year" type="number" placeholder="2022" />
+                </div>
+                <div class="field-wrap">
+                  <label class="field" for="g_department">학과 *</label>
+                  <input id="g_department" type="text" placeholder="컴퓨터공학과" />
+                </div>
+                <div class="field-wrap">
+                  <label class="field" for="g_major_type">전공구분</label>
+                  <input id="g_major_type" type="text" placeholder="전공" value="전공" />
+                </div>
+                <div class="field-wrap">
+                  <label class="field" for="g_source_url">출처 URL</label>
+                  <input id="g_source_url" type="url" placeholder="https://…" />
+                </div>
+                <div class="field-wrap">
+                  <label class="field" for="g_total">총 학점</label>
+                  <input id="g_total" type="number" />
+                </div>
+                <div class="field-wrap">
+                  <label class="field" for="g_major">전공 학점</label>
+                  <input id="g_major" type="number" />
+                </div>
+                <div class="field-wrap">
+                  <label class="field" for="g_general">교양 학점</label>
+                  <input id="g_general" type="number" />
+                </div>
+                <div class="field-wrap">
+                  <label class="field" for="g_thesis">졸업논문/작품</label>
+                  <select id="g_thesis">
+                    <option value="">미지정</option>
+                    <option value="true">필수</option>
+                    <option value="false">해당 없음</option>
+                  </select>
+                </div>
+                <div class="field-wrap">
+                  <label class="field" for="g_track">트랙 / 세부전공</label>
+                  <input id="g_track" type="text" placeholder="심화과정, 소프트웨어트랙 …" />
+                </div>
+                <div class="field-wrap">
+                  <label class="field" for="g_english">영어 / 외국어 요건</label>
+                  <input id="g_english" type="text" placeholder="TOEIC 700 이상 등" />
+                </div>
+                <div class="field-wrap">
+                  <label class="field" for="g_license">자격 / 면허 요건</label>
+                  <input id="g_license" type="text" placeholder="국가고시 응시자격 등" />
+                </div>
+                <div class="field-wrap">
+                  <label class="field" for="g_verified">verified_at (ISO)</label>
+                  <input id="g_verified" type="text" placeholder="2026-01-01T00:00:00.000Z" />
+                </div>
+              </div>
+              <div class="field-wrap" style="margin-top:12px">
+                <label class="field" for="g_notes">비고 / 추가 규칙</label>
+                <textarea id="g_notes" placeholder="[PLACEHOLDER] 시드면 반드시 교체"></textarea>
+              </div>
+              <div class="btn-row">
+                <button type="button" class="btn" id="btn-grad-save">저장</button>
+                <button type="button" class="btn btn-secondary" id="btn-grad-reset">초기화</button>
+                <button type="button" class="btn btn-ghost" id="btn-grad-preview">카톡 미리보기</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="preview-panel">
+            <div class="card">
+              <h2>카톡 미리보기</h2>
+              <p class="muted" style="margin:0 0 10px">학생에게 보이는 형식 (서버 formatGraduationAnswer)</p>
+              <div class="kakao-frame">
+                <div class="kakao-label">WISE FAQ</div>
+                <div class="kakao-bubble" id="kakao-preview">입학연도·학과를 입력하거나 목록에서 선택 후 「카톡 미리보기」를 누르세요.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>등록된 졸업요건</h2>
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-grad-reload">목록 새로고침</button>
+          </div>
+          <div class="filters">
+            <div class="field-wrap">
+              <label class="field" for="filter-year">입학연도</label>
+              <select id="filter-year"><option value="">전체</option></select>
+            </div>
+            <div class="field-wrap">
+              <label class="field" for="filter-dept">학과 검색</label>
+              <input id="filter-dept" type="search" placeholder="학과명 일부" />
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="data">
+              <thead>
+                <tr>
+                  <th>학과</th>
+                  <th>학점</th>
+                  <th>기타</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="g_list"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Clubs -->
+      <section id="page-clubs" class="page">
+        <h1 class="page-title">동아리</h1>
+        <p class="page-desc">동아리 정보를 등록하면 저장 시 자동으로 재임베딩됩니다.</p>
+
+        <div class="card">
+          <h2 id="club-form-title">동아리 추가</h2>
+          <input type="hidden" id="c_editId" />
+          <div class="grid grid-2">
+            <div class="field-wrap">
+              <label class="field" for="c_name">이름 *</label>
+              <input id="c_name" type="text" />
+            </div>
+            <div class="field-wrap">
+              <label class="field" for="c_category">분과 *</label>
+              <input id="c_category" type="text" placeholder="학술/IT, 공연/음악, 봉사…" />
+            </div>
+            <div class="field-wrap">
+              <label class="field" for="c_contact">연락처</label>
+              <input id="c_contact" type="text" />
+            </div>
+            <div class="field-wrap">
+              <label class="field" for="c_meeting">정기 모임</label>
+              <input id="c_meeting" type="text" />
+            </div>
+            <div class="field-wrap">
+              <label class="field" for="c_location">장소</label>
+              <input id="c_location" type="text" />
+            </div>
+            <div class="field-wrap">
+              <label class="field" for="c_source">출처 URL *</label>
+              <input id="c_source" type="url" placeholder="https://…" />
+            </div>
+          </div>
+          <div class="field-wrap" style="margin-top:12px">
+            <label class="field" for="c_intro">소개 * (semantic)</label>
+            <textarea id="c_intro"></textarea>
+          </div>
+          <div class="field-wrap" style="margin-top:12px">
+            <label class="field" for="c_activities">활동 * (semantic)</label>
+            <textarea id="c_activities"></textarea>
+          </div>
+          <div class="btn-row">
+            <button type="button" class="btn" id="btn-club-save">저장 + 재임베딩</button>
+            <button type="button" class="btn btn-secondary" id="btn-club-reset">초기화</button>
+            <button type="button" class="btn btn-ghost" id="btn-reindex">전체 재인덱싱</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>등록된 동아리</h2>
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-club-reload">목록 새로고침</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data">
+              <thead>
+                <tr>
+                  <th>동아리</th>
+                  <th>모임 / 장소</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="c_list"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Unanswered -->
+      <section id="page-unanswered" class="page">
+        <h1 class="page-title">미답변</h1>
+        <p class="page-desc">봇이 답하지 못한 질문 로그입니다. (공개 API)</p>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>미답변 로그</h2>
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-unanswered-reload">새로고침</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>질문</th>
+                  <th>사유</th>
+                  <th>경로</th>
+                  <th>시각</th>
+                </tr>
+              </thead>
+              <tbody id="u_list"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
   </div>
 
-  <div class="card">
-    <h2>상태 / 로그</h2>
-    <div id="status">ready</div>
-  </div>
-
-  <script>
-    const $ = (id) => document.getElementById(id);
-    function headers() {
-      const h = { 'Content-Type': 'application/json' };
-      const t = $('token').value.trim();
-      if (t) h['x-admin-token'] = t;
-      return h;
-    }
-    function log(x) {
-      $('status').textContent = typeof x === 'string' ? x : JSON.stringify(x, null, 2);
-    }
-    function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, (ch) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-    }
-    function showTab(which) {
-      $('panelGrad').style.display = which === 'grad' ? '' : 'none';
-      $('panelClubs').style.display = which === 'clubs' ? '' : 'none';
-      $('tabGrad').classList.toggle('active', which === 'grad');
-      $('tabClubs').classList.toggle('active', which === 'clubs');
-    }
-
-    /* Graduation */
-    function resetGradForm() {
-      $('g_editId').value = '';
-      $('g_year').value = '';
-      $('g_department').value = '';
-      $('g_major_type').value = '전공';
-      $('g_total').value = '';
-      $('g_major').value = '';
-      $('g_general').value = '';
-      $('g_notes').value = '';
-      $('g_source_url').value = '';
-      $('g_verified').value = '';
-      $('g_track').value = '';
-      $('g_thesis').value = '';
-      $('g_english').value = '';
-      $('g_license').value = '';
-    }
-    function fillGrad(r) {
-      $('g_editId').value = r.id;
-      $('g_year').value = r.admission_year;
-      $('g_department').value = r.department || '';
-      $('g_major_type').value = r.major_type || '전공';
-      $('g_total').value = r.total_credits ?? '';
-      $('g_major').value = r.major_credits ?? '';
-      $('g_general').value = r.general_credits ?? '';
-      $('g_notes').value = r.notes || '';
-      $('g_source_url').value = r.source_url || '';
-      $('g_verified').value = r.verified_at || '';
-      $('g_track').value = r.track || '';
-      $('g_thesis').value = r.thesis_required === null || r.thesis_required === undefined ? '' : String(r.thesis_required);
-      $('g_english').value = r.english_requirement || '';
-      $('g_license').value = r.license_requirement || '';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-    async function loadGrads() {
-      const res = await fetch('/api/admin/graduation', { headers: headers() });
-      const data = await res.json();
-      if (!res.ok) return log(data);
-      const rows = (data.requirements || []).map((r) => {
-        const ph = (r.notes || '').includes('PLACEHOLDER') ? ' <span class="badge">PLACEHOLDER</span>' : '';
-        return `<tr>
-          <td><strong>${escapeHtml(r.department)}</strong>${ph}
-            <div class="muted">${r.admission_year} · ${escapeHtml(r.major_type || '')}</div></td>
-          <td class="muted">총 ${r.total_credits ?? '-'} / 전공 ${r.major_credits ?? '-'} / 교양 ${r.general_credits ?? '-'}</td>
-          <td>
-            <button type="button" onclick='fillGrad(${JSON.stringify(r).replace(/'/g, "&#39;")})'>수정</button>
-            <button type="button" class="danger" onclick="removeGrad('${r.id}')">삭제</button>
-          </td>
-        </tr>`;
-      }).join('');
-      $('g_list').innerHTML = `<table><thead><tr><th>학과</th><th>학점</th><th></th></tr></thead><tbody>${rows || '<tr><td colspan="3">없음</td></tr>'}</tbody></table>`;
-      log({ loaded_graduation: data.count });
-    }
-    async function saveGrad() {
-      const body = {
-        admission_year: Number($('g_year').value),
-        department: $('g_department').value,
-        major_type: $('g_major_type').value,
-        total_credits: $('g_total').value === '' ? null : Number($('g_total').value),
-        major_credits: $('g_major').value === '' ? null : Number($('g_major').value),
-        general_credits: $('g_general').value === '' ? null : Number($('g_general').value),
-        track: $('g_track').value || null,
-        thesis_required: $('g_thesis').value === '' ? null : $('g_thesis').value === 'true',
-        english_requirement: $('g_english').value || null,
-        license_requirement: $('g_license').value || null,
-        notes: $('g_notes').value,
-        source_url: $('g_source_url').value,
-        verified_at: $('g_verified').value || null,
-      };
-      const id = $('g_editId').value;
-      const res = await fetch(id ? `/api/admin/graduation/${id}` : '/api/admin/graduation', {
-        method: id ? 'PUT' : 'POST',
-        headers: headers(),
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-      log(data);
-      if (res.ok) { resetGradForm(); loadGrads(); }
-    }
-    async function removeGrad(id) {
-      if (!confirm('삭제할까요?')) return;
-      const res = await fetch(`/api/admin/graduation/${id}`, { method: 'DELETE', headers: headers() });
-      log(await res.json());
-      loadGrads();
-    }
-
-    /* Clubs (unchanged) */
-    function resetForm() {
-      $('editId').value = '';
-      ['name','category','contact','meeting_time','location','source_url','intro','activities']
-        .forEach((id) => $(id).value = '');
-    }
-    function fillForm(c) {
-      $('editId').value = c.id;
-      $('name').value = c.name || '';
-      $('category').value = c.category || '';
-      $('contact').value = c.contact || '';
-      $('meeting_time').value = c.meeting_time || '';
-      $('location').value = c.location || '';
-      $('source_url').value = c.source_url || '';
-      $('intro').value = c.intro || '';
-      $('activities').value = c.activities || '';
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-    async function loadClubs() {
-      const res = await fetch('/api/admin/clubs', { headers: headers() });
-      const data = await res.json();
-      if (!res.ok) return log(data);
-      const rows = (data.clubs || []).map((c) => `
-        <tr>
-          <td><strong>${escapeHtml(c.name)}</strong><div class="muted">${escapeHtml(c.category)}</div></td>
-          <td class="muted">${escapeHtml(c.meeting_time || '-')} / ${escapeHtml(c.location || '-')}</td>
-          <td>
-            <button type="button" onclick='fillForm(${JSON.stringify(c).replace(/'/g, "&#39;")})'>수정</button>
-            <button type="button" class="danger" onclick="removeClub('${c.id}')">삭제</button>
-          </td>
-        </tr>`).join('');
-      $('list').innerHTML = `<table><thead><tr><th>동아리</th><th>모임/장소</th><th></th></tr></thead><tbody>${rows || '<tr><td colspan="3">없음</td></tr>'}</tbody></table>`;
-      log({ loaded: data.count });
-    }
-    async function saveClub() {
-      const body = {
-        name: $('name').value,
-        category: $('category').value,
-        contact: $('contact').value,
-        meeting_time: $('meeting_time').value,
-        location: $('location').value,
-        source_url: $('source_url').value,
-        intro: $('intro').value,
-        activities: $('activities').value,
-      };
-      const id = $('editId').value;
-      const res = await fetch(id ? `/api/admin/clubs/${id}` : '/api/admin/clubs', {
-        method: id ? 'PUT' : 'POST',
-        headers: headers(),
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-      log(data);
-      if (res.ok) { resetForm(); loadClubs(); }
-    }
-    async function removeClub(id) {
-      if (!confirm('삭제할까요?')) return;
-      const res = await fetch(`/api/admin/clubs/${id}`, { method: 'DELETE', headers: headers() });
-      log(await res.json());
-      loadClubs();
-    }
-    async function reindexAll() {
-      const res = await fetch('/api/admin/reindex', { method: 'POST', headers: headers(), body: '{}' });
-      log(await res.json());
-    }
-    async function loadUnanswered() {
-      const res = await fetch('/api/unanswered');
-      log(await res.json());
-    }
-    loadGrads().catch((e) => log(String(e)));
-  </script>
+  <div id="toast" role="status"></div>
+  <script src="/admin/admin.js"></script>
 </body>
 </html>
