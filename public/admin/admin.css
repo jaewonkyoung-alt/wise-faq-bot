@@ -125,7 +125,8 @@ button, input, select, textarea {
   width: var(--nav-w);
   flex-shrink: 0;
   background: #FFFFFF;
-  color: #e8ecf7;
+  color: var(--text);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   padding: 20px 14px;
@@ -136,19 +137,21 @@ button, input, select, textarea {
 
 .brand {
   padding: 4px 10px 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid var(--border);
   margin-bottom: 16px;
 }
 
 .brand strong {
   display: block;
-  font-size: 1rem;
+  font-size: 1.05rem;
   letter-spacing: -0.02em;
+  color: var(--text);
 }
 
 .brand span {
   font-size: 0.75rem;
-  opacity: 0.65;
+  color: var(--muted);
+  opacity: 1;
 }
 
 .nav-btn {
@@ -157,9 +160,9 @@ button, input, select, textarea {
   text-align: left;
   background: transparent;
   border: 0;
-  color: #c5cce0;
+  color: var(--muted);
   padding: 10px 12px;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
   margin-bottom: 4px;
   font-size: 0.92rem;
@@ -167,32 +170,34 @@ button, input, select, textarea {
   transition: background 0.15s, color 0.15s;
 }
 
-.nav-btn:hover { background: rgba(255,255,255,0.06); color: #fff; }
+.nav-btn:hover { background: var(--surface-2); color: var(--text); }
 .nav-btn.active {
-  background: var(--primary);
-  color: #fff;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-weight: 600;
 }
 
 .sidebar-foot {
   margin-top: auto;
   padding: 12px 10px 4px;
-  border-top: 1px solid rgba(255,255,255,0.08);
+  border-top: 1px solid var(--border);
 }
 
 .sidebar-foot button {
   width: 100%;
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.18);
-  color: #c5cce0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--muted);
   padding: 8px;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
   font-size: 0.85rem;
 }
 
 .sidebar-foot button:hover {
-  background: rgba(255,255,255,0.06);
-  color: #fff;
+  background: var(--brand-soft);
+  color: var(--brand);
+  border-color: transparent;
 }
 
 .main {
@@ -314,9 +319,9 @@ textarea { min-height: 80px; resize: vertical; }
 
 .btn-secondary {
   background: #e8ebf4;
-  color: #2a3348;
+  color: var(--text);
 }
-.btn-secondary:hover { background: #d8dceb; }
+.btn-secondary:hover { background: #EFEFEF; }
 
 .btn-danger {
   background: var(--danger);
@@ -386,9 +391,9 @@ textarea { min-height: 80px; resize: vertical; }
 }
 
 .alert-info {
-  background: #eef2ff;
-  border: 1px solid #c7d2fe;
-  color: #2a3a8c;
+  background: var(--brand-soft);
+  border: 1px solid var(--warn-border);
+  color: var(--warn-text);
 }
 
 .alert strong { font-weight: 700; }
@@ -546,7 +551,7 @@ table.data .actions {
 .mobile-bar {
   display: none;
   background: #FFFFFF;
-  color: #fff;
+  color: var(--text);
   padding: 12px 16px;
   align-items: center;
   justify-content: space-between;

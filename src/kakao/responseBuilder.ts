@@ -60,8 +60,21 @@ export function collegeReplies(colleges: string[]): KakaoQuickReply[] {
   return replies;
 }
 
-export function departmentReplies(departments: string[]): KakaoQuickReply[] {
-  const replies = departments.slice(0, 8).map((d) => quickMessage(d, d));
+export function departmentReplies(
+  departments: string[],
+  offset = 0
+): KakaoQuickReply[] {
+  const pageSize = 7; // leave room for 더보기 / 메뉴
+  const page = departments.slice(offset, offset + pageSize);
+  const replies = page.map((d) => quickMessage(d.slice(0, 25), d));
+  if (offset + pageSize < departments.length) {
+    replies.push(
+      quickMessage('더보기', `__dept_more__:${offset + pageSize}`)
+    );
+  }
+  if (offset > 0) {
+    replies.push(quickMessage('이전', `__dept_more__:${Math.max(0, offset - pageSize)}`));
+  }
   replies.push(quickMessage('메뉴', '메뉴'));
   return replies;
 }

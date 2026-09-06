@@ -291,6 +291,14 @@ export async function handleKakaoDialog(
     }
 
     const known = departmentsForCollege(session.college);
+    const moreMatch = utterance.match(/^__dept_more__:(\d+)$/);
+    if (moreMatch) {
+      const offset = Number(moreMatch[1]);
+      return simpleText(
+        `학과·전공을 선택해 주세요. (${offset + 1}~${Math.min(offset + 7, known.length)} / ${known.length})`,
+        departmentReplies(known, offset)
+      );
+    }
     const resolved = resolveDepartment(utterance, known);
 
     if (resolved.kind === 'ambiguous') {
