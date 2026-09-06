@@ -101,7 +101,20 @@ function migrate(database: Database.Database): void {
   `);
 
   ensureGradColumns(database);
+  ensureKakaoSessionColumns(database);
 }
+
+function ensureKakaoSessionColumns(database: Database.Database): void {
+  const cols = (
+    database.prepare(`PRAGMA table_info(kakao_sessions)`).all() as Array<{
+      name: string;
+    }>
+  ).map((c) => c.name);
+  if (!cols.includes('college')) {
+    database.exec(`ALTER TABLE kakao_sessions ADD COLUMN college TEXT`);
+  }
+}
+
 
 function ensureGradColumns(database: Database.Database): void {
   const cols = (

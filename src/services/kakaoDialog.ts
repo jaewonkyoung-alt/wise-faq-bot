@@ -15,6 +15,12 @@ import {
   lookupKbGraduation,
 } from './kbGraduation';
 import { answerRoomCode, parseRoomCode } from './roomCode';
+import {
+  listColleges,
+  listDepartmentsInCollege,
+  recentAdmissionYears,
+  resolveCollege,
+} from './collegeTaxonomy';
 import { logUnanswered } from './unanswered';
 import {
   clearSession,
@@ -29,6 +35,7 @@ import {
   simpleText,
   textWithPdfLink,
   yearReplies,
+  collegeReplies,
   departmentReplies,
 } from '../kakao/responseBuilder';
 import { ask } from './askService';
@@ -37,6 +44,7 @@ const MENU_UTTERANCES = /^(메뉴|시작|처음으로|home|menu|웰컴|환영|�
 const GRAD_UTTERANCES = /^(졸업요건|졸업\s*요건|졸업학점|졸업)$/i;
 const CLUB_UTTERANCES = /^(동아리|클럽|club)$/i;
 const MAP_UTTERANCES = /^(지도|캠퍼스\s*지도|map)$/i;
+const NOTICE_UTTERANCES = /^(공지|공지사항|알림|notice)$/i;
 
 function isEmpty(u: string): boolean {
   return !u || !u.trim();
@@ -58,8 +66,15 @@ function listDepartments(): string[] {
 }
 
 function listYears(): number[] {
-  const set = new Set<number>([...listKbYears(), ...listSqlYears()]);
-  return [...set].sort((a, b) => b - a);
+  return recentAdmissionYears();
+}
+
+function departmentsForCollege(college: string | null): string[] {
+  if (college) {
+    const inCollege = listDepartmentsInCollege(college);
+    if (inCollege.length > 0) return inCollege;
+  }
+  return listDepartments();
 }
 
 function respondGraduationHit(
@@ -135,6 +150,7 @@ export async function handleKakaoDialog(
     upsertSession(userKey, {
       flow: 'grad_year',
       admission_year: null,
+      college: null,
       department: null,
     });
     const years = listYears();
@@ -156,6 +172,14 @@ export async function handleKakaoDialog(
         quickMessage('동아리 목록', '동아리 목록 알려줘'),
         quickMessage('메뉴', '메뉴'),
       ]
+    );
+  }
+
+  if (NOTICE_UTTERANCES.test(utterance)) {
+    resetToMenu(userKey);
+    return simpleText(
+      '【공지】\n아직 등록된 공지가 없습니다.\n관리자에서 공지(제목·본문·링크) 등록 후 여기서 조회합니다.\n(카톡 일괄 푸시는 알림톡 API 연동 예정)',
+      menuReplies()
     );
   }
 
@@ -197,7 +221,7 @@ export async function handleKakaoDialog(
     return simpleText(ans.text, menuReplies());
   }
 
-  // Slot: waiting for year
+  // Slot: year → college (대분류)
   if (session.flow === 'grad_year') {
     const year = parseAdmissionYear(utterance);
     if (year == null) {
@@ -206,15 +230,56 @@ export async function handleKakaoDialog(
         yearReplies(listYears())
       );
     }
-    upsertSession(userKey, { flow: 'grad_dept', admission_year: year });
-    const depts = listDepartments();
+    upsertSession(userKey, {
+      flow: 'grad_college',
+      admission_year: year,
+      college: null,
+      department: null,
+    });
     return simpleText(
-      `${year}학번으로 저장했습니다.\n학과를 선택하거나 입력해 주세요.`,
+      `${year}학번으로 저장했습니다.\n단과대학(대분류)을 선택해 주세요.`,
+      collegeReplies(listColleges())
+    );
+  }
+
+  if (session.flow === 'grad_college') {
+    const year = session.admission_year;
+    if (year == null) {
+      upsertSession(userKey, { flow: 'grad_year', college: null });
+      return simpleText(
+        '입학연도부터 다시 선택해 주세요.',
+        yearReplies(listYears())
+      );
+    }
+    const knownColleges = listColleges();
+    const resolvedC = resolveCollege(utterance, knownColleges);
+    if (resolvedC.kind === 'ambiguous') {
+      return simpleText(
+        `단과대학 후보가 여러 개입니다. 버튼을 눌러 주세요.\n후보: ${(resolvedC.candidates || []).join(', ')}`,
+        collegeReplies(resolvedC.candidates || knownColleges)
+      );
+    }
+    if (resolvedC.kind === 'none' || !resolvedC.college) {
+      return simpleText(
+        '등록된 단과대학 목록에서 찾지 못했습니다. 아래 버튼 중 하나를 선택해 주세요.',
+        collegeReplies(knownColleges)
+      );
+    }
+    const college = resolvedC.college;
+    upsertSession(userKey, {
+      flow: 'grad_dept',
+      admission_year: year,
+      college,
+      department: null,
+    });
+    const depts = departmentsForCollege(college);
+    return simpleText(
+      `${college}을(를) 선택했습니다.\n학과·전공을 선택하거나 입력해 주세요.`,
       departmentReplies(depts)
     );
   }
 
-  // Slot: waiting for department → KB then SQL lookup
+  // Slot: department → KB then SQL lookup
   if (session.flow === 'grad_dept') {
     const year = session.admission_year;
     if (year == null) {
@@ -225,7 +290,7 @@ export async function handleKakaoDialog(
       );
     }
 
-    const known = listDepartments();
+    const known = departmentsForCollege(session.college);
     const resolved = resolveDepartment(utterance, known);
 
     if (resolved.kind === 'ambiguous') {
@@ -278,13 +343,14 @@ export async function handleKakaoDialog(
       }
       // year known but dept missing → start slot at dept
       upsertSession(userKey, {
-        flow: 'grad_dept',
+        flow: 'grad_college',
         admission_year: year,
+        college: null,
         department: null,
       });
       return simpleText(
-        `${year}학번으로 인식했습니다.\n학과를 선택하거나 입력해 주세요.`,
-        departmentReplies(listDepartments())
+        `${year}학번으로 인식했습니다.\n단과대학(대분류)을 선택해 주세요.`,
+        collegeReplies(listColleges())
       );
     }
 
@@ -296,7 +362,7 @@ export async function handleKakaoDialog(
 
   resetToMenu(userKey);
   return simpleText(
-    '메뉴에서 선택해 주세요.\n졸업요건 · 동아리 · 지도',
+    '메뉴에서 선택해 주세요.\n졸업요건 · 동아리 · 지도 · 공지',
     menuReplies()
   );
 }

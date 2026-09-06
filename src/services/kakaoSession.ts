@@ -7,6 +7,7 @@ function rowToSession(row: Record<string, unknown>): KakaoSession {
     flow: String(row.flow) as KakaoFlow,
     admission_year:
       row.admission_year == null ? null : Number(row.admission_year),
+    college: row.college == null ? null : String(row.college),
     department: row.department == null ? null : String(row.department),
     updated_at: String(row.updated_at),
   };
@@ -33,6 +34,10 @@ export function upsertSession(
       patch.admission_year !== undefined
         ? patch.admission_year
         : (existing?.admission_year ?? null),
+    college:
+      patch.college !== undefined
+        ? patch.college
+        : (existing?.college ?? null),
     department:
       patch.department !== undefined
         ? patch.department
@@ -42,11 +47,12 @@ export function upsertSession(
 
   getDb()
     .prepare(
-      `INSERT INTO kakao_sessions (user_key, flow, admission_year, department, updated_at)
-       VALUES (?, ?, ?, ?, ?)
+      `INSERT INTO kakao_sessions (user_key, flow, admission_year, college, department, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?)
        ON CONFLICT(user_key) DO UPDATE SET
          flow = excluded.flow,
          admission_year = excluded.admission_year,
+         college = excluded.college,
          department = excluded.department,
          updated_at = excluded.updated_at`
     )
@@ -54,6 +60,7 @@ export function upsertSession(
       next.user_key,
       next.flow,
       next.admission_year,
+      next.college,
       next.department,
       next.updated_at
     );
@@ -68,6 +75,7 @@ export function resetToMenu(userKey: string): KakaoSession {
   return upsertSession(userKey, {
     flow: 'menu',
     admission_year: null,
+    college: null,
     department: null,
   });
 }

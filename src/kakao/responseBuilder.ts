@@ -39,18 +39,23 @@ export function menuReplies(): KakaoQuickReply[] {
     quickMessage('졸업요건', '졸업요건'),
     quickMessage('동아리', '동아리'),
     quickMessage('지도', '지도'),
+    quickMessage('공지', '공지'),
   ];
 }
 
 export function yearReplies(yearsFromDb: number[]): KakaoQuickReply[] {
-  const base =
+  // Prefer explicit 7-year window (4년제 + 여유 3년). Fall back to DB years if empty.
+  const years =
     yearsFromDb.length > 0
-      ? yearsFromDb.slice(0, 5)
-      : [2021, 2022, 2023, 2024, 2025];
-  // Ensure a common range is offered for testing even if DB years differ
-  const set = new Set<number>([...base, 2021, 2022, 2023, 2024, 2025]);
-  const years = [...set].sort((a, b) => a - b).slice(0, 6);
+      ? [...new Set(yearsFromDb)].sort((a, b) => a - b).slice(-7)
+      : [2020, 2021, 2022, 2023, 2024, 2025, 2026];
   const replies = years.map((y) => quickMessage(String(y), String(y)));
+  replies.push(quickMessage('메뉴', '메뉴'));
+  return replies;
+}
+
+export function collegeReplies(colleges: string[]): KakaoQuickReply[] {
+  const replies = colleges.slice(0, 9).map((c) => quickMessage(c.slice(0, 25), c));
   replies.push(quickMessage('메뉴', '메뉴'));
   return replies;
 }
