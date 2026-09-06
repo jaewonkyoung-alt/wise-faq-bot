@@ -14,11 +14,29 @@ Kakao Open Builder Skill → Express가 **졸업요건 · 동아리 · 지도(�
 
 자세한 구조: [ARCHITECTURE.md](./ARCHITECTURE.md) · 보안: [SECURITY.md](./SECURITY.md)
 
+## Docs (1st presentation aligned)
+
+| Doc | Content |
+|------|------|
+| [docs/presentation/1st-review.md](./docs/presentation/1st-review.md) | Slide-by-slide outline (1st review) |
+| [docs/verification.md](./docs/verification.md) | Metrics: target, testset, measurement method |
+| [docs/scope.md](./docs/scope.md) | Current vs later (Kakao FAQ, folder KB, graduation/clubs/map, tunnel hosting) |
+| [docs/architecture.md](./docs/architecture.md) | System overview, hybrid flow, use case (mermaid) |
+| [docs/artifacts/](./docs/artifacts/) | Gantt, usecase, ERD, sequence, tech-stack stubs |
+
+**1st presentation deck filename:** `2021212843_경재원_1차발표.pptx`  
+(copy: [docs/presentation/2021212843_경재원_1차발표.pptx](./docs/presentation/2021212843_경재원_1차발표.pptx), ~47KB)
+
 ## Stack
 
 - Express + TypeScript
 - SQLite (`better-sqlite3`)
 - Folder KB `data/kb/` → `/kb/...`
+- Kakao Open Builder + Admin UI (`/admin`)
+
+
+- Seed/PLACEHOLDER data is demo-only; see [docs/scope.md](./docs/scope.md).
+- Hosting may use a tunnel (`PUBLIC_BASE_URL`); school transfer is later.
 
 ## Setup
 
@@ -36,7 +54,7 @@ npm start
 | 변수 | 필수 | 설명 |
 |------|------|------|
 | `ADMIN_TOKEN` | yes | `/api/admin/*`, `/api/unanswered` — header `x-admin-token` |
-| `PUBLIC_BASE_URL` | PDF buttons | HTTPS public URL, no trailing slash |
+| `PUBLIC_BASE_URL` | PDF buttons | HTTPS public URL, no trailing slash (tunnel hosting OK) |
 | `KAKAO_SKILL_SECRET` | prod recommended | header `x-kakao-skill-secret` when set |
 | `LLM_PROVIDER` | no | default `mock`; see `.env.example` |
 
@@ -53,6 +71,7 @@ data/kb/
 
 - PDFs at `/kb/...`; Kakao webLink needs `PUBLIC_BASE_URL`.
 - `/kb` is public static — no private docs.
+- Seed/PLACEHOLDER rows are demo — replace with official catalogs ([docs/scope.md](./docs/scope.md)).
 
 ## Admin
 
