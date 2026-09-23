@@ -79,7 +79,8 @@ async function main() {
   const steps: Array<{ u: string; expect: RegExp }> = [
     { u: '메뉴', expect: /졸업요건|선택/ },
     { u: '졸업요건', expect: /입학연도|학번/ },
-    { u: '2022', expect: /학과|2022/ },
+    { u: '2022', expect: /단과대|학과|2022/ },
+    { u: '글로컬에너지대학', expect: /학과|전공/ },
     { u: '컴퓨터공학과', expect: /졸업요건|130|PLACEHOLDER|학점|PDF/ },
   ];
 
@@ -97,6 +98,7 @@ async function main() {
   clearSession(USER);
   await postSkill(base, '졸업요건');
   await postSkill(base, '2099');
+  await postSkill(base, '글로컬에너지대학');
   const miss = await postSkill(base, '컴퓨터공학과');
   if (!/확인되지 않음|데이터 없음/.test(miss.text)) {
     throw new Error('expected miss message: ' + miss.text.slice(0, 120));

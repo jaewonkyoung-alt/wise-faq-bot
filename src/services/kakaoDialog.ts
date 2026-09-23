@@ -22,6 +22,7 @@ import {
   resolveCollege,
 } from './collegeTaxonomy';
 import { logUnanswered } from './unanswered';
+import { formatNoticesForKakao, listPublishedNotices } from './noticeService';
 import {
   clearSession,
   getSession,
@@ -177,10 +178,8 @@ export async function handleKakaoDialog(
 
   if (NOTICE_UTTERANCES.test(utterance)) {
     resetToMenu(userKey);
-    return simpleText(
-      '【공지】\n아직 등록된 공지가 없습니다.\n관리자에서 공지(제목·본문·링크) 등록 후 여기서 조회합니다.\n(카톡 일괄 푸시는 알림톡 API 연동 예정)',
-      menuReplies()
-    );
+    // 게시 중인 공지 상위 5건 · 카톡 길이 제한(총 900자) 안에서 클램프
+    return simpleText(formatNoticesForKakao(listPublishedNotices(5)), menuReplies());
   }
 
   if (MAP_UTTERANCES.test(utterance)) {

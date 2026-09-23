@@ -7,6 +7,7 @@ import { adminRouter } from './routes/admin';
 import { unansweredRouter } from './routes/unanswered';
 import { kakaoRouter } from './routes/kakao';
 import { graduationRouter } from './routes/graduation';
+import { adminNoticeRouter, noticeRouter } from './routes/notices';
 
 export function createApp() {
   const app = express();
@@ -29,8 +30,10 @@ export function createApp() {
   app.use(healthRouter);
   app.use('/api', askRouter);
   app.use('/api', graduationRouter);
+  app.use('/api', noticeRouter);
   app.use('/api', unansweredRouter);
   app.use('/api/admin', adminRouter);
+  app.use('/api/admin', adminNoticeRouter);
   app.use('/api/kakao', kakaoRouter);
 
   app.get('/admin', (_req, res) => {

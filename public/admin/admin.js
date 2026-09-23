@@ -8,6 +8,7 @@
     grads: [],
     clubs: [],
     unanswered: [],
+    notices: [],
   };
 
   function $(id) {
@@ -102,7 +103,7 @@
     sessionStorage.setItem(TOKEN_KEY, token);
     showApp();
     state.grads = (r.data && r.data.requirements) || [];
-    await Promise.all([loadClubs(), loadUnanswered(), loadHealth()]);
+    await Promise.all([loadClubs(), loadNotices(), loadUnanswered(), loadHealth()]);
     renderGradList();
     updateStats();
     toast('잠금 해제됨', 'ok');
@@ -113,6 +114,7 @@
     state.unlocked = false;
     state.grads = [];
     state.clubs = [];
+    state.notices = [];
     sessionStorage.removeItem(TOKEN_KEY);
     $('login-token').value = '';
     showLogin();
@@ -133,6 +135,7 @@
     if (name === 'graduation') renderGradList();
     if (name === 'clubs') renderClubList();
     if (name === 'unanswered') loadUnanswered();
+    if (name === 'notices') loadNotices();
   }
 
   /* ── Dashboard ── */
@@ -140,6 +143,8 @@
     $('stat-grad').textContent = String(state.grads.length);
     $('stat-clubs').textContent = String(state.clubs.length);
     $('stat-unanswered').textContent = String(state.unanswered.length);
+    var sn = document.getElementById('stat-notices');
+    if (sn) sn.textContent = String(state.notices.length);
   }
 
   async function loadHealth() {
@@ -610,6 +615,167 @@
     updateStats();
   }
 
+  /* ── Notices ── */
+  function readNoticeForm() {
+    var starts = $('n_starts').value;
+    var ends = $('n_ends').value;
+    return {
+      title: ($('n_title').value || '').trim(),
+      body: ($('n_body').value || '').trim(),
+      link_url: ($('n_link').value || '').trim() || null,
+      pinned: $('n_pinned').checked,
+      published: $('n_published').checked,
+      starts_at: starts ? new Date(starts + 'T00:00:00').toISOString() : null,
+      ends_at: ends ? new Date(ends + 'T23:59:59').toISOString() : null
+    };
+  }
+
+  function resetNoticeForm() {
+    $('n_editId').value = '';
+    ['n_title', 'n_body', 'n_link', 'n_starts', 'n_ends'].forEach(function (id) {
+      $(id).value = '';
+    });
+    $('n_published').checked = true;
+    $('n_pinned').checked = false;
+    $('notice-form-title').textContent = '공지 추가';
+  }
+
+  function fillNotice(n) {
+    $('n_editId').value = n.id;
+    $('n_title').value = n.title || '';
+    $('n_body').value = n.body || '';
+    $('n_link').value = n.link_url || '';
+    $('n_starts').value = n.starts_at ? String(n.starts_at).slice(0, 10) : '';
+    $('n_ends').value = n.ends_at ? String(n.ends_at).slice(0, 10) : '';
+    $('n_published').checked = !!n.published;
+    $('n_pinned').checked = !!n.pinned;
+    $('notice-form-title').textContent = '공지 수정';
+    window.scrollTo(0, 0);
+  }
+
+  function noticeStatus(n) {
+    if (!n.published) return '초안';
+    var now = new Date().toISOString();
+    if (n.starts_at && n.starts_at > now) return '예약';
+    if (n.ends_at && n.ends_at < now) return '종료';
+    return '게시 중';
+  }
+
+  function renderNoticeList() {
+    var tbody = $('n_list');
+    if (!state.notices.length) {
+      tbody.innerHTML = '<tr><td colspan="4" class="empty">등록된 공지가 없습니다.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = state.notices
+      .map(function (n) {
+        var period =
+          (n.starts_at ? String(n.starts_at).slice(0, 10) : '—') +
+          ' ~ ' +
+          (n.ends_at ? String(n.ends_at).slice(0, 10) : '—');
+        return (
+          '<tr>' +
+          '<td><div class="row-title">' +
+          (n.pinned ? '[고정] ' : '') +
+          escapeHtml(n.title) +
+          '</div><div class="muted">' +
+          escapeHtml(String(n.body).slice(0, 60)) +
+          '</div></td>' +
+          '<td class="muted">' +
+          escapeHtml(noticeStatus(n)) +
+          '</td>' +
+          '<td class="muted">' +
+          escapeHtml(period) +
+          '</td>' +
+          '<td class="actions">' +
+          '<button type="button" class="btn btn-sm btn-secondary" data-act="edit-notice" data-id="' +
+          escapeHtml(n.id) +
+          '">수정</button> ' +
+          '<button type="button" class="btn btn-sm btn-danger" data-act="del-notice" data-id="' +
+          escapeHtml(n.id) +
+          '">삭제</button>' +
+          '</td></tr>'
+        );
+      })
+      .join('');
+  }
+
+  async function loadNotices() {
+    var r = await api('/api/admin/notices');
+    if (!r.ok) {
+      if (r.status === 401) {
+        lock();
+        showLogin(koreanAuthError(r.data, r.status));
+        return;
+      }
+      toast(koreanAuthError(r.data, r.status), 'error');
+      return;
+    }
+    state.notices = (r.data && r.data.notices) || [];
+    renderNoticeList();
+    updateStats();
+  }
+
+  async function saveNotice() {
+    var input = readNoticeForm();
+    if (!input.title || !input.body) {
+      toast('제목과 본문은 필수입니다.', 'error');
+      return;
+    }
+    var id = $('n_editId').value;
+    var r = await api(id ? '/api/admin/notices/' + id : '/api/admin/notices', {
+      method: id ? 'PUT' : 'POST',
+      body: input
+    });
+    if (!r.ok) {
+      toast(koreanAuthError(r.data, r.status) || '저장 실패', 'error');
+      return;
+    }
+    toast(id ? '공지 수정됨 · 카톡 반영' : '공지 등록됨 · 카톡 반영', 'ok');
+    resetNoticeForm();
+    loadNotices();
+  }
+
+  async function removeNotice(id) {
+    if (!window.confirm('이 공지를 삭제할까요?')) return;
+    var r = await api('/api/admin/notices/' + id, { method: 'DELETE' });
+    if (!r.ok) {
+      toast('삭제 실패', 'error');
+      return;
+    }
+    toast('삭제됨', 'ok');
+    loadNotices();
+  }
+
+  async function previewNotices() {
+    var box = $('n_preview');
+    var r = await api('/api/notices?limit=5', { noAuth: true });
+    if (!r.ok) {
+      box.textContent = '미리보기 실패';
+      return;
+    }
+    var list = (r.data && r.data.notices) || [];
+    if (!list.length) {
+      box.textContent = '【공지】\n등록된 공지가 없습니다.';
+      return;
+    }
+    box.textContent =
+      '【공지】\n\n' +
+      list
+        .map(function (n) {
+          var body = String(n.body).replace(/\s+/g, ' ').trim();
+          return (
+            '· ' +
+            (n.pinned ? '[고정] ' : '') +
+            n.title +
+            '\n' +
+            (body.length > 80 ? body.slice(0, 79) + '…' : body) +
+            (n.link_url ? '\n링크: ' + n.link_url : '')
+          );
+        })
+        .join('\n\n');
+  }
+
   /* ── Events ── */
   function findById(list, id) {
     for (var i = 0; i < list.length; i++) {
@@ -649,6 +815,11 @@
 
     $('btn-unanswered-reload').addEventListener('click', loadUnanswered);
 
+    $('btn-notice-save').addEventListener('click', saveNotice);
+    $('btn-notice-reset').addEventListener('click', resetNoticeForm);
+    $('btn-notice-reload').addEventListener('click', loadNotices);
+    $('btn-notice-preview').addEventListener('click', previewNotices);
+
     document.addEventListener('click', function (e) {
       var t = e.target;
       if (!t || !t.getAttribute) return;
@@ -665,6 +836,11 @@
         if (c) fillClub(c);
       } else if (act === 'del-club') {
         removeClub(id);
+      } else if (act === 'edit-notice') {
+        var n = findById(state.notices, id);
+        if (n) fillNotice(n);
+      } else if (act === 'del-notice') {
+        removeNotice(id);
       }
     });
   }

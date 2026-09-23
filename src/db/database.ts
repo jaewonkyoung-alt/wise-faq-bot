@@ -91,6 +91,21 @@ function migrate(database: Database.Database): void {
     CREATE INDEX IF NOT EXISTS idx_grad_year ON graduation_requirements(admission_year);
     CREATE INDEX IF NOT EXISTS idx_grad_dept ON graduation_requirements(department);
 
+    CREATE TABLE IF NOT EXISTS notices (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      body TEXT NOT NULL,
+      link_url TEXT,
+      pinned INTEGER NOT NULL DEFAULT 0,
+      published INTEGER NOT NULL DEFAULT 1,
+      starts_at TEXT,
+      ends_at TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_notices_feed ON notices(published, pinned, updated_at);
+
     CREATE TABLE IF NOT EXISTS kakao_sessions (
       user_key TEXT PRIMARY KEY,
       flow TEXT NOT NULL DEFAULT 'menu',

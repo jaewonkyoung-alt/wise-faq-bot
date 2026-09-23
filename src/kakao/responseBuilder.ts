@@ -121,14 +121,15 @@ export function textWithPdfLink(opts: {
       version: '2.0',
       template: {
         outputs: [
+          // 본문은 simpleText 한 번만. 카드는 원문 링크 버튼 용도로만 사용한다
+          // (이전에는 같은 내용이 카드 설명과 텍스트로 두 번 표시됐다).
+          { simpleText: { text: opts.text.slice(0, 900) } },
           {
             basicCard: {
-              description: opts.text.slice(0, 200),
+              description: '원문 PDF를 버튼으로 열 수 있습니다.',
               buttons,
             },
           },
-          // Also include full text for readability (Kakao basicCard desc is short)
-          { simpleText: { text: opts.text.slice(0, 900) } },
         ],
       },
     };

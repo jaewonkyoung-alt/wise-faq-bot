@@ -30,7 +30,8 @@
         <button type="button" class="nav-btn active" data-page="dashboard">대시보드</button>
         <button type="button" class="nav-btn" data-page="graduation">졸업요건</button>
         <button type="button" class="nav-btn" data-page="clubs">동아리</button>
-        <button type="button" class="nav-btn" data-page="unanswered">미답변</button>
+        <button type="button" class="nav-btn" data-page="notices">공지</button>
+          <button type="button" class="nav-btn" data-page="unanswered">미답변</button>
       </nav>
       <div class="sidebar-foot">
         <button type="button" id="btn-lock">토큰 잠금</button>
@@ -45,7 +46,8 @@
       <button type="button" class="nav-btn active" data-page="dashboard">대시보드</button>
       <button type="button" class="nav-btn" data-page="graduation">졸업요건</button>
       <button type="button" class="nav-btn" data-page="clubs">동아리</button>
-      <button type="button" class="nav-btn" data-page="unanswered">미답변</button>
+      <button type="button" class="nav-btn" data-page="notices">공지</button>
+          <button type="button" class="nav-btn" data-page="unanswered">미답변</button>
     </div>
 
     <main class="main">
@@ -82,6 +84,10 @@
           <div class="stat">
             <div class="label">동아리</div>
             <div class="value" id="stat-clubs">—</div>
+          </div>
+          <div class="stat">
+            <div class="label">공지</div>
+            <div class="value" id="stat-notices">—</div>
           </div>
           <div class="stat">
             <div class="label">미답변</div>
@@ -281,6 +287,79 @@
                 </tr>
               </thead>
               <tbody id="c_list"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Notices -->
+      <section id="page-notices" class="page">
+        <h1 class="page-title">공지</h1>
+        <p class="page-desc">게시한 공지는 카카오톡 「공지」 메뉴에서 바로 조회됩니다. (상위 5건 · 고정 우선)</p>
+
+        <div class="card">
+          <h2 id="notice-form-title">공지 추가</h2>
+          <input type="hidden" id="n_editId" />
+          <div class="grid grid-2">
+            <div class="field-wrap">
+              <label class="field" for="n_title">제목 *</label>
+              <input id="n_title" type="text" placeholder="개강 총회 안내" />
+            </div>
+            <div class="field-wrap">
+              <label class="field" for="n_link">링크 (http/https만)</label>
+              <input id="n_link" type="url" placeholder="https://wise.dongguk.ac.kr/…" />
+            </div>
+            <div class="field-wrap">
+              <label class="field" for="n_starts">게시 시작 (선택)</label>
+              <input id="n_starts" type="date" />
+            </div>
+            <div class="field-wrap">
+              <label class="field" for="n_ends">게시 종료 (선택)</label>
+              <input id="n_ends" type="date" />
+            </div>
+          </div>
+          <div class="field-wrap" style="margin-top:12px">
+            <label class="field" for="n_body">본문 *</label>
+            <textarea id="n_body" placeholder="학생에게 보여줄 내용을 입력하세요."></textarea>
+          </div>
+          <div class="btn-row">
+            <label class="field" style="display:flex;align-items:center;gap:6px;margin:0">
+              <input type="checkbox" id="n_published" checked /> 게시
+            </label>
+            <label class="field" style="display:flex;align-items:center;gap:6px;margin:0">
+              <input type="checkbox" id="n_pinned" /> 상단 고정
+            </label>
+            <button type="button" class="btn" id="btn-notice-save">저장</button>
+            <button type="button" class="btn btn-secondary" id="btn-notice-reset">초기화</button>
+            <button type="button" class="btn btn-ghost" id="btn-notice-preview">카톡 미리보기</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>카톡 미리보기</h2>
+          <p class="muted" style="margin:0 0 10px">학생에게 보이는 형식 (서버 formatNoticesForKakao · 총 900자 클램프)</p>
+          <div class="kakao-frame">
+            <div class="kakao-label">WISE FAQ</div>
+            <div class="kakao-bubble" id="n_preview" style="white-space:pre-wrap">「카톡 미리보기」를 누르면 실제 응답 형식으로 표시됩니다.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>등록된 공지</h2>
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-notice-reload">목록 새로고침</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data">
+              <thead>
+                <tr>
+                  <th>제목</th>
+                  <th>상태</th>
+                  <th>게시 기간</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="n_list"></tbody>
             </table>
           </div>
         </div>
