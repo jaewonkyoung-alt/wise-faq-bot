@@ -5,7 +5,13 @@
  *   npm run test:notices
  */
 import dotenv from 'dotenv';
+import os from 'os';
+import path from 'path';
 dotenv.config();
+// 운영 DB(data/wise.db)의 공지를 지우지 않도록, 경로 지정이 없으면 임시 DB 사용
+if (!process.env.DATABASE_PATH) {
+  process.env.DATABASE_PATH = path.join(os.tmpdir(), `wise-test-notices-${process.pid}.db`);
+}
 
 import type { Server } from 'http';
 import { createApp } from '../src/app';
