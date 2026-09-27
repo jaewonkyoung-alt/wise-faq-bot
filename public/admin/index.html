@@ -90,6 +90,10 @@
             <div class="value" id="stat-notices">—</div>
           </div>
           <div class="stat">
+            <div class="label">공지 알림 구독</div>
+            <div class="value" id="stat-subscribers">—</div>
+          </div>
+          <div class="stat">
             <div class="label">미답변</div>
             <div class="value" id="stat-unanswered">—</div>
           </div>
@@ -295,7 +299,14 @@
       <!-- Notices -->
       <section id="page-notices" class="page">
         <h1 class="page-title">공지</h1>
-        <p class="page-desc">게시한 공지는 카카오톡 「공지」 메뉴에서 바로 조회됩니다. (상위 5건 · 고정 우선)</p>
+        <p class="page-desc">게시한 공지는 카카오톡 「공지」 메뉴에서 바로 조회되고, 알림 구독 학생에게는 다음 대화 때 답변 앞에 먼저 전달됩니다.</p>
+
+        <div class="card notice-policy">
+          <h2>등록 원칙 — 전교생 공통 공지만</h2>
+          <p class="muted" style="margin:0">학과·동아리·행사별 공지는 등록하지 않습니다. 구독한 모든 학생에게 같은 공지가 가므로, 대상이 좁은 공지를 올리면 알림이 스팸이 됩니다.<br />
+          전달 규칙: 한 번에 최대 3건 · 게시 후 14일이 지난 공지는 알림에서 제외 · 같은 공지는 학생마다 한 번만.</p>
+          <p style="margin:10px 0 0">알림 구독자 <strong id="n_subscribers">—</strong>명</p>
+        </div>
 
         <div class="card">
           <h2 id="notice-form-title">공지 추가</h2>
@@ -356,6 +367,7 @@
                   <th>제목</th>
                   <th>상태</th>
                   <th>게시 기간</th>
+                  <th>알림 전달</th>
                   <th></th>
                 </tr>
               </thead>

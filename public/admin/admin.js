@@ -9,6 +9,8 @@
     clubs: [],
     unanswered: [],
     notices: [],
+    subscribers: null,
+    delivered: {},
   };
 
   function $(id) {
@@ -145,6 +147,8 @@
     $('stat-unanswered').textContent = String(state.unanswered.length);
     var sn = document.getElementById('stat-notices');
     if (sn) sn.textContent = String(state.notices.length);
+    var ss = document.getElementById('stat-subscribers');
+    if (ss) ss.textContent = state.subscribers == null ? '—' : String(state.subscribers);
   }
 
   async function loadHealth() {
@@ -664,7 +668,7 @@
   function renderNoticeList() {
     var tbody = $('n_list');
     if (!state.notices.length) {
-      tbody.innerHTML = '<tr><td colspan="4" class="empty">등록된 공지가 없습니다.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="empty">등록된 공지가 없습니다.</td></tr>';
       return;
     }
     tbody.innerHTML = state.notices
@@ -687,6 +691,9 @@
           '<td class="muted">' +
           escapeHtml(period) +
           '</td>' +
+          '<td class="muted">' +
+          escapeHtml(String((state.delivered && state.delivered[n.id]) || 0)) +
+          '명</td>' +
           '<td class="actions">' +
           '<button type="button" class="btn btn-sm btn-secondary" data-act="edit-notice" data-id="' +
           escapeHtml(n.id) +
@@ -712,6 +719,10 @@
       return;
     }
     state.notices = (r.data && r.data.notices) || [];
+    state.subscribers = r.data && typeof r.data.subscribers === 'number' ? r.data.subscribers : null;
+    state.delivered = (r.data && r.data.delivered) || {};
+    var nsub = document.getElementById('n_subscribers');
+    if (nsub) nsub.textContent = state.subscribers == null ? '—' : String(state.subscribers);
     renderNoticeList();
     updateStats();
   }

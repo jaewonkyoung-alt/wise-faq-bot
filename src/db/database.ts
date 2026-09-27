@@ -106,6 +106,22 @@ function migrate(database: Database.Database): void {
 
     CREATE INDEX IF NOT EXISTS idx_notices_feed ON notices(published, pinned, updated_at);
 
+    -- 공지 알림 구독자 (카카오 봇 사용자 키). 인증 채널이 아니라 Event API 푸시는 못 쓰므로
+    -- 구독자가 다음에 말을 걸 때 새 공지를 먼저 붙여 준다.
+    CREATE TABLE IF NOT EXISTS notice_subscribers (
+      user_key TEXT PRIMARY KEY,
+      subscribed_at TEXT NOT NULL
+    );
+
+    -- 공지별 전달 기록: 같은 공지를 같은 학생에게 두 번 보내지 않기 위함
+    CREATE TABLE IF NOT EXISTS notice_deliveries (
+      user_key TEXT NOT NULL,
+      notice_id TEXT NOT NULL,
+      delivered_at TEXT NOT NULL,
+      PRIMARY KEY (user_key, notice_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_notice_deliveries_notice ON notice_deliveries(notice_id);
+
     CREATE TABLE IF NOT EXISTS kakao_sessions (
       user_key TEXT PRIMARY KEY,
       flow TEXT NOT NULL DEFAULT 'menu',

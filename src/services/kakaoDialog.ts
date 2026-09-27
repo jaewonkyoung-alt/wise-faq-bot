@@ -24,6 +24,14 @@ import {
 import { logUnanswered } from './unanswered';
 import { formatNoticesForKakao, listPublishedNotices } from './noticeService';
 import {
+  formatNoticeBanner,
+  isSubscribed,
+  markDelivered,
+  pendingNotices,
+  subscribe,
+  unsubscribe,
+} from './noticeSubscription';
+import {
   clearSession,
   getSession,
   resetToMenu,
@@ -32,6 +40,8 @@ import {
 import {
   buildAskSkillResponse,
   menuReplies,
+  noticeReplies,
+  prependText,
   quickMessage,
   simpleText,
   textWithPdfLink,
@@ -46,6 +56,8 @@ const GRAD_UTTERANCES = /^(졸업요건|졸업\s*요건|졸업학점|졸업)$/i;
 const CLUB_UTTERANCES = /^(동아리|클럽|club)$/i;
 const MAP_UTTERANCES = /^(지도|캠퍼스\s*지도|map)$/i;
 const NOTICE_UTTERANCES = /^(공지|공지사항|알림|notice)$/i;
+const NOTICE_SUB_ON = /^(공지\s*)?알림\s*(받기|켜기|신청|구독)$/;
+const NOTICE_SUB_OFF = /^(공지\s*)?알림\s*(끄기|해제|취소|그만)$/;
 
 function isEmpty(u: string): boolean {
   return !u || !u.trim();
@@ -127,10 +139,42 @@ function respondGraduationHit(
 }
 
 /**
+ * 카카오 진입점: 대화 응답을 만든 뒤, 공지 알림 구독자에게는
+ * 아직 받지 않은 새 공지를 답변 앞에 붙인다.
+ */
+export async function handleKakaoDialog(
+  userKey: string,
+  utteranceRaw: string
+): Promise<KakaoSkillResponse> {
+  const response = await dialog(userKey, utteranceRaw);
+  const utterance = (utteranceRaw || '').trim();
+  // 공지 메뉴·구독 응답 자체에는 붙이지 않는다 (같은 내용 반복 방지)
+  if (
+    NOTICE_UTTERANCES.test(utterance) ||
+    NOTICE_SUB_ON.test(utterance) ||
+    NOTICE_SUB_OFF.test(utterance)
+  ) {
+    return response;
+  }
+  try {
+    const { notices, total } = pendingNotices(userKey);
+    if (notices.length === 0) return response;
+    const withBanner = prependText(response, formatNoticeBanner(notices, total));
+    if (!withBanner) return response;
+    markDelivered(userKey, notices.map((n) => n.id));
+    return withBanner;
+  } catch (err) {
+    // 알림 실패가 본 답변을 막으면 안 된다
+    console.error('[notice-banner]', err);
+    return response;
+  }
+}
+
+/**
  * Primary Kakao dialog: graduation slot-filling (year → dept → KB/SQL).
  * Map: room-code parse. Clubs secondary via ask().
  */
-export async function handleKakaoDialog(
+async function dialog(
   userKey: string,
   utteranceRaw: string
 ): Promise<KakaoSkillResponse> {
@@ -179,7 +223,31 @@ export async function handleKakaoDialog(
   if (NOTICE_UTTERANCES.test(utterance)) {
     resetToMenu(userKey);
     // 게시 중인 공지 상위 5건 · 카톡 길이 제한(총 900자) 안에서 클램프
-    return simpleText(formatNoticesForKakao(listPublishedNotices(5)), menuReplies());
+    const shown = listPublishedNotices(5);
+    const subscribed = isSubscribed(userKey);
+    if (subscribed) markDelivered(userKey, shown.map((n) => n.id));
+    const tip = subscribed
+      ? ''
+      : '\n\n「새 공지 알림 받기」를 누르면 새 공통 공지를 다음 대화 때 먼저 알려 드립니다.';
+    return simpleText(formatNoticesForKakao(shown) + tip, noticeReplies(subscribed));
+  }
+
+  if (NOTICE_SUB_ON.test(utterance)) {
+    resetToMenu(userKey);
+    const current = subscribe(userKey);
+    const intro =
+      '공지 알림을 켰습니다.\n새 전교생 공통 공지가 올라오면, 다음에 챗봇을 이용할 때 답변 앞에 먼저 알려 드립니다.\n(한 번에 최대 3건 · 같은 공지는 한 번만)';
+    const list = current.length ? `\n\n${formatNoticesForKakao(current, 600)}` : '';
+    return simpleText((intro + list).slice(0, 1000), noticeReplies(true));
+  }
+
+  if (NOTICE_SUB_OFF.test(utterance)) {
+    resetToMenu(userKey);
+    unsubscribe(userKey);
+    return simpleText(
+      '공지 알림을 껐습니다.\n공지는 「공지」 메뉴에서 언제든 확인할 수 있습니다.',
+      noticeReplies(false)
+    );
   }
 
   if (MAP_UTTERANCES.test(utterance)) {

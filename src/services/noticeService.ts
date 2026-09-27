@@ -132,7 +132,9 @@ export function updateNotice(
 }
 
 export function deleteNotice(id: string): boolean {
-  const result = getDb().prepare('DELETE FROM notices WHERE id = ?').run(id);
+  const db = getDb();
+  const result = db.prepare('DELETE FROM notices WHERE id = ?').run(id);
+  db.prepare('DELETE FROM notice_deliveries WHERE notice_id = ?').run(id);
   return result.changes > 0;
 }
 

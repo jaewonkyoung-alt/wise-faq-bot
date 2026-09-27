@@ -33,6 +33,46 @@ export function quickMessage(label: string, messageText?: string): KakaoQuickRep
   };
 }
 
+/**
+ * 기존 응답 맨 앞에 안내 문구를 붙인다 (새 공지 알림용).
+ * 카카오 outputs 는 최대 3개라, 이미 3개면 첫 simpleText 에 합친다.
+ * 합칠 곳이 없으면 null — 호출 측은 전달 기록을 남기지 않는다.
+ */
+export function prependText(
+  response: KakaoSkillResponse,
+  text: string
+): KakaoSkillResponse | null {
+  const outputs = response.template.outputs;
+  if (outputs.length < 3) {
+    return {
+      ...response,
+      template: { ...response.template, outputs: [{ simpleText: { text } }, ...outputs] },
+    };
+  }
+  const first = outputs[0];
+  if ('simpleText' in first) {
+    const merged = `${text}\n\n${first.simpleText.text}`.slice(0, 1000);
+    return {
+      ...response,
+      template: {
+        ...response.template,
+        outputs: [{ simpleText: { text: merged } }, ...outputs.slice(1)],
+      },
+    };
+  }
+  return null;
+}
+
+/** 공지 메뉴 버튼: 구독 상태에 따라 켜기/끄기 */
+export function noticeReplies(subscribed: boolean): KakaoQuickReply[] {
+  return [
+    subscribed
+      ? quickMessage('알림 끄기', '공지 알림 끄기')
+      : quickMessage('새 공지 알림 받기', '공지 알림 받기'),
+    ...menuReplies(),
+  ];
+}
+
 /** Primary menu: 졸업요건 first, then clubs / map */
 export function menuReplies(): KakaoQuickReply[] {
   return [

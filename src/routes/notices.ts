@@ -9,6 +9,7 @@ import {
   listPublishedNotices,
   updateNotice,
 } from '../services/noticeService';
+import { countSubscribers, deliveryCounts } from '../services/noticeSubscription';
 import type { NoticeInput } from '../types/notice';
 
 /** Public: student-facing notice list (published + inside window). */
@@ -45,7 +46,8 @@ function bodyToNotice(body: Record<string, unknown>): NoticeInput | null {
 adminNoticeRouter.get('/notices', (req, res) => {
   if (!checkAdmin(req, res)) return;
   const notices = listNotices();
-  res.json({ count: notices.length, notices });
+  // 알림 구독자 수 · 공지별 전달 인원 (관리자 화면 표시용)
+  res.json({ count: notices.length, notices, subscribers: countSubscribers(), delivered: deliveryCounts() });
 });
 
 adminNoticeRouter.get('/notices/:id', (req, res) => {
