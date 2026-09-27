@@ -11,7 +11,7 @@ TOC = [
     "공지 기능 — 관리자 웹 동작 화면",
     "공지 기능 — 카카오톡 · API 동작",
     "버그 수정 · 테스트",
-    "형상관리 · 요구사항 이행 상태",
+    "요구사항 이행 상태",
     "졸업요건 실데이터 — 수집 · 구조화 · 특이사항",
     "다음 주 계획",
 ]
@@ -94,67 +94,30 @@ def build(d):
 
     # 4. 이번 주 요약
     s = d.slide("1. 이번 주 작업 요약")
-    text(s, 0.55, 1.02, 7.6, 0.35, "계획 대비 실제", size=15, bold=True, color=DARK)
-    table(s, 0.55, 1.42, 7.6, [1.5, 3.0, 2.2, 0.9], [
+    text(s, 0.55, 1.02, 12.2, 0.35, "계획 대비 실제", size=15, bold=True, color=DARK)
+    table(s, 0.55, 1.42, 12.2, [1.4, 5.6, 3.8, 1.4], [
         ["구분", "수행 내용", "산출물", "상태"],
-        ["계획 작업", "공지 CRUD · 카톡 공지 조회\n(3주차에 설계만 했던 기능)", "코드 · 테스트 · 화면", "완료"],
+        ["계획 작업", "공지 CRUD · 카톡 공지 조회 (3주차에 설계만 했던 기능)", "코드 · 테스트 · 화면", "완료"],
         ["추가 1", "카카오톡 중복 응답 결함 수정", "responseBuilder 수정", "완료"],
         ["추가 2", "깨져 있던 회귀 테스트 복구", "test:kakao-grad", "완료"],
         ["추가 3", "공지 테스트 신규 작성", "test:notices 16건", "완료"],
-        ["추가 4", "졸업요건 원본 PDF 수집 · 엑셀 구조화\n(42개 학과 · 21학번 이후)", "엑셀 9개 시트 · SSD", "완료"],
-        ["추가 5", "공지 방식 변경: 조회 → 알림 구독\n(전교생 공통 공지만)", "test:notice-sub 24건", "완료"],
+        ["추가 4", "졸업요건 원본 PDF 수집 · 엑셀 구조화 (42개 학과)", "엑셀 9개 시트 · SSD", "완료"],
+        ["추가 5", "공지 방식 변경: 조회 → 알림 구독 (전교생 공통 공지만)", "test:notice-sub 24건", "완료"],
         ["문서", "설계 산출물 13종 · 진행 보고 문서화", "GitHub docs/", "완료"],
-    ], size=12, row_h=0.62, first_col_bold=True)
-    text(s, 8.4, 1.02, 4.4, 0.35, "이번 주 지표", size=15, bold=True, color=DARK)
-    nums = [("14", "변경된 파일 수", "신규 6 · 수정 8"),
-            ("40", "신규 테스트 검사", "notices 16 · notice-sub 24"),
-            ("2", "수정한 결함", "중복 응답 · 회귀 테스트"),
-            ("3", "GitHub 커밋", "26de462 · d1d9b72 · 43aa83f")]
-    for i, (n, h, sub) in enumerate(nums):
-        y = 1.42 + i * 1.32
-        rect(s, 8.4, y, 4.35, 1.15, fill=LIGHT2, line=LINE)
-        text(s, 8.6, y + 0.12, 1.2, 0.9, n, size=30, bold=True, color=DARK, margin=0)
-        text(s, 9.9, y + 0.18, 2.7, 0.4, h, size=13, bold=True, color=DARK, margin=0)
-        text(s, 9.9, y + 0.6, 2.7, 0.4, sub, size=11, color=GRAY, margin=0)
-    label(s, 0.55, 6.85, 7.6, 0.3, "전체 테스트 5종 · 타입체크 모두 통과", size=11, color=MUTED, align=PP_ALIGN.LEFT)
+    ], size=14, row_h=0.62, first_col_bold=True)
+    label(s, 0.55, 6.85, 12.2, 0.3, "전체 테스트 5종 · 타입체크 모두 통과", size=11, color=MUTED, align=PP_ALIGN.LEFT)
 
     # 5. 설계 → 구현
     s = d.slide("2. 공지 기능 — 설계 문서에서 구현으로")
-    text(s, 0.55, 1.02, 7.6, 0.35, "3주차에 문서로만 정의했던 항목의 구현 결과", size=14, bold=True, color=DARK)
-    table(s, 0.55, 1.45, 7.6, [1.4, 2.6, 3.4], [
+    text(s, 0.55, 1.02, 12.2, 0.35, "3주차에 문서로만 정의했던 항목의 구현 결과", size=15, bold=True, color=DARK)
+    table(s, 0.55, 1.5, 12.2, [2.0, 4.6, 5.6], [
         ["설계 항목", "3주차 정의", "구현 결과"],
         ["요구사항", "FR-06 공지 조회 / FR-10 공지 관리", "둘 다 구현 완료"],
         ["유스케이스", "UC-05 공지 조회 / UC-09 공지 관리", "기본·대안·예외 흐름 그대로 구현"],
         ["데이터", "notices 테이블 (10개 컬럼)", "마이그레이션 + 피드 인덱스 추가"],
-        ["인터페이스", "공개 1 · 관리자 2 엔드포인트 그룹", "5개 엔드포인트 구현"],
+        ["인터페이스", "공개 1 · 관리자 2 엔드포인트 그룹", "6개 엔드포인트 구현 (공개 1 · 관리자 5)"],
         ["테스트", "TC-09 링크·게시기간 검증", "16개 검사로 확장"],
-    ], size=12, row_h=0.7, first_col_bold=True)
-    text(s, 8.5, 1.02, 4.3, 0.35, "확장 규칙(NFR-05) 검증", size=14, bold=True, color=DARK)
-    box(s, 8.5, 1.45, 4.3, 2.55,
-        [("설계 시 세운 규칙", {"bold": True, "size": 12, "color": NAVY}),
-         ("\"새 도메인 = 파일 3개 추가 +", {"size": 12}),
-         ("기존 코드 1곳만 수정\"", {"size": 12}), ("", {"size": 6}),
-         ("실제 결과", {"bold": True, "size": 12, "color": NAVY}),
-         ("신규: types/notice.ts", {"size": 11}),
-         ("      services/noticeService.ts", {"size": 11}),
-         ("      routes/notices.ts", {"size": 11}),
-         ("수정: database.ts(테이블) · app.ts(등록)", {"size": 11}),
-         ("      kakaoDialog.ts(메뉴 분기 1곳)", {"size": 11})],
-        fill=LIGHT2, line=LINE, align=PP_ALIGN.LEFT)
-    box(s, 8.5, 4.2, 4.3, 1.0,
-        [("규칙대로 동작함", {"bold": True, "size": 13, "color": DARK}),
-         ("기존 도메인(졸업요건·동아리·지도) 코드는 수정하지 않음", {"size": 11, "color": GRAY})],
-        fill=WHITE, line=NAVY, align=PP_ALIGN.LEFT)
-    text(s, 0.55, 5.45, 12.2, 0.35, "구현 범위", size=14, bold=True, color=DARK)
-    feats = [("관리자 CRUD", "등록·수정·삭제·목록"),
-             ("게시 제어", "게시 여부 · 상단 고정 · 게시 기간"),
-             ("카톡 조회", "게시 중인 공지 상위 5건"),
-             ("입력 검증", "필수값 · http(s) 링크만 허용"),
-             ("출력 클램프", "총 900자 · 초과분 건수 안내")]
-    for i, (h, b) in enumerate(feats):
-        x = 0.55 + i * 2.46
-        rect(s, x, 5.85, 2.3, 1.0, fill=LIGHT2, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE,
-             label=[(h, {"bold": True, "size": 12}), (b, {"size": 10, "color": GRAY})])
+    ], size=15, row_h=0.8, first_col_bold=True)
 
     # 6. 데이터 · 엔드포인트
     s = d.slide("2. 공지 기능 — 데이터 모델 · 엔드포인트")
@@ -352,32 +315,6 @@ def build(d):
         fill=WHITE, line=NAVY, align=PP_ALIGN.LEFT)
     label(s, 8.3, 6.25, 4.5, 0.6, "테스트는 임시 DB로 실행 — 기존 공지 테스트가 운영 DB 공지를\n지울 수 있던 문제도 이번에 수정", size=10, color=MUTED, align=PP_ALIGN.LEFT)
 
-    # 14. 형상관리
-    s = d.slide("6. 형상관리 · 문서화")
-    picture(s, "term_git.png", 0.55, 1.1, 7.4, 3.3)
-    caption(s, 0.55, 4.55, 7.4, "GitHub 커밋 이력", "커밋 메시지에 구현 범위 · 수정한 결함 · 설계 문서 연결을 기록")
-    text(s, 0.55, 5.4, 7.4, 0.35, "커밋 규칙", size=14, bold=True, color=DARK)
-    commits = [("feat", "기능 추가"), ("fix", "결함 수정"), ("docs", "문서"), ("test", "테스트")]
-    for i, (h, b) in enumerate(commits):
-        x = 0.55 + i * 1.9
-        rect(s, x, 5.8, 1.75, 0.8, fill=LIGHT2, line=LINE, shape=MSO_SHAPE.ROUNDED_RECTANGLE,
-             label=[(h, {"bold": True, "size": 12}), (b, {"size": 10, "color": GRAY})])
-    text(s, 8.3, 1.02, 4.5, 0.35, "레포에 정리한 문서", size=14, bold=True, color=DARK)
-    box(s, 8.3, 1.45, 4.5, 2.5,
-        [("docs/design/  (3주차 설계 13종)", {"bold": True, "size": 12}),
-         ("개요 · 방법론 · WBS · 모듈 구조", {"size": 11}),
-         ("시퀀스 · 상태 · ERD · 테이블 명세", {"size": 11}),
-         ("API 18종 · 위험 관리 · 추적표 · UC 명세", {"size": 11}), ("", {"size": 6}),
-         ("docs/progress/  (주차별 진행 보고)", {"bold": True, "size": 12}),
-         ("2026-W04-진행보고.md", {"size": 11})],
-        fill=LIGHT2, line=LINE, align=PP_ALIGN.LEFT)
-    box(s, 8.3, 4.15, 4.5, 1.15,
-        [("발표에서 뺀 상세 산출물을 문서로 유지", {"bold": True, "size": 12}),
-         ("최종 보고서에 그대로 포함할 예정", {"size": 11, "color": GRAY})],
-        fill=WHITE, line=NAVY, align=PP_ALIGN.LEFT)
-    label(s, 8.3, 5.45, 4.5, 0.9, "레포: jaewonkyoung-alt/wise-faq-bot (private)\n코드 · 설계 문서 · 진행 보고 · 발표 자료를 한곳에서 관리",
-          size=10, color=MUTED, align=PP_ALIGN.LEFT)
-
     # 15. 요구사항 이행 상태
     s = d.slide("6. 요구사항 이행 상태")
     table(s, 0.55, 1.05, 12.2, [1.0, 2.6, 5.2, 1.3, 2.1], [
@@ -439,13 +376,12 @@ def build(d):
             "컴퓨터공학과는 20~21학번 소속이 '컴퓨터공학전공' — 21학번은 옛 이름으로 물어볼 가능성이 큼")
     table(s, 0.55, 4.1, 7.4, [1.35, 3.6, 2.45], [
         ["특이사항", "내용", "챗봇 처리"],
-        ["학과명 변경", "별칭 31개 학과 — 컴퓨터공학전공 → 컴퓨터공학과,\n불교아동보육학과 → 아동청소년교육학과 등", "별칭 사전 등록 ·\n당시 소속명 함께 표시"],
+        ["학과명 변경", "이전 명칭·별칭이 있는 학과 31개\n예: 컴퓨터공학전공 → 컴퓨터공학과", "별칭 사전 등록 ·\n당시 소속명 함께 표시"],
         ["신설 · 모집중단", "신설 6개(21학번 기준 없음) · 모집중단 5개", "기준 없음 안내 · 검색 유지"],
-        ["요건 면제", "사회봉사 면제 7개 · 외국어 면제 11개 학과", "면제 여부를 먼저 답변"],
+        ["요건 면제", "사회봉사 면제 7개 · 외국어 면제 11개 학과\n(내국인 신입생 기준)", "면제 여부를 먼저 답변"],
         ["다른 외국어 기준", "영문 TOEIC 700 · 일문 JLPT N3/JPT · 중문 HSK", "시험별 기준 병기"],
         ["2025학번 변경", "단수전공 '57+모듈1' · 모의토익 불인정", "문자열 조건으로 처리"],
-        ["원문 오류", "의학과 2026 논문 칸 공란 · 엘리트스포츠 소속 오기", "'확인 필요'로 응답"],
-    ], size=10, row_h=0.4, first_col_bold=True)
+    ], size=10, row_h=0.46, first_col_bold=True)
     text(s, 8.3, 1.02, 4.45, 0.35, "구조화 데이터 활용 계획", size=14, bold=True, color=DARK)
     flow = [("① DB 적재", "졸업기준_요약 → graduation_requirements\n키: 학과 · 학번 구간 · 학생구분"),
             ("② 학번 → 구간 매핑", "21학번 → '2020~2021' 열 조회\n별칭으로 학과명 정규화"),
@@ -463,26 +399,19 @@ def build(d):
 
     # 18. 다음 주 계획
     s = d.slide("8. 다음 주 계획 (5주차 · 10/5 발표)")
-    plans = [("졸업요건 데이터", ["엑셀 → 카톡 답변 연결", "  DB 구조 확장 · 엑셀 523행 적재", "  학번 구간 조회 · 학과 42개 · 별칭",
-                                "  예시(PLACEHOLDER) 데이터 교체", "미반영 공통 기준 3종 추출",
-                                "  교양 · 외국어 대체 · 외국인 편입"]),
-             ("구현", ["미답변 관리 화면 (FR-12)", "졸업요건 KB 검증 도구 (FR-11)"]),
-             ("검증", ["정답표 394행 자동 비교", "카톡 실기기 E2E 시나리오 실행", "응답 시간 측정 준비"]),
-             ("운영", ["고정 스킬 URL 확보 방안", "오픈빌더 재연결 체크리스트", "공지 알림 실기기 확인"])]
-    for i, (h, items) in enumerate(plans):
-        x = 0.55 + i * 3.08
-        rect(s, x, 1.15, 2.93, 0.55, fill=NAVY, label=h, size=15, bold=True, color=WHITE, line=None)
-        rect(s, x, 1.7, 2.93, 2.45, fill=LIGHT2, line=LINE)
-        bullets(s, x + 0.1, 1.8, 2.78, 2.3, items, size=12, gap=False)
-    text(s, 0.55, 4.35, 12.2, 0.35, "남은 이슈 (우선순위 순)", size=14, bold=True, color=DARK)
-    issues = [("R1", "카톡 스킬 URL 미고정", "터널 재시작 시 주소 변경 → 실기기 검증이 막힘", "5주"),
-              ("R2", "실기기 카톡 검증 0회", "현재 증거는 로컬 서버 응답", "5주"),
-              ("R3", "카톡 졸업요건 답변이 아직 예시 데이터", "엑셀(실데이터) 연결 전 — 공통 기준 3종도 미반영", "5주"),
-              ("R4", "응답 시간 미측정", "카톡 5초 제한 대비 실측 없음", "6주")]
-    for i, (rid, h, b, w) in enumerate(issues):
-        y = 4.78 + i * 0.6
-        rect(s, 0.55, y, 0.7, 0.5, fill=NAVY, label=rid, size=11, bold=True, color=WHITE)
-        rect(s, 1.3, y, 10.2, 0.5, fill=LIGHT2, line=LINE,
-             label=[(f"{h} — {b}", {"size": 11})], align=PP_ALIGN.LEFT)
-        rect(s, 11.6, y, 1.15, 0.5, fill=WHITE, line=NAVY, label=w, size=11, bold=True)
-    label(s, 0.55, 7.15, 12.2, 0.3, "R1이 해결되어야 R2(실기기 검증)와 시스템 테스트가 시작됨", size=11, color=GRAY, align=PP_ALIGN.LEFT)
+    plans = [
+        "졸업요건 엑셀을 챗봇에 연결해 카톡 답변을 실제 학과별 기준으로 바꾼다.",
+        "아직 못 넣은 공통 기준 3종(교양 세부·외국어 대체·외국인 편입생)을 추가한다.",
+        "학번별 정답표 394행과 챗봇 답변을 자동으로 비교하는 테스트를 만든다.",
+        "고정 스킬 URL을 확보해 카톡 실기기에서 공지 알림과 응답 시간을 확인한다.",
+        "미답변 관리 화면(FR-12)과 졸업요건 KB 검증 도구(FR-11)를 마무리한다.",
+    ]
+    lines = []
+    for i, t in enumerate(plans, 1):
+        lines.append((f"{i}.  {t}", {}))
+        if i < len(plans):
+            lines.append(("", {"size": 20}))
+    text(s, 0.75, 1.45, 12.0, 5.3, lines, size=20, color=DARK)
+    label(s, 0.75, 6.85, 12.0, 0.3,
+          "1번이 가장 우선 — 끝나야 3번 테스트가 가능하고, 4번은 스킬 URL이 고정되어야 시작할 수 있음",
+          size=12, color=GRAY, align=PP_ALIGN.LEFT)

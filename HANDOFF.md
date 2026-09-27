@@ -246,6 +246,6 @@ pdftoppm -jpeg -r 58 deck.pdf out    # 페이지 이미지로 겹침·넘침 확
 | 3주 | 설계 산출물 13종 | `docs/design/` (커밋 26de462) |
 | 4주 | 공지 기능 + 버그 수정 | 커밋 `d1d9b72` |
 | 4주 | 진행 보고 문서 | `docs/progress/2026-W04-진행보고.md` (커밋 43aa83f) |
-| 4주 | 진행 보고 발표 자료 (18장, 9/28 수정) | `slides/` · SSD 동일 파일 |
+| 4주 | 진행 보고 발표 자료 (17장, 최종 `2021212843_경재원_4주차_진행보고_3.pptx`) | `slides/` · SSD · Google Drive「컴퓨터공학종합설계2 대기」 |
 | 4주 | 공지 알림 구독 + 테스트 DB 분리 | 브랜치 머지 커밋 (git log 참고) |
 | 4주 | 졸업요건 엑셀 · 추출 스크립트 | `data/graduation-source/` · `tools/grad-extract/` |
