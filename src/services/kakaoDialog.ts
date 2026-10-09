@@ -14,7 +14,7 @@ import {
   listKbYears,
   lookupKbGraduation,
 } from './kbGraduation';
-import { answerPlaceQuery, answerRoomCode, parseRoomCode, type RoomAnswer } from './roomCode';
+import { answerPlaceQuery, answerRoomCode, isPlaceName, parseRoomCode, type RoomAnswer } from './roomCode';
 import {
   findCriteria,
   formatCriteriaAnswer,
@@ -70,7 +70,7 @@ const MAP_UTTERANCES = /^(지도|캠퍼스\s*지도|map)$/i;
 /** 위치를 묻는 말 — 메뉴 밖에서 건물 이름이 나오면 지도 답변 */
 const WHERE_UTTERANCES = /어디|위치|가는\s*길|찾아가/;
 const NOTICE_UTTERANCES = /^(공지|공지사항|알림|notice)$/i;
-const NOTICE_SUB_ON = /^(공지\s*)?알림\s*(받기|켜기|신청|구독)$/;
+const NOTICE_SUB_ON = /^(새\s*)?(공지\s*)?알림\s*(받기|켜기|신청|구독)$/;
 const NOTICE_SUB_OFF = /^(공지\s*)?알림\s*(끄기|해제|취소|그만)$/;
 /** 졸업요건 답변 뒤 버튼: 같은 학번·학과로 학생구분만 바꿔 다시 조회 */
 const GRAD_TYPE_UTTERANCES: Record<string, StudentType> = {
@@ -500,8 +500,8 @@ async function dialog(
     return mapReply(answerRoomCode(utterance)!);
   }
 
-  // "도서관 어디야" 처럼 건물 위치를 묻는 문장
-  if (WHERE_UTTERANCES.test(utterance)) {
+  // "도서관 어디야" 처럼 건물 위치를 묻는 문장, 또는 건물 이름만 보낸 경우 ("기숙사")
+  if (WHERE_UTTERANCES.test(utterance) || isPlaceName(utterance)) {
     const place = answerPlaceQuery(utterance);
     if (place) {
       if (place.candidates?.length) upsertSession(userKey, { flow: 'map_room', admission_year: null, department: null });

@@ -247,6 +247,15 @@ export function formatPlaceAnswer(p: CampusPlace): RoomAnswer {
   return { ok: true, text: lines.join('\n').slice(0, 900), buildingName: p.display, mapUrl: kakaoMapUrl(p) };
 }
 
+/** 말 전체가 건물 이름·별칭인가 ("기숙사", "백상관", "본관?") — 메뉴에서 건물 이름만 보낸 경우 */
+export function isPlaceName(utterance: string): boolean {
+  const u = norm((utterance || '').replace(/[?？!]+$/, '').replace(/\s*(은|는|이|가)$/, ''));
+  if (u.length < 2) return false;
+  const { places, groups = {} } = loadPlaces();
+  const keys = [...Object.keys(groups), ...places.flatMap((p) => [p.display, p.name, ...p.aliases])];
+  return keys.some((k) => norm(k) === u);
+}
+
 /** 건물 이름 질문 — 한 곳이면 위치, 여러 곳이면 후보 목록 */
 export function answerPlaceQuery(utterance: string): RoomAnswer | null {
   const hits = findPlaces(utterance);
