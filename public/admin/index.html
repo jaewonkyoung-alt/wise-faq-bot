@@ -56,9 +56,9 @@
         <h1 class="page-title">대시보드</h1>
         <p class="page-desc">동국대 WISE FAQ · 졸업요건(1차) + 동아리 RAG</p>
 
-        <div class="alert alert-warn">
-          <strong>PLACEHOLDER 주의</strong> — 시드 데이터에 [PLACEHOLDER]가 포함된 졸업요건이 있을 수 있습니다.
-          학생에게 노출되기 전에 실제 학칙·규칙을 확인하고 갱신하세요.
+        <div class="alert alert-info">
+          <strong>졸업요건 공식 기준</strong> — 카카오톡 졸업요건 답변은 「2026 학사제도 및 학업이수가이드」에서 가져온
+          42개 학과 · 2020~2026학번 기준으로 나갑니다. 가이드가 바뀌면 엑셀을 고친 뒤 <code>npm run import:graduation</code> 으로 다시 적재하세요.
         </div>
         <div class="alert alert-info">
           졸업요건을 저장하면 <strong>카카오톡 답변이 즉시</strong> 반영됩니다. (재인덱싱 불필요)
@@ -111,7 +111,7 @@
       <!-- Graduation -->
       <section id="page-graduation" class="page">
         <h1 class="page-title">졸업요건</h1>
-        <p class="page-desc">입학연도·학과별 학점·규칙을 등록합니다. DB에 있는 값만 학생에게 노출됩니다.</p>
+        <p class="page-desc">가이드에 없는 경우를 보충하는 수동 등록입니다. 가이드의 42개 학과는 공식 기준이 먼저 답변되고, 여기 등록한 값은 그 밖의 학과에만 쓰입니다.</p>
 
         <div class="split">
           <div>

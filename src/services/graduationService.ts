@@ -407,8 +407,8 @@ export function parseAdmissionYear(text: string): number | null {
   const t = text.trim();
   if (!t) return null;
 
-  // Full year first: 2021–2099 (also covers "2022년 입학")
-  const full = t.match(/(20[2-9]\d)/);
+  // Full year first: 2000–2099 (also covers "2022년 입학"). 2020 이전도 받아야 '개별 심사' 안내가 나간다
+  const full = t.match(/(20\d\d)/);
   if (full) {
     const y = Number(full[1]);
     if (y >= 2000 && y <= 2099) return y;

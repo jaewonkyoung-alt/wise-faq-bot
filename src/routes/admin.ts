@@ -17,6 +17,7 @@ import {
   updateGraduation,
 } from '../services/graduationService';
 import { reloadGraduationKb, scanGraduationKb } from '../services/kbGraduation';
+import { countCriteria } from '../services/gradCriteria';
 import { reloadRoomMaps, listBuildingCodes } from '../services/roomCode';
 
 import { checkAdmin } from '../middleware/adminAuth';
@@ -160,7 +161,8 @@ adminRouter.post('/reindex', async (req, res) => {
 adminRouter.get('/graduation', (req, res) => {
   if (!checkAdmin(req, res)) return;
   const rows = listGraduation();
-  res.json({ count: rows.length, requirements: rows });
+  // criteria: 가이드에서 적재한 공식 기준 규모 (대시보드 표시용)
+  res.json({ count: rows.length, requirements: rows, criteria: countCriteria() });
 });
 
 adminRouter.get('/graduation/:id', (req, res) => {

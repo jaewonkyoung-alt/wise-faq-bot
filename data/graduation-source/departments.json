@@ -1,0 +1,499 @@
+{
+ "meta": {
+  "source": "https://wise.dongguk.ac.kr/page/155",
+  "guide": "2026학년도 학사제도 및 학업이수가이드",
+  "excel": "2021212843_경재원_졸업요건_학과별_정리.xlsx"
+ },
+ "rows": [
+  {
+   "no": 8,
+   "name": "불교학부",
+   "homepage_name": "불교학부(불교학전공, 불교문화콘텐츠전공)",
+   "aliases": [
+    "불교학전공",
+    "불교문화콘텐츠전공"
+   ],
+   "phone": "054-770-2760,2393",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/08.pdf"
+  },
+  {
+   "no": 9,
+   "name": "명상심리상담학과",
+   "homepage_name": "명상심리상담학과",
+   "aliases": [],
+   "phone": "054-770-2760,2136",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/09.pdf"
+  },
+  {
+   "no": 10,
+   "name": "한국음악과",
+   "homepage_name": "한국음악과",
+   "aliases": [],
+   "phone": "054-770-2760,2509",
+   "status": "모집중단(기준표 2021학번까지)",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/10.pdf"
+  },
+  {
+   "no": 11,
+   "name": "웹문예학과",
+   "homepage_name": "웹문예학과(국어국문학전공)",
+   "aliases": [
+    "국어국문학전공"
+   ],
+   "phone": "054-770-2776,2119",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/11.pdf"
+  },
+  {
+   "no": 12,
+   "name": "국사학과",
+   "homepage_name": "국사학과",
+   "aliases": [
+    "국사학전공"
+   ],
+   "phone": "054-770-2776,2465",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/12.pdf"
+  },
+  {
+   "no": 13,
+   "name": "고고미술사학과",
+   "homepage_name": "고고미술사학과",
+   "aliases": [
+    "인문콘텐츠학부 고고미술사학전공"
+   ],
+   "phone": "054-770-2776,2688",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/13.pdf"
+  },
+  {
+   "no": 14,
+   "name": "영어영문학과",
+   "homepage_name": "영어영문학과",
+   "aliases": [
+    "영어영문학전공"
+   ],
+   "phone": "054-770-2776,2128",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/14.pdf"
+  },
+  {
+   "no": 15,
+   "name": "일어일문학과",
+   "homepage_name": "일어일문학과",
+   "aliases": [
+    "일어일문학전공"
+   ],
+   "phone": "054-770-2776,2640",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/15.pdf"
+  },
+  {
+   "no": 16,
+   "name": "중어중문학과",
+   "homepage_name": "중어중문학과",
+   "aliases": [
+    "중어중문학전공"
+   ],
+   "phone": "054-770-2776,2141",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/16.pdf"
+  },
+  {
+   "no": 17,
+   "name": "디자인미술학과",
+   "homepage_name": "디자인미술학과(미술학과)",
+   "aliases": [
+    "미술학과"
+   ],
+   "phone": "054-770-2776,2636",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/17.pdf"
+  },
+  {
+   "no": 18,
+   "name": "스포츠과학전공",
+   "homepage_name": "스포츠과학전공",
+   "aliases": [
+    "스포츠과학과"
+   ],
+   "phone": "054-770-2776,2528",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/18.pdf"
+  },
+  {
+   "no": 19,
+   "name": "스포츠의학전공",
+   "homepage_name": "스포츠의학전공",
+   "aliases": [],
+   "phone": "054-770-2776,2528",
+   "status": "신설(2022학번부터)",
+   "has_2021": false,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/19.pdf"
+  },
+  {
+   "no": 20,
+   "name": "엘리트스포츠전공",
+   "homepage_name": "엘리트스포츠전공",
+   "aliases": [],
+   "phone": "054-770-2776,2528",
+   "status": "신설(2025학번부터)",
+   "has_2021": false,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/20.pdf"
+  },
+  {
+   "no": 21,
+   "name": "조경·정원디자인학과",
+   "homepage_name": "조경·정원디자인학과(조경·정원디자인학부,조경학과)",
+   "aliases": [
+    "조경·정원디자인학부",
+    "조경학과",
+    "조경·정원디자인학부 조경전공/정원디자인전공"
+   ],
+   "phone": "054-770-2776,2235",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/21.pdf"
+  },
+  {
+   "no": 22,
+   "name": "행정·경찰공공학부",
+   "homepage_name": "행정·경찰공공학부",
+   "aliases": [
+    "행정·경찰공공학부 공공행정학전공 / 경찰행정학전공"
+   ],
+   "phone": "054-770-2775,2774,2294",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/22.pdf"
+  },
+  {
+   "no": 23,
+   "name": "사회복지학과",
+   "homepage_name": "사회복지학과",
+   "aliases": [],
+   "phone": "054-770-2775,2774,2513",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/23.pdf"
+  },
+  {
+   "no": 24,
+   "name": "아동청소년교육학과",
+   "homepage_name": "아동청소년교육학과(불교아동보육학과)",
+   "aliases": [
+    "불교아동보육학과"
+   ],
+   "phone": "054-770-2775,2774,2508",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/24.pdf"
+  },
+  {
+   "no": 25,
+   "name": "항공서비스무역학과",
+   "homepage_name": "항공서비스무역학과(글로벌경제통상학부)",
+   "aliases": [
+    "글로벌경제통상학부"
+   ],
+   "phone": "054-770-2775,2774,2388",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/25.pdf"
+  },
+  {
+   "no": 26,
+   "name": "경영학과",
+   "homepage_name": "경영학과",
+   "aliases": [
+    "경영학전공"
+   ],
+   "phone": "054-770-2775,2774,2469",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/26.pdf"
+  },
+  {
+   "no": 27,
+   "name": "회계세무학과",
+   "homepage_name": "회계세무학과",
+   "aliases": [
+    "회계세무학전공"
+   ],
+   "phone": "054-770-2775,2774,2389",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/27.pdf"
+  },
+  {
+   "no": 28,
+   "name": "정보경영학과",
+   "homepage_name": "정보경영학과",
+   "aliases": [
+    "정보경영학전공"
+   ],
+   "phone": "054-770-2775,2774,2532",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/28.pdf"
+  },
+  {
+   "no": 29,
+   "name": "호텔관광경영학전공",
+   "homepage_name": "호텔관광경영학전공",
+   "aliases": [
+    "호텔관광외식경영학부 호텔관광경영학전공"
+   ],
+   "phone": "054-770-2775,2774,2817",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/29.pdf"
+  },
+  {
+   "no": 30,
+   "name": "조리외식경영학전공",
+   "homepage_name": "조리외식경영학전공",
+   "aliases": [
+    "호텔관광외식경영학부 조리외식경영학전공"
+   ],
+   "phone": "054-770-2775,2774,2818",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/30.pdf"
+  },
+  {
+   "no": 31,
+   "name": "유아교육과",
+   "homepage_name": "유아교육과",
+   "aliases": [],
+   "phone": "054-770-2755,2507",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/31.pdf"
+  },
+  {
+   "no": 32,
+   "name": "가정교육과",
+   "homepage_name": "가정교육과",
+   "aliases": [],
+   "phone": "054-770-2755,2527",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/32.pdf"
+  },
+  {
+   "no": 33,
+   "name": "수학교육과",
+   "homepage_name": "수학교육과",
+   "aliases": [],
+   "phone": "054-770-2755,2526",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/33.pdf"
+  },
+  {
+   "no": 34,
+   "name": "보건의료정보학과",
+   "homepage_name": "보건의료정보학과",
+   "aliases": [],
+   "phone": "054-770-2775,2774,2977",
+   "status": "신설(2022학번부터)",
+   "has_2021": false,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/34.pdf"
+  },
+  {
+   "no": 35,
+   "name": "뷰티아트산업학과",
+   "homepage_name": "뷰티아트산업학과(뷰티메디컬학과)",
+   "aliases": [
+    "뷰티메디컬학과"
+   ],
+   "phone": "054-770-2776,2565",
+   "status": "신설(2022학번부터)",
+   "has_2021": false,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/35.pdf"
+  },
+  {
+   "no": 36,
+   "name": "바이오·화학융합학부",
+   "homepage_name": "바이오·화학융합학부(바이오메디컬학과)",
+   "aliases": [
+    "바이오메디컬학과",
+    "바이오제약공학과",
+    "바이오제약공학전공"
+   ],
+   "phone": "054-770-2759,2519",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/36.pdf"
+  },
+  {
+   "no": 37,
+   "name": "전자·정보통신공학과",
+   "homepage_name": "전자·정보통신공학과",
+   "aliases": [
+    "전자·정보통신공학전공"
+   ],
+   "phone": "054-770-2759,2608",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/37.pdf"
+  },
+  {
+   "no": 38,
+   "name": "원자력·에너지·전기공학과",
+   "homepage_name": "원자력·에너지·전기공학과(에너지·전기공학과)",
+   "aliases": [
+    "에너지·전기공학과",
+    "창의융합공학부 에너지‧전기공학과"
+   ],
+   "phone": "054-770-2759,2871",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/38.pdf"
+  },
+  {
+   "no": 39,
+   "name": "안전보건전공",
+   "homepage_name": "안전보건전공(안전공학전공)",
+   "aliases": [
+    "안전공학전공"
+   ],
+   "phone": "054-770-2759,2525",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/39.pdf"
+  },
+  {
+   "no": 40,
+   "name": "소방방재전공",
+   "homepage_name": "소방방재전공",
+   "aliases": [],
+   "phone": "054-770-2759,2525",
+   "status": "신설(2022학번부터)",
+   "has_2021": false,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/40.pdf"
+  },
+  {
+   "no": 41,
+   "name": "자동차소재부품공학전공",
+   "homepage_name": "자동차소재부품공학전공",
+   "aliases": [
+    "자동차소재부품공학과"
+   ],
+   "phone": "054-770-2759,2746",
+   "status": "신설(2023학번부터)",
+   "has_2021": false,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/41.pdf"
+  },
+  {
+   "no": 42,
+   "name": "컴퓨터공학과",
+   "homepage_name": "컴퓨터공학과",
+   "aliases": [
+    "컴퓨터공학전공"
+   ],
+   "phone": "054-770-2759,2523",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/42.pdf"
+  },
+  {
+   "no": 43,
+   "name": "한의예과·한의학과",
+   "homepage_name": "한의예과·한의학과",
+   "aliases": [
+    "한의예과",
+    "한의학과"
+   ],
+   "phone": "054-770-2365",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/43.pdf"
+  },
+  {
+   "no": 44,
+   "name": "의예과·의학과",
+   "homepage_name": "의예과·의학과",
+   "aliases": [
+    "의예과",
+    "의학과"
+   ],
+   "phone": "054-770-2398",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/44.pdf"
+  },
+  {
+   "no": 45,
+   "name": "간호학과",
+   "homepage_name": "간호학과",
+   "aliases": [],
+   "phone": "054-770-2772",
+   "status": "운영",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/45.pdf"
+  },
+  {
+   "no": 46,
+   "name": "신소재화학전공",
+   "homepage_name": "신소재화학전공",
+   "aliases": [
+    "생명신소재융합학부 신소재화학전공"
+   ],
+   "phone": "054-770-2759,2517",
+   "status": "모집중단(기준표 2021학번까지)",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/46.pdf"
+  },
+  {
+   "no": 47,
+   "name": "의생명공학전공",
+   "homepage_name": "의생명공학전공",
+   "aliases": [
+    "생명신소재융합학부 의생명공학전공"
+   ],
+   "phone": "054-770-2759,2493",
+   "status": "모집중단(기준표 2021학번까지)",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/47.pdf"
+  },
+  {
+   "no": 48,
+   "name": "기계시스템공학전공",
+   "homepage_name": "기계시스템공학전공",
+   "aliases": [
+    "창의융합공학부 기계시스템공학전공"
+   ],
+   "phone": "054-770-2759,2869",
+   "status": "모집중단(기준표 2022학번까지)",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/48.pdf"
+  },
+  {
+   "no": 49,
+   "name": "빅데이터·응용통계학전공",
+   "homepage_name": "빅데이터·응용통계학전공",
+   "aliases": [
+    "ICT・빅데이터학부 빅데이터・응용통계학전공"
+   ],
+   "phone": "054-770-2759,2520",
+   "status": "모집중단(기준표 2021학번까지)",
+   "has_2021": true,
+   "pdf_url": "https://wise.dongguk.ac.kr/resources/files/course/2026/49.pdf"
+  }
+ ]
+}

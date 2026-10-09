@@ -91,6 +91,43 @@ function migrate(database: Database.Database): void {
     CREATE INDEX IF NOT EXISTS idx_grad_year ON graduation_requirements(admission_year);
     CREATE INDEX IF NOT EXISTS idx_grad_dept ON graduation_requirements(department);
 
+    -- 학교 가이드(2026 학사제도 및 학업이수가이드)에서 추출한 공식 졸업기준.
+    -- 학번 구간(year_from~year_to) 단위로 저장하고, 값은 원문 표기 그대로 문자열("57+모듈1", "2.0", "-")
+    CREATE TABLE IF NOT EXISTS graduation_criteria (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      dept_no INTEGER NOT NULL,
+      department TEXT NOT NULL,
+      program TEXT NOT NULL DEFAULT '',
+      year_label TEXT NOT NULL,
+      year_from INTEGER NOT NULL,
+      year_to INTEGER NOT NULL,
+      student_type TEXT NOT NULL,
+      affiliation TEXT,
+      personality_self TEXT, personality TEXT, communication TEXT, liberal_foreign TEXT,
+      digital TEXT, academic_basic TEXT, convergence TEXT, foreign_common TEXT,
+      major_single TEXT, major_primary TEXT, major_double TEXT,
+      total_credits TEXT, gpa TEXT, volunteer TEXT,
+      lang_requirement TEXT, lang_test TEXT, thesis TEXT, notes TEXT,
+      source_page INTEGER
+    );
+    CREATE INDEX IF NOT EXISTS idx_grad_criteria_lookup
+      ON graduation_criteria(department, student_type, year_from, year_to);
+
+    -- 학과 메타 (문의전화 · 원문 PDF) 와 별칭(옛 이름·다른 표기 → 현행 학과명)
+    CREATE TABLE IF NOT EXISTS grad_departments (
+      name TEXT PRIMARY KEY,
+      dept_no INTEGER NOT NULL,
+      homepage_name TEXT,
+      phone TEXT,
+      status TEXT,
+      pdf_url TEXT
+    );
+    CREATE TABLE IF NOT EXISTS department_aliases (
+      alias_key TEXT PRIMARY KEY,
+      alias TEXT NOT NULL,
+      department TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS notices (
       id TEXT PRIMARY KEY,
       title TEXT NOT NULL,

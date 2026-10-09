@@ -9,15 +9,18 @@ import { listClubs } from './services/clubStore';
 import { reindexAll } from './services/reindex';
 import { createLlmProvider } from './llm/provider';
 import { getEmbedProvider } from './embeddings/embedder';
-import {
-  listGraduation,
-  upsertGraduationByKey,
-} from './services/graduationService';
+import { listGraduation } from './services/graduationService';
+import { countCriteria, importGradCriteria } from './services/gradCriteria';
 
 const PORT = Number(process.env.PORT) || 3000;
 
 async function ensureClubsSeeded(): Promise<void> {
   getDb();
+  // 4주차까지 쓰던 가상 예시 동아리(연락처가 @example.)는 지우고 실제 수집본(data/seed/clubs.json)으로 채운다
+  const { deleteClub } = await import('./services/clubStore');
+  const samples = listClubs().filter((c) => (c.contact || '').includes('@example.'));
+  for (const c of samples) deleteClub(c.id);
+  if (samples.length) console.log(`[wise-faq-bot] removed ${samples.length} sample clubs`);
   const clubs = listClubs();
   if (clubs.length > 0) {
     const row = getDb()
@@ -60,42 +63,30 @@ async function ensureClubsSeeded(): Promise<void> {
   );
 }
 
-function ensureGraduationSeeded(): void {
+/**
+ * 공식 졸업기준(가이드 42개 학과)을 적재한다. 예전 DB에 남은 [PLACEHOLDER] 예시 행은 지운다
+ * — 공식 데이터가 있는데 가짜 값이 답변에 섞이지 않도록.
+ */
+function ensureGraduationCriteria(): void {
   getDb();
-  if (listGraduation().length > 0) return;
-
-  const seedPath = path.resolve(process.cwd(), 'data/seed/graduation.json');
-  if (!fs.existsSync(seedPath)) {
-    console.warn('[wise-faq-bot] no graduation seed at', seedPath);
-    return;
-  }
-  console.log('[wise-faq-bot] seeding graduation placeholders from', seedPath);
-  const raw = JSON.parse(fs.readFileSync(seedPath, 'utf-8')) as Array<{
-    admission_year: number;
-    department: string;
-    major_type?: string;
-    total_credits?: number;
-    major_credits?: number;
-    general_credits?: number;
-    notes?: string;
-    source_url?: string;
-    verified_at?: string;
-  }>;
-  for (const item of raw) {
-    upsertGraduationByKey(item);
-  }
+  const removed = getDb()
+    .prepare(`DELETE FROM graduation_requirements WHERE notes LIKE '%[PLACEHOLDER]%'`)
+    .run().changes;
+  if (removed > 0) console.log(`[wise-faq-bot] removed ${removed} placeholder graduation rows`);
+  const imported = importGradCriteria(false);
+  const { departments, rows } = countCriteria();
   console.log(
-    `[wise-faq-bot] graduation rows: ${listGraduation().length} (PLACEHOLDER)`
+    `[wise-faq-bot] graduation criteria: ${departments} departments, ${rows} rows${imported ? ' (imported)' : ''}`
   );
 }
 
 async function main() {
   await ensureClubsSeeded();
-  ensureGraduationSeeded();
+  ensureGraduationCriteria();
 
   const app = createApp();
   const clubs = listClubs().length;
-  const grads = listGraduation().length;
+  const grads = countCriteria().departments + listGraduation().length;
 
   app.listen(PORT, () => {
     console.log(`[wise-faq-bot] Phase-1: graduation (primary) + clubs`);

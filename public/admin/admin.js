@@ -6,6 +6,7 @@
     token: '',
     unlocked: false,
     grads: [],
+    gradCriteria: null,
     clubs: [],
     unanswered: [],
     notices: [],
@@ -105,6 +106,7 @@
     sessionStorage.setItem(TOKEN_KEY, token);
     showApp();
     state.grads = (r.data && r.data.requirements) || [];
+    state.gradCriteria = (r.data && r.data.criteria) || null;
     await Promise.all([loadClubs(), loadNotices(), loadUnanswered(), loadHealth()]);
     renderGradList();
     updateStats();
@@ -142,7 +144,9 @@
 
   /* ── Dashboard ── */
   function updateStats() {
-    $('stat-grad').textContent = String(state.grads.length);
+    // 공식 기준 학과 수 + 수동 등록 건수
+    var gc = state.gradCriteria;
+    $('stat-grad').textContent = gc ? gc.departments + '개 학과' + (state.grads.length ? ' + 수동 ' + state.grads.length : '') : String(state.grads.length);
     $('stat-clubs').textContent = String(state.clubs.length);
     $('stat-unanswered').textContent = String(state.unanswered.length);
     var sn = document.getElementById('stat-notices');
@@ -366,6 +370,7 @@
       return;
     }
     state.grads = (r.data && r.data.requirements) || [];
+    state.gradCriteria = (r.data && r.data.criteria) || null;
     renderGradList();
     updateStats();
   }

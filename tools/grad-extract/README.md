@@ -11,6 +11,15 @@ PDF 표가 선이 아니라 도형으로 그려져 있어 pdfplumber 표 인식�
 | `extract.py` | PDF 한 개 → 병합 셀을 채운 2D 그리드(JSON) |
 | `normalize.py` | 그리드 → 레코드 (기준표 · 졸업논문 · 필수과목 · 각주) |
 | `build_xlsx.py` | 레코드 → 엑셀 9개 시트 |
+| `export_json.py` | 엑셀 → 서버용 JSON 3종 (`criteria` · `departments` · `answer-key`) |
+
+엑셀을 고친 뒤 서버에 반영하려면:
+
+```bash
+python3 tools/grad-extract/export_json.py   # openpyxl 필요
+npm run import:graduation                   # DB 다시 적재
+npm run test:grad-criteria                  # 정답표 394행 비교
+```
 
 ## 다시 만들기
 
