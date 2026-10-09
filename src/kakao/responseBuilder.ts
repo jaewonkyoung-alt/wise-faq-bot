@@ -25,6 +25,16 @@ export function simpleText(
   return response;
 }
 
+/** 여러 말풍선 (카카오 outputs 최대 3개, 각 1000자) */
+export function multiText(texts: string[], quickReplies?: KakaoQuickReply[]): KakaoSkillResponse {
+  const response: KakaoSkillResponse = {
+    version: '2.0',
+    template: { outputs: texts.slice(0, 3).map((t) => ({ simpleText: { text: t.slice(0, 1000) } })) },
+  };
+  if (quickReplies && quickReplies.length > 0) response.template.quickReplies = quickReplies.slice(0, 10);
+  return response;
+}
+
 export function quickMessage(label: string, messageText?: string): KakaoQuickReply {
   return {
     label: label.slice(0, 25),

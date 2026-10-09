@@ -18,6 +18,7 @@
     "test:kakao-grad": "tsx scripts/test-kakao-grad.ts",
     "test:room-code": "tsx scripts/test-room-code.ts",
     "test:campus-map": "tsx scripts/test-campus-map.ts",
+    "test:club-list": "tsx scripts/test-club-list.ts",
     "test:notices": "tsx scripts/test-notices.ts",
     "test:notice-sub": "tsx scripts/test-notice-subscription.ts",
     "test:grad-criteria": "tsx scripts/test-grad-criteria.ts",

@@ -70,6 +70,7 @@ function pickFields(
   };
 
   const parts: string[] = [`【${club.name}】`];
+  if (club.summary) parts.push(club.summary);
   for (const f of wanted) {
     const value = club[f as keyof Club];
     if (value == null || value === '') continue;
@@ -131,7 +132,7 @@ async function runSemantic(args: SemanticSearchArgs, question: string): Promise<
   const rows = getDb()
     .prepare(
       `SELECT e.club_id, e.chunk_kind, e.chunk_text, e.embedding_json,
-              c.name, c.category, c.intro, c.activities, c.source_url, c.updated_at,
+              c.name, c.category, c.intro, c.summary, c.activities, c.source_url, c.updated_at,
               c.contact, c.meeting_time, c.location, c.created_at
        FROM embeddings e
        JOIN clubs c ON c.id = e.club_id`
@@ -161,6 +162,7 @@ async function runSemantic(args: SemanticSearchArgs, question: string): Promise<
             row.meeting_time == null ? null : String(row.meeting_time),
           location: row.location == null ? null : String(row.location),
           intro: String(row.intro ?? ''),
+          summary: String(row.summary ?? ''),
           activities: String(row.activities ?? ''),
           source_url: String(row.source_url),
           updated_at: String(row.updated_at),
@@ -200,7 +202,7 @@ async function runSemantic(args: SemanticSearchArgs, question: string): Promise<
       const c = r.club;
       return [
         `【${c.name}】 (${c.category})`,
-        `소개: ${c.intro}`,
+        c.summary || `소개: ${c.intro}`,
         `활동: ${c.activities}`,
         `(검색 점수: ${r.score.toFixed(3)} · 의미 유사도 + 키워드)`,
       ].join('\n');

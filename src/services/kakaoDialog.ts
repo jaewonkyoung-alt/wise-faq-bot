@@ -52,6 +52,7 @@ import {
   menuReplies,
   noticeReplies,
   prependText,
+  multiText,
   quickMessage,
   simpleText,
   textWithPdfLink,
@@ -62,6 +63,7 @@ import {
   gradResultReplies,
 } from '../kakao/responseBuilder';
 import { ask } from './askService';
+import { clubDetailText, clubListAnswer, clubListRequest, findClubByExactName } from './clubList';
 
 const MENU_UTTERANCES = /^(메뉴|시작|처음으로|home|menu|웰컴|환영|첫인사|입장|welcome)$/i;
 const GRAD_UTTERANCES = /^(졸업요건|졸업\s*요건|졸업학점|졸업)$/i;
@@ -281,6 +283,25 @@ async function dialog(
         quickMessage('메뉴', '메뉴'),
       ]
     );
+  }
+
+  // 동아리 목록 — 분과별 개수 → 분과를 고르면 한두 줄 소개와 함께
+  const listReq = clubListRequest(utterance);
+  if (listReq) {
+    upsertSession(userKey, { flow: 'clubs', admission_year: null, department: null });
+    const ans = clubListAnswer(listReq.category);
+    return multiText(ans.texts, ans.replies.map(([l, m]) => quickMessage(l, m)));
+  }
+
+  // 동아리 이름만 보낸 경우 ("검선", "동산") — 목록에서 이름을 보고 고른 학생
+  const namedClub = findClubByExactName(utterance);
+  if (namedClub) {
+    upsertSession(userKey, { flow: 'clubs', admission_year: null, department: null });
+    return simpleText(clubDetailText(namedClub), [
+      quickMessage(`${namedClub.category} 동아리 목록`, `${namedClub.category} 동아리 목록`),
+      quickMessage('동아리 목록', '동아리 목록'),
+      quickMessage('메뉴', '메뉴'),
+    ]);
   }
 
   if (NOTICE_UTTERANCES.test(utterance)) {
