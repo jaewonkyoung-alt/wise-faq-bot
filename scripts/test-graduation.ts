@@ -2,7 +2,8 @@ import dotenv from 'dotenv';
 import os from 'os';
 dotenv.config();
 // 관리자 수동 등록 경로 테스트 — 예시(PLACEHOLDER) 시드를 쓰므로 운영 DB가 아닌 임시 DB에서
-if (!process.env.DATABASE_PATH) {
+// 테스트는 항상 임시 DB — .env 의 운영 DATABASE_PATH 를 쓰면 운영 데이터가 섞인다 (10/10 사고)
+{
   process.env.DATABASE_PATH = require('path').join(os.tmpdir(), `wise-test-graduation-${process.pid}.db`);
 }
 

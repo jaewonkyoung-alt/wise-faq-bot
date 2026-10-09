@@ -7,7 +7,8 @@ import os from 'os';
 import pathMod from 'path';
 dotenv.config();
 // 운영 DB의 세션·미답변을 건드리지 않도록 경로 지정이 없으면 임시 DB
-if (!process.env.DATABASE_PATH) {
+// 테스트는 항상 임시 DB — .env 의 운영 DATABASE_PATH 를 쓰면 운영 데이터가 섞인다 (10/10 사고)
+{
   process.env.DATABASE_PATH = pathMod.join(os.tmpdir(), `wise-test-kakao-grad-${process.pid}.db`);
 }
 

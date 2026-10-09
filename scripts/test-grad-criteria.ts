@@ -12,7 +12,8 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 dotenv.config();
-if (!process.env.DATABASE_PATH) {
+// 테스트는 항상 임시 DB — .env 의 운영 DATABASE_PATH 를 쓰면 운영 데이터가 섞인다 (10/10 사고)
+{
   process.env.DATABASE_PATH = path.join(os.tmpdir(), `wise-test-grad-criteria-${process.pid}.db`);
 }
 

@@ -8,7 +8,8 @@ import dotenv from 'dotenv';
 import os from 'os';
 import path from 'path';
 dotenv.config();
-if (!process.env.DATABASE_PATH) {
+// 테스트는 항상 임시 DB — .env 의 운영 DATABASE_PATH 를 쓰면 운영 데이터가 섞인다 (10/10 사고)
+{
   process.env.DATABASE_PATH = path.join(os.tmpdir(), `wise-test-notice-sub-${process.pid}.db`);
 }
 
@@ -71,6 +72,10 @@ async function main() {
   check('공지 메뉴에 「새 공지 알림 받기」 버튼', labels(noticeMenu).includes('새 공지 알림 받기'), labels(noticeMenu));
 
   /* ── 2. 구독 ── */
+  // 버튼 글자 그대로 입력해도 구독 (오픈빌더 봇테스트에서 발견)
+  const typed = await say('stu-typed', '새 공지 알림 받기');
+  check('「새 공지 알림 받기」를 직접 입력해도 구독', JSON.stringify(typed).includes('공지 알림을 켰습니다'), typed);
+  await say('stu-typed', '공지 알림 끄기');
   const sub = await say('stu-a', '공지 알림 받기');
   check('구독 응답 문구', first(sub).includes('알림을 켰습니다'), first(sub));
   check('구독 응답에 현재 공지 포함', first(sub).includes('기존 공지'), first(sub));

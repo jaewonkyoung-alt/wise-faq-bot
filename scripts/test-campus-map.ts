@@ -12,7 +12,8 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 dotenv.config();
-if (!process.env.DATABASE_PATH) {
+// 테스트는 항상 임시 DB — .env 의 운영 DATABASE_PATH 를 쓰면 운영 데이터가 섞인다 (10/10 사고)
+{
   process.env.DATABASE_PATH = path.join(os.tmpdir(), `wise-test-campus-map-${process.pid}.db`);
 }
 
@@ -137,6 +138,19 @@ async function main(): Promise<void> {
   check('기숙사: 후보 버튼', cand.includes('백상관') && cand.includes('금강동'), cand);
   const pick = out(await handleKakaoDialog(U, '백상관'));
   check('후보 선택 → 백상관 위치', pick.includes('map.kakao.com') && pick.includes('백상관'), pick);
+
+  // 메뉴에서 건물 이름만 보낸 경우 (오픈빌더 봇테스트에서 발견)
+  await handleKakaoDialog(U, '메뉴');
+  const bare = out(await handleKakaoDialog(U, '기숙사'));
+  check('메뉴에서 "기숙사"만: 후보 버튼', bare.includes('백상관') && bare.includes('금강동'), bare);
+  const bare2 = out(await handleKakaoDialog(U, '백상관'));
+  check('이어서 "백상관": 위치', bare2.includes('map.kakao.com'), bare2);
+  await handleKakaoDialog(U, '메뉴');
+  const lib2 = out(await handleKakaoDialog(U, '도서관'));
+  check('메뉴에서 "도서관"만: 위치', lib2.includes('map.kakao.com'), lib2);
+  await handleKakaoDialog(U, '메뉴');
+  const notPlace = out(await handleKakaoDialog(U, '별 보는 동아리 있어?'));
+  check('동아리 질문은 지도로 가지 않음', !notPlace.includes('map.kakao.com'), notPlace);
 
   console.log(`\nPASS test-campus-map (${passed} checks)`);
 }

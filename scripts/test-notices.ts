@@ -9,7 +9,8 @@ import os from 'os';
 import path from 'path';
 dotenv.config();
 // 운영 DB(data/wise.db)의 공지를 지우지 않도록, 경로 지정이 없으면 임시 DB 사용
-if (!process.env.DATABASE_PATH) {
+// 테스트는 항상 임시 DB — .env 의 운영 DATABASE_PATH 를 쓰면 운영 데이터가 섞인다 (10/10 사고)
+{
   process.env.DATABASE_PATH = path.join(os.tmpdir(), `wise-test-notices-${process.pid}.db`);
 }
 
