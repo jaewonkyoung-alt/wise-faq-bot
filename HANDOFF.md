@@ -1,6 +1,6 @@
 # 인수인계 문서 (이 프로젝트를 처음 보는 AI/사람용)
 
-마지막 갱신: 2026-09-24 · 기준 커밋: `main`
+마지막 갱신: 2026-10-03 · 기준 커밋: `main`
 
 이 문서만 읽으면 이어서 작업할 수 있도록 정리했다. 과거 대화는 없다고 가정한다.
 
@@ -18,8 +18,11 @@
 ### 일정 기준
 
 - 기능 완성(freeze): **10/25**
-- 버퍼(버그픽스·통합시험): 10/26 ~ 11/8
-- 데모 준비 완료: 11/8
+- 10/26 ~ 11/1: 버그픽스 + 졸업논문·포스터 초안
+- **11/2(월) ~ 11/6(금) 15시: 졸업논문 심사신청서 접수 (지도교수 날인 필수)** — 날인은 11/2~11/4 목표
+- 11/5 ~ 11/8: 통합 시험 · 데모 리허설 (데모 준비 완료 11/8)
+- **11/9(월) ~ 11/13(금) 17시: 졸업논문 심사** — 최종 발표 11/9, 실질 마감 11/13 (원래 제출일 11/15는 일요일)
+- 간트차트 데이터는 `tools/slides/gantt.py` 한 곳에서 관리
 
 ---
 
@@ -70,9 +73,12 @@ npm run dev                   # tsx watch, 최초 실행 시 마이그레이션 
 npm run typecheck
 npm run test:notices      # 공지 16건
 npm run test:notice-sub   # 공지 알림 구독 24건
+npm run test:grad-criteria # 졸업요건 공식 기준: 정답표 394행 전수 비교 + 학과명 해석
 npm run test:kakao-grad   # 졸업요건 대화 전 구간
 npm run test:graduation
 npm run test:room-code
+npm run test:campus-map   # 지도: 호실 287개 전수 · 좌표 · 층 예외(D9xx) · 건물 이름 · 카톡 대화
+npm run eval:clubs        # 동아리 검색 50문항 (기본 30 + 새 질문 20), 임시 DB
 ```
 
 임시 DB로 돌리려면 `DATABASE_PATH=/tmp/t.db` 를 앞에 붙인다. 공지 테스트 2종은 지정이 없으면 스스로 OS 임시 폴더의 DB를 쓴다
@@ -121,13 +127,22 @@ npm run test:room-code
 - 카톡 발화: `공지 알림 받기` / `공지 알림 끄기` (공지 메뉴 버튼으로도 제공)
 - 관리자: 공지 목록에 공지별 전달 인원, 대시보드에 구독자 수
 
-### 졸업요건 실데이터 (9/27~28) — 아직 챗봇에 연결 안 됨
+### 졸업요건 실데이터 (9/27~28 수집 · 5주차에 챗봇 연결 완료)
 
 - 학교 「학사제도 및 졸업이수가이드」 PDF 51개 수집 → 표를 좌표로 복원해 엑셀로 구조화
 - 엑셀: `data/graduation-source/2021212843_경재원_졸업요건_학과별_정리.xlsx` (9개 시트, 특이사항 28건). 원본 PDF는 SSD `졸업요건_원본PDF/`
 - 추출 스크립트: `tools/grad-extract/` (README 참고)
-- **지금 카톡 졸업요건 답변은 여전히 예시(PLACEHOLDER) 데이터다.** `data/kb/졸업요건/` 3건과 `data/seed/graduation.json` 5건이 전부 가짜값.
-  엑셀 연결은 5주차 작업(사용자 결정).
+- **5주차: 카톡 졸업요건 답변이 공식 기준으로 바뀌었다.**
+  - 엑셀 → `tools/grad-extract/export_json.py` → `data/graduation-source/{criteria,departments,answer-key}.json`
+  - 서버 시작 시 `graduation_criteria`(523행) · `grad_departments`(42) · `department_aliases` 로 적재 (`src/services/gradCriteria.ts`).
+    다시 적재: `npm run import:graduation`
+  - 학번 구간으로 조회 (21학번 → 2020~2021 열). 옛 이름·다른 표기 인식 (컴퓨터공학전공 · 전자정보통신공학과 · 컴공 등)
+  - 단과대 목록은 2026 홈페이지 기준(`data/kb/졸업요건/_taxonomy.json`) + 21·22학번 당시 단과대 이름(인문대학·과학기술대학 등)도 입력으로 인식
+  - 답변 뒤 버튼: 편입생 기준 · 외국인 기준 · 다른 학과 · 다른 학번. 원문 PDF 버튼은 학교 홈페이지 PDF로 바로 연결
+  - 기준이 없으면 추측하지 않고 안내: 2020 이전(개별 심사) · 신설 · 모집중단 · 가이드 이후 학번
+  - 예시 데이터 정리: `data/kb/졸업요건/` 의 가짜 폴더 삭제, 서버 시작 시 `[PLACEHOLDER]` 행 삭제.
+    `graduation_requirements` 테이블(관리자 수동 등록)은 가이드에 없는 학과 보충용으로만 남김
+  - REST: `GET /api/graduation/criteria?year=2021&department=컴퓨터공학전공&type=신입생-내국인`
 
 ---
 
@@ -249,3 +264,17 @@ pdftoppm -jpeg -r 58 deck.pdf out    # 페이지 이미지로 겹침·넘침 확
 | 4주 | 진행 보고 발표 자료 (17장, 최종 `2021212843_경재원_4주차_진행보고_3.pptx`) | `slides/` · SSD · Google Drive「컴퓨터공학종합설계2 대기」 |
 | 4주 | 공지 알림 구독 + 테스트 DB 분리 | 브랜치 머지 커밋 (git log 참고) |
 | 4주 | 졸업요건 엑셀 · 추출 스크립트 | `data/graduation-source/` · `tools/grad-extract/` |
+
+---
+
+## 5주차 추가 사항 (2026-10-03, 미커밋)
+
+- **지도 실데이터**: `tools/map-crawl/crawl_campus_map.py` 가 학교 홈페이지 강의실 안내(page/861) · 캠퍼스맵(campus/map) · 건물 상세(ajax)를 받아
+  `data/kb/지도/{buildings,places,rooms}.json` 을 만든다. 호실 287 · 강의실 건물 16동 · 장소 35곳 · 코드 19개(전부 좌표).
+  두 출처의 건물 이름이 달라 코드 → 이름 → 앞부분 → 수동(MANUAL_PLACE) 순으로 맞춘다. 원본 저장본은 SSD `지도_조사/원본_2026-10-03`.
+- **지도 답변**(`src/services/roomCode.ts`): 호실명·구분·수용인원, 건물 층수를 넘는 번호(D901 등)는 층을 말하지 않음, 숫자 기준 은/는,
+  건물 이름·별칭 질문(`answerPlaceQuery`), 여러 곳이면 후보 버튼, 카카오맵 링크 카드(`textWithLinkCard`).
+- **동아리 실데이터**: `data/seed/clubs.json` = 1차 크롤링 61개 (예전 가상 8개는 `clubs.sample.json`). 서버 시작 시 연락처가 `@example.` 인 예시 동아리를 지우고 시드한다.
+- **동아리 검색**: `data/kb/동아리/_keywords.json`(학생 표현 → 분야) + `clubKeywords.ts`. 의미 유사도에 키워드 점수(최대 +0.8)를 더하고,
+  사전에 걸린 동아리가 있으면 그 동아리만 답한다. 이름·'다른 이름' 별칭도 점수·구조 검색에 반영. mock 임베딩 한계는 그대로 — 실제 임베딩으로 재평가 필요.
+- **발표**: `slides/2021212843_경재원_5주차_진행보고.pptx` (17장, `tools/slides/w5final.py`, 이미지는 `w5_capture.py`). 미리보기 `preview_html.py`.
