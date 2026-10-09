@@ -1,0 +1,9 @@
+# 외부에는 카카오 스킬과 상태 확인만 연다. 관리자 웹(/admin)·API는 이 Mac 안에서만.
+on_http_request:
+  - expressions:
+      - "!(req.url.path == '/api/kakao/skill' || req.url.path == '/health')"
+    actions:
+      - type: custom-response
+        config:
+          status_code: 404
+          body: "not found"
