@@ -38,6 +38,7 @@ function bodyToInput(body: Record<string, unknown>): ClubInput | null {
     meeting_time: body.meeting_time == null ? null : String(body.meeting_time),
     location: body.location == null ? null : String(body.location),
     intro,
+    summary: body.summary == null ? null : String(body.summary),
     activities,
     source_url,
   };
@@ -124,6 +125,7 @@ adminRouter.put('/clubs/:id', async (req, res) => {
     meeting_time: body.meeting_time,
     location: body.location,
     intro: body.intro,
+    summary: body.summary,
     activities: body.activities,
     source_url: body.source_url,
   });

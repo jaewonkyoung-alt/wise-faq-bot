@@ -6,6 +6,8 @@ export interface Club {
   meeting_time: string | null;
   location: string | null;
   intro: string;
+  /** 한두 문장 소개 — 목록·답변에서 어떤 동아리인지 */
+  summary: string;
   activities: string;
   source_url: string;
   updated_at: string;
@@ -19,6 +21,7 @@ export interface ClubInput {
   meeting_time?: string | null;
   location?: string | null;
   intro: string;
+  summary?: string | null;
   activities: string;
   source_url: string;
 }

@@ -11,6 +11,7 @@ function rowToClub(row: Record<string, unknown>): Club {
     meeting_time: row.meeting_time == null ? null : String(row.meeting_time),
     location: row.location == null ? null : String(row.location),
     intro: String(row.intro ?? ''),
+    summary: String(row.summary ?? ''),
     activities: String(row.activities ?? ''),
     source_url: String(row.source_url),
     updated_at: String(row.updated_at),
@@ -60,6 +61,7 @@ export function createClub(input: ClubInput): Club {
     meeting_time: input.meeting_time?.trim() || null,
     location: input.location?.trim() || null,
     intro: input.intro.trim(),
+    summary: input.summary?.trim() || '',
     activities: input.activities.trim(),
     source_url: input.source_url.trim(),
     updated_at: now,
@@ -68,8 +70,8 @@ export function createClub(input: ClubInput): Club {
   getDb()
     .prepare(
       `INSERT INTO clubs
-      (id, name, category, contact, meeting_time, location, intro, activities, source_url, updated_at, created_at)
-      VALUES (@id, @name, @category, @contact, @meeting_time, @location, @intro, @activities, @source_url, @updated_at, @created_at)`
+      (id, name, category, contact, meeting_time, location, intro, summary, activities, source_url, updated_at, created_at)
+      VALUES (@id, @name, @category, @contact, @meeting_time, @location, @intro, @summary, @activities, @source_url, @updated_at, @created_at)`
     )
     .run(club);
   return club;
@@ -96,6 +98,7 @@ export function updateClub(id: string, input: Partial<ClubInput>): Club | undefi
         ? input.location?.trim() || null
         : existing.location,
     intro: input.intro?.trim() ?? existing.intro,
+    summary: input.summary != null ? input.summary.trim() : existing.summary,
     activities: input.activities?.trim() ?? existing.activities,
     source_url: input.source_url?.trim() ?? existing.source_url,
     updated_at: new Date().toISOString(),
@@ -105,7 +108,7 @@ export function updateClub(id: string, input: Partial<ClubInput>): Club | undefi
     .prepare(
       `UPDATE clubs SET
         name=@name, category=@category, contact=@contact, meeting_time=@meeting_time,
-        location=@location, intro=@intro, activities=@activities, source_url=@source_url,
+        location=@location, intro=@intro, summary=@summary, activities=@activities, source_url=@source_url,
         updated_at=@updated_at
       WHERE id=@id`
     )

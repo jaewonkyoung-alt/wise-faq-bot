@@ -170,6 +170,15 @@ function migrate(database: Database.Database): void {
 
   ensureGradColumns(database);
   ensureKakaoSessionColumns(database);
+  ensureClubColumns(database);
+}
+
+/** 동아리 한두 줄 소개 (목록에서 어떤 동아리인지 보여 줄 때) — 10/10 추가 */
+function ensureClubColumns(database: Database.Database): void {
+  const cols = (database.prepare(`PRAGMA table_info(clubs)`).all() as Array<{ name: string }>).map((c) => c.name);
+  if (!cols.includes('summary')) {
+    database.exec(`ALTER TABLE clubs ADD COLUMN summary TEXT NOT NULL DEFAULT ''`);
+  }
 }
 
 function ensureKakaoSessionColumns(database: Database.Database): void {

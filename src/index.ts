@@ -22,6 +22,22 @@ async function ensureClubsSeeded(): Promise<void> {
   for (const c of samples) deleteClub(c.id);
   if (samples.length) console.log(`[wise-faq-bot] removed ${samples.length} sample clubs`);
   const clubs = listClubs();
+  // 한두 줄 소개가 비어 있는 동아리는 시드의 소개로 채운다 (10/10 summary 칼럼 추가 이전 DB) — 관리자가 쓴 값은 덮지 않음
+  const seedFile = path.resolve(process.cwd(), 'data/seed/clubs.json');
+  if (clubs.length > 0 && fs.existsSync(seedFile)) {
+    const { updateClub } = await import('./services/clubStore');
+    const seed = JSON.parse(fs.readFileSync(seedFile, 'utf-8')) as Array<{ name: string; summary?: string }>;
+    const byName = new Map(seed.map((x) => [x.name, x.summary || '']));
+    let filled = 0;
+    for (const c of clubs) {
+      const s = byName.get(c.name);
+      if (!c.summary && s) {
+        updateClub(c.id, { summary: s });
+        filled += 1;
+      }
+    }
+    if (filled) console.log(`[wise-faq-bot] filled summary for ${filled} clubs`);
+  }
   if (clubs.length > 0) {
     const row = getDb()
       .prepare('SELECT COUNT(*) AS c FROM embeddings')
@@ -51,6 +67,7 @@ async function ensureClubsSeeded(): Promise<void> {
     meeting_time?: string;
     location?: string;
     intro: string;
+    summary?: string;
     activities: string;
     source_url: string;
   }>;

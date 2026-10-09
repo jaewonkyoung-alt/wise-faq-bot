@@ -442,7 +442,7 @@
   /* ── Clubs ── */
   function resetClubForm() {
     $('c_editId').value = '';
-    ['c_name', 'c_category', 'c_contact', 'c_meeting', 'c_location', 'c_source', 'c_intro', 'c_activities'].forEach(
+    ['c_name', 'c_category', 'c_contact', 'c_meeting', 'c_location', 'c_source', 'c_summary', 'c_intro', 'c_activities'].forEach(
       function (id) {
         $(id).value = '';
       }
@@ -458,6 +458,7 @@
     $('c_meeting').value = c.meeting_time || '';
     $('c_location').value = c.location || '';
     $('c_source').value = c.source_url || '';
+    $('c_summary').value = c.summary || '';
     $('c_intro').value = c.intro || '';
     $('c_activities').value = c.activities || '';
     $('club-form-title').textContent = '동아리 수정';
@@ -522,6 +523,7 @@
       meeting_time: $('c_meeting').value.trim() || null,
       location: $('c_location').value.trim() || null,
       source_url: $('c_source').value.trim(),
+      summary: $('c_summary').value.trim(),
       intro: $('c_intro').value.trim(),
       activities: $('c_activities').value.trim(),
     };
