@@ -73,6 +73,17 @@ export function noticeReplies(subscribed: boolean): KakaoQuickReply[] {
   ];
 }
 
+/** 졸업요건 답변 뒤: 같은 학번·학과로 학생구분 바꾸기, 또는 다른 학과·학번 */
+export function gradResultReplies(): KakaoQuickReply[] {
+  return [
+    quickMessage('편입생 기준', '편입생 기준'),
+    quickMessage('외국인 기준', '외국인 기준'),
+    quickMessage('다른 학과', '다른 학과'),
+    quickMessage('다른 학번', '다른 학번'),
+    quickMessage('메뉴', '메뉴'),
+  ];
+}
+
 /** Primary menu: 졸업요건 first, then clubs / map */
 export function menuReplies(): KakaoQuickReply[] {
   return [
@@ -136,6 +147,34 @@ export function buildAskSkillResponse(
   void utterance;
   const text = result.answer.slice(0, 900);
   return simpleText(text, defaultClubReplies());
+}
+
+/** 본문 simpleText + 링크 버튼 카드 (지도 위치 등). 본문은 한 번만 보낸다. */
+export function textWithLinkCard(opts: {
+  text: string;
+  url: string;
+  buttonLabel: string;
+  description: string;
+  quickReplies?: KakaoQuickReply[];
+}): KakaoSkillResponse {
+  const response: KakaoSkillResponse = {
+    version: '2.0',
+    template: {
+      outputs: [
+        { simpleText: { text: opts.text.slice(0, 900) } },
+        {
+          basicCard: {
+            description: opts.description,
+            buttons: [{ label: opts.buttonLabel.slice(0, 14), action: 'webLink', webLinkUrl: opts.url }],
+          },
+        },
+      ],
+    },
+  };
+  if (opts.quickReplies && opts.quickReplies.length > 0) {
+    response.template.quickReplies = opts.quickReplies;
+  }
+  return response;
 }
 
 /**

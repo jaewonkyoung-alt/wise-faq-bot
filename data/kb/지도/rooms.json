@@ -1,5 +1,1724 @@
 {
-  "S504": { "building": "자연과학관", "name": "공용강의실", "type": "강의실" },
-  "A207": { "building": "원효관", "name": "A207", "type": "강의실" },
-  "K301": { "building": "도서관", "name": "스마트강의실2", "type": "강의실" }
+  "A102": {
+    "building": "원효관",
+    "name": "불교미술3",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "A103": {
+    "building": "원효관",
+    "name": "불교미술4",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "A104": {
+    "building": "원효관",
+    "name": "불교미술2",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "A105": {
+    "building": "원효관",
+    "name": "불교미술유산실습실",
+    "type": "실습실",
+    "capacity": 10
+  },
+  "A106": {
+    "building": "원효관",
+    "name": "공용실습실",
+    "type": "실습실",
+    "capacity": 30
+  },
+  "A109": {
+    "building": "원효관",
+    "name": "유아교육과스마트실습실",
+    "type": "실습실",
+    "capacity": 30
+  },
+  "A110": {
+    "building": "원효관",
+    "name": "A110",
+    "type": "강의실",
+    "capacity": 35
+  },
+  "A112": {
+    "building": "원효관",
+    "name": "유아교육과스마트강의실",
+    "type": "실습실",
+    "capacity": 25
+  },
+  "A113": {
+    "building": "원효관",
+    "name": "유아교육과수업행동분석실",
+    "type": "강의실",
+    "capacity": 40
+  },
+  "A115": {
+    "building": "원효관",
+    "name": "불교미술유산세미나실",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "A116": {
+    "building": "원효관",
+    "name": "불교미술1",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "A118": {
+    "building": "원효관",
+    "name": "불교미술대학원실",
+    "type": "실습실",
+    "capacity": 15
+  },
+  "A119": {
+    "building": "원효관",
+    "name": "불교문화대학원실",
+    "type": "실습실",
+    "capacity": 15
+  },
+  "A200": {
+    "building": "원효관",
+    "name": "A200",
+    "type": "강의실",
+    "capacity": 30
+  },
+  "A201": {
+    "building": "원효관",
+    "name": "A201",
+    "type": "강의실",
+    "capacity": 45
+  },
+  "A202": {
+    "building": "원효관",
+    "name": "A202",
+    "type": "강의실",
+    "capacity": 45
+  },
+  "A204": {
+    "building": "원효관",
+    "name": "A204",
+    "type": "강의실",
+    "capacity": 70
+  },
+  "A205": {
+    "building": "원효관",
+    "name": "원효관컴퓨터실A",
+    "type": "컴퓨터실습실",
+    "capacity": 40
+  },
+  "A207": {
+    "building": "원효관",
+    "name": "A207",
+    "type": "강의실",
+    "capacity": 130
+  },
+  "A208": {
+    "building": "원효관",
+    "name": "A208",
+    "type": "강의실",
+    "capacity": 150
+  },
+  "A209": {
+    "building": "원효관",
+    "name": "A209",
+    "type": "강의실",
+    "capacity": 150
+  },
+  "A212": {
+    "building": "원효관",
+    "name": "원효관컴퓨터실C",
+    "type": "컴퓨터실습실",
+    "capacity": 40
+  },
+  "A213": {
+    "building": "원효관",
+    "name": "A213",
+    "type": "강의실",
+    "capacity": 22
+  },
+  "A214": {
+    "building": "원효관",
+    "name": "A214",
+    "type": "강의실",
+    "capacity": 22
+  },
+  "A215": {
+    "building": "원효관",
+    "name": "원효관컴퓨터실B",
+    "type": "컴퓨터실습실",
+    "capacity": 40
+  },
+  "A220": {
+    "building": "원효관",
+    "name": "A220(교양비교과전용)",
+    "type": "강의실",
+    "capacity": 40
+  },
+  "A222": {
+    "building": "원효관",
+    "name": "A222",
+    "type": "강의실",
+    "capacity": 40
+  },
+  "A301": {
+    "building": "원효관",
+    "name": "A301",
+    "type": "강의실",
+    "capacity": 50
+  },
+  "A302": {
+    "building": "원효관",
+    "name": "A302",
+    "type": "강의실",
+    "capacity": 60
+  },
+  "A303": {
+    "building": "원효관",
+    "name": "A303",
+    "type": "강의실",
+    "capacity": 70
+  },
+  "A304": {
+    "building": "원효관",
+    "name": "A304",
+    "type": "강의실",
+    "capacity": 60
+  },
+  "A305": {
+    "building": "원효관",
+    "name": "A305",
+    "type": "강의실",
+    "capacity": 65
+  },
+  "A306": {
+    "building": "원효관",
+    "name": "A306",
+    "type": "강의실",
+    "capacity": 65
+  },
+  "A307": {
+    "building": "원효관",
+    "name": "A307",
+    "type": "강의실",
+    "capacity": 130
+  },
+  "A308": {
+    "building": "원효관",
+    "name": "A308",
+    "type": "강의실",
+    "capacity": 150
+  },
+  "A309": {
+    "building": "원효관",
+    "name": "A309",
+    "type": "강의실",
+    "capacity": 150
+  },
+  "A310": {
+    "building": "원효관",
+    "name": "A310",
+    "type": "강의실",
+    "capacity": 22
+  },
+  "A311": {
+    "building": "원효관",
+    "name": "A311",
+    "type": "강의실",
+    "capacity": 22
+  },
+  "A312": {
+    "building": "원효관",
+    "name": "A312",
+    "type": "강의실",
+    "capacity": 22
+  },
+  "A313": {
+    "building": "원효관",
+    "name": "A313",
+    "type": "강의실",
+    "capacity": 22
+  },
+  "A314": {
+    "building": "원효관",
+    "name": "A314",
+    "type": "강의실",
+    "capacity": 22
+  },
+  "A315": {
+    "building": "원효관",
+    "name": "A315",
+    "type": "강의실",
+    "capacity": 22
+  },
+  "A316": {
+    "building": "원효관",
+    "name": "A316",
+    "type": "강의실",
+    "capacity": 55
+  },
+  "A317": {
+    "building": "원효관",
+    "name": "A317",
+    "type": "강의실",
+    "capacity": 55
+  },
+  "A318": {
+    "building": "원효관",
+    "name": "A318",
+    "type": "강의실",
+    "capacity": 50
+  },
+  "A319": {
+    "building": "원효관",
+    "name": "A319(HyFlex)",
+    "type": "강의실",
+    "capacity": 50
+  },
+  "A320": {
+    "building": "원효관",
+    "name": "A320",
+    "type": "강의실",
+    "capacity": 50
+  },
+  "A321": {
+    "building": "원효관",
+    "name": "A321(HyFlex)",
+    "type": "강의실",
+    "capacity": 50
+  },
+  "A322": {
+    "building": "원효관",
+    "name": "A322",
+    "type": "강의실",
+    "capacity": 50
+  },
+  "A323": {
+    "building": "원효관",
+    "name": "A323",
+    "type": "강의실",
+    "capacity": 50
+  },
+  "A324": {
+    "building": "원효관",
+    "name": "A324",
+    "type": "강의실",
+    "capacity": 50
+  },
+  "A401": {
+    "building": "원효관",
+    "name": "A401",
+    "type": "강의실",
+    "capacity": 30
+  },
+  "A402": {
+    "building": "원효관",
+    "name": "A402",
+    "type": "강의실",
+    "capacity": 40
+  },
+  "A403": {
+    "building": "원효관",
+    "name": "A403",
+    "type": "강의실",
+    "capacity": 35
+  },
+  "A404": {
+    "building": "원효관",
+    "name": "A404",
+    "type": "강의실",
+    "capacity": 35
+  },
+  "A405": {
+    "building": "원효관",
+    "name": "A405",
+    "type": "강의실",
+    "capacity": 35
+  },
+  "A406": {
+    "building": "원효관",
+    "name": "A406",
+    "type": "강의실",
+    "capacity": 35
+  },
+  "A407": {
+    "building": "원효관",
+    "name": "A407",
+    "type": "강의실",
+    "capacity": 75
+  },
+  "A408": {
+    "building": "원효관",
+    "name": "A408",
+    "type": "강의실",
+    "capacity": 75
+  },
+  "A409": {
+    "building": "원효관",
+    "name": "영유아교육세미나실",
+    "type": "강의실",
+    "capacity": 12
+  },
+  "A502": {
+    "building": "원효관",
+    "name": "GLOBAL ACE HALL(AI융합세미나실)",
+    "type": "세미나실",
+    "capacity": 145
+  },
+  "B101": {
+    "building": "진흥관",
+    "name": "B101",
+    "type": "강의실",
+    "capacity": 62
+  },
+  "B103": {
+    "building": "진흥관",
+    "name": "B103(첨단강의실)",
+    "type": "강의실",
+    "capacity": 70
+  },
+  "B106": {
+    "building": "진흥관",
+    "name": "호텔관광경영스마트랩",
+    "type": "컴퓨터실습실",
+    "capacity": 30
+  },
+  "B201": {
+    "building": "진흥관",
+    "name": "B201(HyFlex)",
+    "type": "강의실",
+    "capacity": 80
+  },
+  "B202": {
+    "building": "진흥관",
+    "name": "B202",
+    "type": "강의실",
+    "capacity": 70
+  },
+  "B203": {
+    "building": "진흥관",
+    "name": "진흥관컴퓨터실B",
+    "type": "컴퓨터실습실",
+    "capacity": 40
+  },
+  "B204": {
+    "building": "진흥관",
+    "name": "정보경영전산실습실(HyFlex)",
+    "type": "컴퓨터실습실",
+    "capacity": 22
+  },
+  "B205": {
+    "building": "진흥관",
+    "name": "진흥관컴퓨터실A",
+    "type": "컴퓨터실습실",
+    "capacity": 40
+  },
+  "B206": {
+    "building": "진흥관",
+    "name": "B206",
+    "type": "강의실",
+    "capacity": 70
+  },
+  "B207": {
+    "building": "진흥관",
+    "name": "행정·경찰공공학부실습실",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "B301": {
+    "building": "진흥관",
+    "name": "B301",
+    "type": "강의실",
+    "capacity": 75
+  },
+  "B302": {
+    "building": "진흥관",
+    "name": "B302",
+    "type": "강의실",
+    "capacity": 70
+  },
+  "B303": {
+    "building": "진흥관",
+    "name": "B303(HyFlex)",
+    "type": "강의실",
+    "capacity": 80
+  },
+  "B304": {
+    "building": "진흥관",
+    "name": "B304",
+    "type": "강의실",
+    "capacity": 75
+  },
+  "B306": {
+    "building": "진흥관",
+    "name": "B306",
+    "type": "강의실",
+    "capacity": 55
+  },
+  "B307": {
+    "building": "진흥관",
+    "name": "B307",
+    "type": "강의실",
+    "capacity": 55
+  },
+  "B308": {
+    "building": "진흥관",
+    "name": "B308",
+    "type": "강의실",
+    "capacity": 75
+  },
+  "B309": {
+    "building": "진흥관",
+    "name": "사회복지학과집단지도실",
+    "type": "실습실",
+    "capacity": 9
+  },
+  "B310": {
+    "building": "진흥관",
+    "name": "B310",
+    "type": "강의실",
+    "capacity": 70
+  },
+  "B401": {
+    "building": "진흥관",
+    "name": "B401",
+    "type": "강의실",
+    "capacity": 95
+  },
+  "B402": {
+    "building": "진흥관",
+    "name": "B402",
+    "type": "강의실",
+    "capacity": 80
+  },
+  "B403": {
+    "building": "진흥관",
+    "name": "B403(HyFlex)",
+    "type": "강의실",
+    "capacity": 42
+  },
+  "B404": {
+    "building": "진흥관",
+    "name": "B404",
+    "type": "강의실",
+    "capacity": 80
+  },
+  "B405": {
+    "building": "진흥관",
+    "name": "B405",
+    "type": "강의실",
+    "capacity": 65
+  },
+  "B406": {
+    "building": "진흥관",
+    "name": "B406",
+    "type": "강의실",
+    "capacity": 55
+  },
+  "B407": {
+    "building": "진흥관",
+    "name": "B407",
+    "type": "강의실",
+    "capacity": 55
+  },
+  "B408": {
+    "building": "진흥관",
+    "name": "B408",
+    "type": "강의실",
+    "capacity": 40
+  },
+  "B409": {
+    "building": "진흥관",
+    "name": "B409",
+    "type": "강의실",
+    "capacity": 35
+  },
+  "B501": {
+    "building": "진흥관",
+    "name": "B501",
+    "type": "강의실",
+    "capacity": 40
+  },
+  "C101": {
+    "building": "선센터",
+    "name": "중선방",
+    "type": "실습실",
+    "capacity": 80
+  },
+  "D101": {
+    "building": "100주년기념관",
+    "name": "D101",
+    "type": "강의실",
+    "capacity": 50
+  },
+  "D102": {
+    "building": "100주년기념관",
+    "name": "D102",
+    "type": "강의실",
+    "capacity": 70
+  },
+  "D103": {
+    "building": "100주년기념관",
+    "name": "D103",
+    "type": "강의실",
+    "capacity": 50
+  },
+  "D104": {
+    "building": "100주년기념관",
+    "name": "D104",
+    "type": "강의실",
+    "capacity": 50
+  },
+  "D105": {
+    "building": "100주년기념관",
+    "name": "D105",
+    "type": "강의실",
+    "capacity": 36
+  },
+  "D202": {
+    "building": "100주년기념관",
+    "name": "창작실습실",
+    "type": "실습실",
+    "capacity": 30
+  },
+  "D401": {
+    "building": "100주년기념관",
+    "name": "D401",
+    "type": "강의실",
+    "capacity": 65
+  },
+  "D402": {
+    "building": "100주년기념관",
+    "name": "D402",
+    "type": "강의실",
+    "capacity": 60
+  },
+  "D403": {
+    "building": "100주년기념관",
+    "name": "D403",
+    "type": "강의실",
+    "capacity": 35
+  },
+  "D404": {
+    "building": "100주년기념관",
+    "name": "다도실습실",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "D405": {
+    "building": "100주년기념관",
+    "name": "D405",
+    "type": "강의실",
+    "capacity": 28
+  },
+  "D406": {
+    "building": "100주년기념관",
+    "name": "D406",
+    "type": "강의실",
+    "capacity": 27
+  },
+  "D407": {
+    "building": "100주년기념관",
+    "name": "D407",
+    "type": "강의실",
+    "capacity": 27
+  },
+  "D408": {
+    "building": "100주년기념관",
+    "name": "D408",
+    "type": "강의실",
+    "capacity": 38
+  },
+  "D409": {
+    "building": "100주년기념관",
+    "name": "D409",
+    "type": "강의실",
+    "capacity": 40
+  },
+  "D411": {
+    "building": "100주년기념관",
+    "name": "D411",
+    "type": "강의실",
+    "capacity": 27
+  },
+  "D901": {
+    "building": "100주년기념관",
+    "name": "대강당",
+    "type": "강의실",
+    "capacity": 490
+  },
+  "D903": {
+    "building": "100주년기념관",
+    "name": "음율활동지도실",
+    "type": "실습실",
+    "capacity": 30
+  },
+  "D904": {
+    "building": "100주년기념관",
+    "name": "피아노실습실",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "D907": {
+    "building": "100주년기념관",
+    "name": "불교문화대학원선서화예술전공실습실",
+    "type": "실습실",
+    "capacity": 8
+  },
+  "E101": {
+    "building": "에너지공학관",
+    "name": "E101",
+    "type": "컴퓨터실습실",
+    "capacity": 40
+  },
+  "E102": {
+    "building": "에너지공학관",
+    "name": "E102",
+    "type": "강의실",
+    "capacity": 70
+  },
+  "E201": {
+    "building": "에너지공학관",
+    "name": "E201",
+    "type": "강의실",
+    "capacity": 80
+  },
+  "E202": {
+    "building": "에너지공학관",
+    "name": "E202",
+    "type": "강의실",
+    "capacity": 50
+  },
+  "E203": {
+    "building": "에너지공학관",
+    "name": "E203",
+    "type": "강의실",
+    "capacity": 70
+  },
+  "E204": {
+    "building": "에너지공학관",
+    "name": "E204(HyFlex)",
+    "type": "강의실",
+    "capacity": 80
+  },
+  "E205": {
+    "building": "에너지공학관",
+    "name": "시스템실험실",
+    "type": "실험실",
+    "capacity": 8
+  },
+  "E301": {
+    "building": "에너지공학관",
+    "name": "E301",
+    "type": "강의실",
+    "capacity": 40
+  },
+  "E302": {
+    "building": "에너지공학관",
+    "name": "E302",
+    "type": "강의실",
+    "capacity": 60
+  },
+  "E303": {
+    "building": "에너지공학관",
+    "name": "정보통신실험실",
+    "type": "실험실",
+    "capacity": 40
+  },
+  "E304": {
+    "building": "에너지공학관",
+    "name": "4MulaOne캡스톤디자인실",
+    "type": "실험실",
+    "capacity": 36
+  },
+  "E305": {
+    "building": "에너지공학관",
+    "name": "E305(RP실)",
+    "type": "컴퓨터실습실",
+    "capacity": 25
+  },
+  "E401": {
+    "building": "에너지공학관",
+    "name": "신재생에너지/열유동해석실",
+    "type": "실험실",
+    "capacity": 40
+  },
+  "E402": {
+    "building": "에너지공학관",
+    "name": "정밀계측/재료분석실",
+    "type": "실험실",
+    "capacity": 40
+  },
+  "E502": {
+    "building": "에너지공학관",
+    "name": "통신공학실험실",
+    "type": "실험실",
+    "capacity": 36
+  },
+  "E503": {
+    "building": "에너지공학관",
+    "name": "디지털시스템실험실(HyFlex)",
+    "type": "실험실",
+    "capacity": 40
+  },
+  "F201": {
+    "building": "생활관",
+    "name": "생활관법당",
+    "type": "실습실",
+    "capacity": 80
+  },
+  "G101": {
+    "building": "문무관",
+    "name": "체육관(코트1)",
+    "type": "실습실",
+    "capacity": 100
+  },
+  "G102": {
+    "building": "문무관",
+    "name": "체육관(코트2)",
+    "type": "실습실",
+    "capacity": 30
+  },
+  "G103": {
+    "building": "문무관",
+    "name": "헬스장",
+    "type": "실습실",
+    "capacity": 30
+  },
+  "G111": {
+    "building": "문무관",
+    "name": "수영장(외부대관)",
+    "type": "실습실",
+    "capacity": 0
+  },
+  "G112": {
+    "building": "문무관",
+    "name": "골프연습장",
+    "type": "실습실",
+    "capacity": 25
+  },
+  "G115": {
+    "building": "문무관",
+    "name": "유도장",
+    "type": "실습실",
+    "capacity": 25
+  },
+  "G202": {
+    "building": "문무관",
+    "name": "G202",
+    "type": "강의실",
+    "capacity": 65
+  },
+  "G203": {
+    "building": "문무관",
+    "name": "G203",
+    "type": "강의실",
+    "capacity": 70
+  },
+  "G204": {
+    "building": "문무관",
+    "name": "G204",
+    "type": "강의실",
+    "capacity": 35
+  },
+  "H101": {
+    "building": "의학관",
+    "name": "제1강의실",
+    "type": "강의실",
+    "capacity": 60
+  },
+  "H102": {
+    "building": "의학관",
+    "name": "제2강의실",
+    "type": "강의실",
+    "capacity": 60
+  },
+  "H103": {
+    "building": "의학관",
+    "name": "제3강의실",
+    "type": "강의실",
+    "capacity": 60
+  },
+  "H104": {
+    "building": "의학관",
+    "name": "종합강의실",
+    "type": "강의실",
+    "capacity": 196
+  },
+  "H105": {
+    "building": "의학관",
+    "name": "해부학실습실",
+    "type": "실습실",
+    "capacity": 60
+  },
+  "H106": {
+    "building": "의학관",
+    "name": "조직병리학실습실",
+    "type": "실습실",
+    "capacity": 60
+  },
+  "H107": {
+    "building": "의학관",
+    "name": "종합실습실",
+    "type": "실습실",
+    "capacity": 60
+  },
+  "H503": {
+    "building": "의학관",
+    "name": "제4강의실",
+    "type": "강의실",
+    "capacity": 60
+  },
+  "H504": {
+    "building": "의학관",
+    "name": "제5강의실",
+    "type": "강의실",
+    "capacity": 75
+  },
+  "H517": {
+    "building": "의학관",
+    "name": "중강의실",
+    "type": "강의실",
+    "capacity": 178
+  },
+  "I201": {
+    "building": "산학협력관",
+    "name": "I201",
+    "type": "강의실",
+    "capacity": 40
+  },
+  "I206": {
+    "building": "산학협력관",
+    "name": "I206",
+    "type": "강의실",
+    "capacity": 24
+  },
+  "I208": {
+    "building": "산학협력관",
+    "name": "I208",
+    "type": "강의실",
+    "capacity": 37
+  },
+  "J101": {
+    "building": "조형관",
+    "name": "환경디자인응용실습실",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "J102": {
+    "building": "조형관",
+    "name": "스튜디오실",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "J103": {
+    "building": "조형관",
+    "name": "도예실습실 모델링 실기실",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "J105": {
+    "building": "조형관",
+    "name": "목공예실",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "J201": {
+    "building": "조형관",
+    "name": "J201",
+    "type": "실습실",
+    "capacity": 25
+  },
+  "J202": {
+    "building": "조형관",
+    "name": "J202",
+    "type": "실습실",
+    "capacity": 25
+  },
+  "J203": {
+    "building": "조형관",
+    "name": "J203",
+    "type": "실습실",
+    "capacity": 25
+  },
+  "J204": {
+    "building": "조형관",
+    "name": "J204",
+    "type": "실습실",
+    "capacity": 25
+  },
+  "J301": {
+    "building": "조형관",
+    "name": "J301",
+    "type": "실습실",
+    "capacity": 25
+  },
+  "J302": {
+    "building": "조형관",
+    "name": "J302",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "J303": {
+    "building": "조형관",
+    "name": "컴퓨터그래픽실A",
+    "type": "컴퓨터실습실",
+    "capacity": 25
+  },
+  "J304": {
+    "building": "조형관",
+    "name": "J304",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "J306": {
+    "building": "조형관",
+    "name": "컴퓨터그래픽실B",
+    "type": "컴퓨터실습실",
+    "capacity": 25
+  },
+  "J307": {
+    "building": "조형관",
+    "name": "J307",
+    "type": "실습실",
+    "capacity": 28
+  },
+  "J401": {
+    "building": "조형관",
+    "name": "J401",
+    "type": "실습실",
+    "capacity": 12
+  },
+  "J402": {
+    "building": "조형관",
+    "name": "J402",
+    "type": "실습실",
+    "capacity": 12
+  },
+  "J403": {
+    "building": "조형관",
+    "name": "J403",
+    "type": "실습실",
+    "capacity": 12
+  },
+  "J404": {
+    "building": "조형관",
+    "name": "J404",
+    "type": "실습실",
+    "capacity": 12
+  },
+  "J405": {
+    "building": "조형관",
+    "name": "J405",
+    "type": "실습실",
+    "capacity": 5
+  },
+  "J406": {
+    "building": "조형관",
+    "name": "웹툰실",
+    "type": "실습실",
+    "capacity": 24
+  },
+  "J407": {
+    "building": "조형관",
+    "name": "회화실",
+    "type": "실습실",
+    "capacity": 16
+  },
+  "J501": {
+    "building": "조형관",
+    "name": "J501",
+    "type": "강의실",
+    "capacity": 55
+  },
+  "J502": {
+    "building": "조형관",
+    "name": "J502",
+    "type": "강의실",
+    "capacity": 55
+  },
+  "J503": {
+    "building": "조형관",
+    "name": "J503",
+    "type": "강의실",
+    "capacity": 55
+  },
+  "J504": {
+    "building": "조형관",
+    "name": "J504",
+    "type": "강의실",
+    "capacity": 55
+  },
+  "K301": {
+    "building": "도서관",
+    "name": "스마트강의실2",
+    "type": "강의실",
+    "capacity": 35
+  },
+  "M101": {
+    "building": "한의학관",
+    "name": "M101",
+    "type": "강의실",
+    "capacity": 90
+  },
+  "M102": {
+    "building": "한의학관",
+    "name": "M102",
+    "type": "강의실",
+    "capacity": 50
+  },
+  "M103": {
+    "building": "한의학관",
+    "name": "M103",
+    "type": "강의실",
+    "capacity": 65
+  },
+  "M104": {
+    "building": "한의학관",
+    "name": "대학원강의실",
+    "type": "강의실",
+    "capacity": 20
+  },
+  "M201": {
+    "building": "한의학관",
+    "name": "M201",
+    "type": "강의실",
+    "capacity": 90
+  },
+  "M203": {
+    "building": "한의학관",
+    "name": "무용실습실",
+    "type": "실습실",
+    "capacity": 30
+  },
+  "M204": {
+    "building": "한의학관",
+    "name": "평생교육원미술실습실",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "M206": {
+    "building": "한의학관",
+    "name": "본초학실습실",
+    "type": "실습실",
+    "capacity": 45
+  },
+  "M207": {
+    "building": "한의학관",
+    "name": "개인연습실",
+    "type": "실습실",
+    "capacity": 3
+  },
+  "M301": {
+    "building": "한의학관",
+    "name": "M301",
+    "type": "강의실",
+    "capacity": 90
+  },
+  "M302": {
+    "building": "한의학관",
+    "name": "M302",
+    "type": "강의실",
+    "capacity": 45
+  },
+  "M303": {
+    "building": "한의학관",
+    "name": "M303",
+    "type": "강의실",
+    "capacity": 55
+  },
+  "M304": {
+    "building": "한의학관",
+    "name": "M304",
+    "type": "강의실",
+    "capacity": 55
+  },
+  "M305": {
+    "building": "한의학관",
+    "name": "본초학실험실",
+    "type": "실험실",
+    "capacity": 20
+  },
+  "M306": {
+    "building": "한의학관",
+    "name": "생화학,약리실험실",
+    "type": "실험실",
+    "capacity": 20
+  },
+  "M308": {
+    "building": "한의학관",
+    "name": "생화학/약리학실습실",
+    "type": "실습실",
+    "capacity": 45
+  },
+  "M401": {
+    "building": "한의학관",
+    "name": "M401",
+    "type": "강의실",
+    "capacity": 90
+  },
+  "M402": {
+    "building": "한의학관",
+    "name": "M402",
+    "type": "강의실",
+    "capacity": 45
+  },
+  "M403": {
+    "building": "한의학관",
+    "name": "M403",
+    "type": "강의실",
+    "capacity": 55
+  },
+  "M404": {
+    "building": "한의학관",
+    "name": "M404",
+    "type": "강의실",
+    "capacity": 45
+  },
+  "M405": {
+    "building": "한의학관",
+    "name": "해부학실습실",
+    "type": "실습실",
+    "capacity": 45
+  },
+  "M406": {
+    "building": "한의학관",
+    "name": "조직/생리학실습실",
+    "type": "실습실",
+    "capacity": 45
+  },
+  "R102": {
+    "building": "백상관",
+    "name": "조리실습실",
+    "type": "실습실",
+    "capacity": 30
+  },
+  "R103": {
+    "building": "백상관",
+    "name": "식음료실습실",
+    "type": "실습실",
+    "capacity": 25
+  },
+  "R201": {
+    "building": "백상관",
+    "name": "보시교실",
+    "type": "강의실",
+    "capacity": 25
+  },
+  "R202": {
+    "building": "백상관",
+    "name": "지계교실",
+    "type": "강의실",
+    "capacity": 25
+  },
+  "R203": {
+    "building": "백상관",
+    "name": "인욕교실",
+    "type": "강의실",
+    "capacity": 25
+  },
+  "R204": {
+    "building": "백상관",
+    "name": "정진교실",
+    "type": "강의실",
+    "capacity": 20
+  },
+  "R205": {
+    "building": "백상관",
+    "name": "선정교실",
+    "type": "강의실",
+    "capacity": 20
+  },
+  "R206": {
+    "building": "백상관",
+    "name": "반야교실",
+    "type": "강의실",
+    "capacity": 25
+  },
+  "S101": {
+    "building": "자연과학관",
+    "name": "S101",
+    "type": "강의실",
+    "capacity": 35
+  },
+  "S102": {
+    "building": "자연과학관",
+    "name": "S102",
+    "type": "강의실",
+    "capacity": 45
+  },
+  "S103": {
+    "building": "자연과학관",
+    "name": "기계안전실험실",
+    "type": "실험실",
+    "capacity": 20
+  },
+  "S104": {
+    "building": "자연과학관",
+    "name": "스마트안전설계실험실",
+    "type": "실험실",
+    "capacity": 20
+  },
+  "S105": {
+    "building": "자연과학관",
+    "name": "건설안전실험실",
+    "type": "실험실",
+    "capacity": 30
+  },
+  "S106": {
+    "building": "자연과학관",
+    "name": "안전미디어실험실",
+    "type": "실험실",
+    "capacity": 20
+  },
+  "S107": {
+    "building": "자연과학관",
+    "name": "생화학/효소학실",
+    "type": "실험실",
+    "capacity": 12
+  },
+  "S110": {
+    "building": "자연과학관",
+    "name": "S110",
+    "type": "강의실",
+    "capacity": 60
+  },
+  "S201": {
+    "building": "자연과학관",
+    "name": "수업행동분석실",
+    "type": "강의실",
+    "capacity": 45
+  },
+  "S202": {
+    "building": "자연과학관",
+    "name": "메타버스첨단강의실(A실)",
+    "type": "강의실",
+    "capacity": 20
+  },
+  "S204": {
+    "building": "자연과학관",
+    "name": "메타버스첨단강의실(B실)",
+    "type": "컴퓨터실습실",
+    "capacity": 50
+  },
+  "S205": {
+    "building": "자연과학관",
+    "name": "물리화학실험실",
+    "type": "실험실",
+    "capacity": 15
+  },
+  "S206": {
+    "building": "자연과학관",
+    "name": "분석화학실험실",
+    "type": "실험실",
+    "capacity": 20
+  },
+  "S208": {
+    "building": "자연과학관",
+    "name": "유기화학실험실",
+    "type": "실험실",
+    "capacity": 20
+  },
+  "S209": {
+    "building": "자연과학관",
+    "name": "L.I.D.E.연구실",
+    "type": "실험실",
+    "capacity": 20
+  },
+  "S301": {
+    "building": "자연과학관",
+    "name": "자연과학관컴퓨터실(임시)",
+    "type": "컴퓨터실습실",
+    "capacity": 24
+  },
+  "S302": {
+    "building": "자연과학관",
+    "name": "수교세미나실",
+    "type": "강의실",
+    "capacity": 55
+  },
+  "S303": {
+    "building": "자연과학관",
+    "name": "S303",
+    "type": "강의실",
+    "capacity": 45
+  },
+  "S305": {
+    "building": "자연과학관",
+    "name": "수학교육과스마트강의실",
+    "type": "컴퓨터실습실",
+    "capacity": 24
+  },
+  "S306": {
+    "building": "자연과학관",
+    "name": "스마트건설방재실험실",
+    "type": "실험실",
+    "capacity": 20
+  },
+  "S307": {
+    "building": "자연과학관",
+    "name": "미생물학실험실",
+    "type": "실험실",
+    "capacity": 15
+  },
+  "S309": {
+    "building": "자연과학관",
+    "name": "분자세포생물학실험실",
+    "type": "실험실",
+    "capacity": 10
+  },
+  "S310": {
+    "building": "자연과학관",
+    "name": "분자면역학실험실",
+    "type": "실험실",
+    "capacity": 15
+  },
+  "S402": {
+    "building": "자연과학관",
+    "name": "S402(에밀레홀)",
+    "type": "강의실",
+    "capacity": 85
+  },
+  "S404": {
+    "building": "자연과학관",
+    "name": "피복실습실",
+    "type": "실습실",
+    "capacity": 24
+  },
+  "S405": {
+    "building": "자연과학관",
+    "name": "인공지능실험실",
+    "type": "실험실",
+    "capacity": 20
+  },
+  "S406": {
+    "building": "자연과학관",
+    "name": "그래픽스실험실",
+    "type": "컴퓨터실습실",
+    "capacity": 42
+  },
+  "S407": {
+    "building": "자연과학관",
+    "name": "마이크로실험실",
+    "type": "실험실",
+    "capacity": 30
+  },
+  "S408": {
+    "building": "자연과학관",
+    "name": "통계자료분석실습실",
+    "type": "컴퓨터실습실",
+    "capacity": 40
+  },
+  "S409": {
+    "building": "자연과학관",
+    "name": "논리회로실",
+    "type": "컴퓨터실습실",
+    "capacity": 49
+  },
+  "S410": {
+    "building": "자연과학관",
+    "name": "모의확률실험실",
+    "type": "컴퓨터실습실",
+    "capacity": 10
+  },
+  "S412": {
+    "building": "자연과학관",
+    "name": "소프트웨어실습실",
+    "type": "실습실",
+    "capacity": 10
+  },
+  "S501": {
+    "building": "자연과학관",
+    "name": "S501",
+    "type": "강의실",
+    "capacity": 30
+  },
+  "S502": {
+    "building": "자연과학관",
+    "name": "S502",
+    "type": "강의실",
+    "capacity": 45
+  },
+  "S503": {
+    "building": "자연과학관",
+    "name": "가정교육과스마트강의실",
+    "type": "실습실",
+    "capacity": 24
+  },
+  "S504": {
+    "building": "자연과학관",
+    "name": "공용강의실",
+    "type": "강의실",
+    "capacity": 45
+  },
+  "S506": {
+    "building": "자연과학관",
+    "name": "공용세미나실",
+    "type": "세미나실",
+    "capacity": 45
+  },
+  "S507": {
+    "building": "자연과학관",
+    "name": "스튜디오1",
+    "type": "실습실",
+    "capacity": 42
+  },
+  "S508": {
+    "building": "자연과학관",
+    "name": "메이커스테이션",
+    "type": "실습실",
+    "capacity": 36
+  },
+  "S509": {
+    "building": "자연과학관",
+    "name": "가정교육과수업행동분석실",
+    "type": "강의실",
+    "capacity": 50
+  },
+  "S510": {
+    "building": "자연과학관",
+    "name": "조경제도실(HyFlex)",
+    "type": "실습실",
+    "capacity": 60
+  },
+  "S511": {
+    "building": "자연과학관",
+    "name": "스튜디오2",
+    "type": "실습실",
+    "capacity": 50
+  },
+  "S512": {
+    "building": "자연과학관",
+    "name": "조경컴퓨터실",
+    "type": "컴퓨터실습실",
+    "capacity": 30
+  },
+  "S513": {
+    "building": "자연과학관",
+    "name": "스튜디오3",
+    "type": "실습실",
+    "capacity": 40
+  },
+  "T103": {
+    "building": "정각원",
+    "name": "정각원법당",
+    "type": "기타",
+    "capacity": null
+  },
+  "Y101": {
+    "building": "영산관",
+    "name": "학군단1",
+    "type": "강의실",
+    "capacity": 53
+  },
+  "Y102": {
+    "building": "영산관",
+    "name": "학군단2",
+    "type": "강의실",
+    "capacity": 26
+  },
+  "Y201": {
+    "building": "영산관",
+    "name": "Y201",
+    "type": "강의실",
+    "capacity": 67
+  },
+  "Y202": {
+    "building": "영산관",
+    "name": "Y202",
+    "type": "강의실",
+    "capacity": 61
+  },
+  "Y203": {
+    "building": "영산관",
+    "name": "건강사정세미나실",
+    "type": "실습실",
+    "capacity": 47
+  },
+  "Y204": {
+    "building": "영산관",
+    "name": "기초간호학실습실",
+    "type": "실습실",
+    "capacity": 10
+  },
+  "Y205": {
+    "building": "영산관",
+    "name": "Y205",
+    "type": "강의실",
+    "capacity": 10
+  },
+  "Y301": {
+    "building": "영산관",
+    "name": "기본간호학실습실1",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "Y302": {
+    "building": "영산관",
+    "name": "기본간호학실습실2",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "Y303": {
+    "building": "영산관",
+    "name": "핵심간호학실습실",
+    "type": "실습실",
+    "capacity": null
+  },
+  "Y304": {
+    "building": "영산관",
+    "name": "노인간호학실습실",
+    "type": "실습실",
+    "capacity": 24
+  },
+  "Y305": {
+    "building": "영산관",
+    "name": "자율실습실",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "Y306": {
+    "building": "영산관",
+    "name": "대학원세미나실",
+    "type": "세미나실",
+    "capacity": 50
+  },
+  "Y307": {
+    "building": "영산관",
+    "name": "간호관리학실습실",
+    "type": "실습실",
+    "capacity": 22
+  },
+  "Y401": {
+    "building": "영산관",
+    "name": "Lotus Hall",
+    "type": "실습실",
+    "capacity": 120
+  },
+  "Y402": {
+    "building": "영산관",
+    "name": "SimLab 2 Virtual Reality Immersive Room",
+    "type": "실습실",
+    "capacity": null
+  },
+  "Y403": {
+    "building": "영산관",
+    "name": "SimLab 1 Disaster Training Unit",
+    "type": "실습실",
+    "capacity": null
+  },
+  "Y404": {
+    "building": "영산관",
+    "name": "SimLab 3 Adult Health Nursing",
+    "type": "실습실",
+    "capacity": null
+  },
+  "Y405": {
+    "building": "영산관",
+    "name": "SimLab 4 Intensive Care Unit",
+    "type": "실습실",
+    "capacity": null
+  },
+  "Y406": {
+    "building": "영산관",
+    "name": "SimLab 5 Child Health Nursing",
+    "type": "실습실",
+    "capacity": null
+  },
+  "Y407": {
+    "building": "영산관",
+    "name": "SimLab 6 Women's Health Nursing",
+    "type": "실습실",
+    "capacity": null
+  },
+  "Y408": {
+    "building": "영산관",
+    "name": "Debriefing Room 2",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "Y409": {
+    "building": "영산관",
+    "name": "Debriefing Room 3",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "Y410": {
+    "building": "영산관",
+    "name": "Debriefing Room 4",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "Y411": {
+    "building": "영산관",
+    "name": "Debriefing Room 5",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "Y412": {
+    "building": "영산관",
+    "name": "SimLab 7 Psychiatric-Mental Health Nursing",
+    "type": "실습실",
+    "capacity": null
+  },
+  "Y413": {
+    "building": "영산관",
+    "name": "SimLab 8 Community Health Nursing",
+    "type": "실습실",
+    "capacity": null
+  },
+  "Y414": {
+    "building": "영산관",
+    "name": "Debriefing Room 6",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "Y415": {
+    "building": "영산관",
+    "name": "Debriefing Room 7",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "Y416": {
+    "building": "영산관",
+    "name": "Debriefing Room 1",
+    "type": "실습실",
+    "capacity": 20
+  },
+  "Y501": {
+    "building": "영산관",
+    "name": "헤어실습실",
+    "type": "실습실",
+    "capacity": 34
+  },
+  "Y502": {
+    "building": "영산관",
+    "name": "메이크업실습실",
+    "type": "실습실",
+    "capacity": 34
+  },
+  "Y503": {
+    "building": "영산관",
+    "name": "베드실",
+    "type": "실습실",
+    "capacity": 34
+  },
+  "Y504": {
+    "building": "영산관",
+    "name": "Y504",
+    "type": "강의실",
+    "capacity": 40
+  },
+  "Y505": {
+    "building": "영산관",
+    "name": "멀티실습실",
+    "type": "실습실",
+    "capacity": 40
+  },
+  "Y506": {
+    "building": "영산관",
+    "name": "전산실습실",
+    "type": "실습실",
+    "capacity": 34
+  }
 }
