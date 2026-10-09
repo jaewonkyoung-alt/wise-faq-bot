@@ -45,7 +45,7 @@ def shoot(page_html, name, w, h, scale=2):
 # ── 카카오톡 화면 (4주차와 같은 모양) ──
 KCSS = """
 *{box-sizing:border-box;margin:0;padding:0}
-body{width:390px;height:844px;font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#BACEE0;overflow:hidden;display:flex;flex-direction:column}
+body{width:390px;height:%(h)dpx;font-family:'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:#BACEE0;overflow:hidden;display:flex;flex-direction:column}
 .status{height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 24px;font-size:15px;font-weight:600;color:#111}
 .top{height:52px;display:flex;align-items:center;padding:0 14px;gap:10px;border-bottom:1px solid rgba(0,0,0,.05)}
 .top .back{font-size:24px;color:#222}.top .t{font-size:17px;font-weight:700;color:#111;flex:1}.top .ic{font-size:16px;color:#333;letter-spacing:10px}
@@ -69,8 +69,8 @@ body{width:390px;height:844px;font-family:'Apple SD Gothic Neo','Malgun Gothic',
 """
 
 
-def kakao(name, turns):
-    R = json.load(open(os.path.join(SRC, "kakao_responses_w5.json"), encoding="utf-8"))
+def kakao(name, turns, file="kakao_responses_w5.json", height=844):
+    R = json.load(open(os.path.join(SRC, file), encoding="utf-8"))
     body = []
     for i, (k, j) in enumerate(turns):
         x = R[k][j]
@@ -91,7 +91,7 @@ def kakao(name, turns):
         if i == len(turns) - 1:
             body.append('<div class="qr">' + "".join(f"<span>{html.escape(q['label'])}</span>"
                                                       for q in tpl.get("quickReplies", [])) + "</div>")
-    page = (f"<html><head><meta charset='utf-8'><style>{KCSS}</style></head><body>"
+    page = (f"<html><head><meta charset='utf-8'><style>{KCSS % {'h': height}}</style></head><body>"
             "<div class='status'><span>2:20</span><span>▂▄▆  ▮</span></div>"
             "<div class='top'><span class='back'>‹</span><span class='t'>동국대 WISE FAQ</span><span class='ic'>⌕ ≡</span></div>"
             f"<div class='chat'>{''.join(body)}</div>"
@@ -100,7 +100,7 @@ def kakao(name, turns):
     open(hp, "w", encoding="utf-8").write(page)
     png = os.path.join(OUT, f"{name}.png")
     subprocess.run([CHROME, "--headless=new", "--disable-gpu", "--hide-scrollbars", f"--screenshot={png}",
-                    "--window-size=390,844", "--force-device-scale-factor=2", "file://" + hp],
+                    f"--window-size=390,{height}", "--force-device-scale-factor=2", "file://" + hp],
                    check=True, capture_output=True, timeout=90)
     print(png)
 
