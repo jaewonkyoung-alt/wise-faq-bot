@@ -11,7 +11,7 @@ async function main() {
   if (listClubs().length === 0) throw new Error('no clubs');
   const emb = getDb().prepare('SELECT COUNT(*) AS c FROM embeddings').get() as { c: number };
   if (emb.c === 0) await reindexAll();
-  const r1 = await ask("와이즈코딩 연락처");
+  const r1 = await ask("디벨로퍼 연락처");
   const r2 = await ask("밴드 공연하는 동아리 활동 알려줘");
   const r3 = await ask("장학금 신청 방법");
   console.log('--- structured ---');

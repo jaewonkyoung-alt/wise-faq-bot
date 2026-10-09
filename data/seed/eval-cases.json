@@ -1,24 +1,31 @@
 [
   {
     "id": "struct-contact",
-    "question": "와이즈코딩 동아리 연락처 알려줘",
+    "question": "디벨로퍼 동아리 연락처 알려줘",
     "expectRoute": "structured_query",
     "expectVerified": true,
     "expectAnswerIncludes": [
-      "wisecoding@example.dongguk.ac.kr"
+      "developer2023.com"
     ],
-    "expectCitationName": "와이즈코딩"
+    "expectCitationName": "디벨로퍼"
   },
   {
     "id": "struct-time",
-    "question": "사운드웨이브 정기 모임 시간?",
+    "question": "푸르체리마 정기 모임 시간?",
     "expectRoute": "structured_query",
     "expectVerified": true,
     "expectAnswerIncludes": [
       "화",
       "목"
     ],
-    "expectCitationName": "사운드웨이브"
+    "expectCitationName": "푸르체리마"
+  },
+  {
+    "id": "struct-alias",
+    "question": "동산 연락처 알려줘",
+    "expectRoute": "structured_query",
+    "expectVerified": true,
+    "expectCitationName": "동국산악부"
   },
   {
     "id": "struct-list",
@@ -26,7 +33,7 @@
     "expectRoute": "structured_query",
     "expectVerified": true,
     "expectAnswerIncludes": [
-      "북커넥트"
+      "디벨로퍼"
     ]
   },
   {
@@ -34,14 +41,21 @@
     "question": "게임 개발 배우는 동아리 소개해줘",
     "expectRoute": "semantic_search",
     "expectVerified": true,
-    "expectCitationName": "유니티게임즈"
+    "expectCitationName": "디벨로퍼"
+  },
+  {
+    "id": "semantic-star",
+    "question": "별 보는 동아리 있어?",
+    "expectRoute": "semantic_search",
+    "expectVerified": true,
+    "expectCitationName": "푸르체리마"
   },
   {
     "id": "semantic-volunteer",
-    "question": "환경 봉사 활동하는 동아리 뭐 있어?",
+    "question": "적십자 봉사 동아리 활동 소개",
     "expectRoute": "semantic_search",
     "expectVerified": true,
-    "expectCitationName": "그린봉사단"
+    "expectCitationName": "RCY"
   },
   {
     "id": "refuse-tuition",

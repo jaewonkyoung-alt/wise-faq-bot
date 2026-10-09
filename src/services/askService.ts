@@ -8,6 +8,7 @@ import {
   listClubs,
 } from './clubStore';
 import { logUnanswered } from './unanswered';
+import { keywordScores, keywordTopics } from './clubKeywords';
 import type {
   AskResult,
   Citation,
@@ -20,6 +21,9 @@ function minScore(): number {
   const n = Number(process.env.SEMANTIC_MIN_SCORE);
   return Number.isFinite(n) ? n : 0.35;
 }
+
+/** 키워드 사전 점수 1점당 더하는 값 (최대 2점까지) */
+const KEYWORD_WEIGHT = 0.4;
 
 function citationOf(club: Club): Citation {
   return {
@@ -83,6 +87,14 @@ function runStructured(args: StructuredQueryArgs): {
 
   if (args.name) {
     clubs = findClubsByName(args.name);
+    // 별칭 ("동산" → 동국산악부): 소개의 '다른 이름' 목록에서 찾는다
+    if (clubs.length === 0) {
+      const key = args.name.toLowerCase();
+      clubs = listClubs().filter((c) => {
+        const m = c.intro.match(/다른 이름:\s*([^\n]+)/);
+        return !!m && m[1].split(/,\s*/).some((a) => a.trim().toLowerCase() === key);
+      });
+    }
   }
   if (clubs.length === 0 && args.category) {
     clubs = findClubsByCategory(args.category);
@@ -109,7 +121,7 @@ function runStructured(args: StructuredQueryArgs): {
   };
 }
 
-async function runSemantic(args: SemanticSearchArgs): Promise<{
+async function runSemantic(args: SemanticSearchArgs, question: string): Promise<{
   facts: string;
   citations: Citation[];
   scores: { club_id: string; score: number }[];
@@ -158,7 +170,17 @@ async function runSemantic(args: SemanticSearchArgs): Promise<{
     }
   }
 
-  const ranked = Array.from(bestByClub.values())
+  // 하이브리드: 임베딩 유사도 + 키워드 사전 점수 (원래 질문 기준)
+  const kw = keywordScores(question, Array.from(bestByClub.values()).map((v) => v.club));
+  for (const v of bestByClub.values()) {
+    v.score += KEYWORD_WEIGHT * Math.min(kw.get(v.club.id) ?? 0, 2);
+  }
+
+  // 사전에 걸린 동아리가 있으면 그 동아리만 답한다 ("별 보는 동아리"에 보드게임 동아리를 붙이지 않게)
+  const pool = kw.size > 0
+    ? Array.from(bestByClub.values()).filter((v) => kw.has(v.club.id))
+    : Array.from(bestByClub.values());
+  const ranked = pool
     .sort((a, b) => b.score - a.score)
     .slice(0, topK);
 
@@ -180,7 +202,7 @@ async function runSemantic(args: SemanticSearchArgs): Promise<{
         `【${c.name}】 (${c.category})`,
         `소개: ${c.intro}`,
         `활동: ${c.activities}`,
-        `(유사도: ${r.score.toFixed(3)})`,
+        `(검색 점수: ${r.score.toFixed(3)} · 의미 유사도 + 키워드)`,
       ].join('\n');
     })
     .join('\n\n');
@@ -210,6 +232,17 @@ export async function ask(question: string): Promise<AskResult> {
   }
 
   const decision = await llm.decideRoute(q);
+
+  // 키워드 사전에 걸리는 질문("별 보는 동아리", "주짓수 배우고 싶어")은 동아리 분야 질문이다.
+  // 동아리 이름이 아닌 말을 이름으로 잡았거나 범위 밖으로 거절했다면 의미 검색으로 돌린다.
+  if (keywordTopics(q).length > 0) {
+    const name = decision.structured?.name;
+    const nameMiss = decision.route === 'structured_query' && (!name || runStructured({ name }).clubs.length === 0);
+    if (decision.route === 'refuse' || nameMiss) {
+      decision.route = 'semantic_search';
+      decision.semantic = { query: q, top_k: 3 };
+    }
+  }
 
   if (decision.route === 'refuse') {
     logUnanswered(q, decision.refuse_reason || 'refuse', 'refuse');
@@ -264,7 +297,7 @@ export async function ask(question: string): Promise<AskResult> {
   // semantic_search
   const args: SemanticSearchArgs = decision.semantic || { query: q, top_k: 3 };
   if (!args.query) args.query = q;
-  const { facts, citations, scores } = await runSemantic(args);
+  const { facts, citations, scores } = await runSemantic(args, q);
   if (!facts) {
     logUnanswered(q, 'low similarity or no embeddings', 'semantic_search');
     return {
