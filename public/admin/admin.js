@@ -136,7 +136,10 @@
       loadHealth();
       updateStats();
     }
-    if (name === 'graduation') renderGradList();
+    if (name === 'graduation') {
+      renderGradList();
+      if (!state.critDepts) loadCriteria();
+    }
     if (name === 'clubs') renderClubList();
     if (name === 'unanswered') loadUnanswered();
     if (name === 'notices') loadNotices();
@@ -295,6 +298,110 @@
         })
         .join('');
     if (cur) sel.value = cur;
+  }
+
+  /* ── 공식 졸업기준 (조회) ── */
+  async function loadCriteria() {
+    var r = await api('/api/admin/graduation/criteria');
+    if (!r.ok) {
+      toast(koreanAuthError(r.data, r.status), 'error');
+      return;
+    }
+    state.critDepts = (r.data && r.data.departments) || [];
+    $('crit-summary').textContent = '· ' + state.critDepts.length + '개 학과';
+    var sel = $('crit-college');
+    var cur = sel.value;
+    var colleges = [];
+    state.critDepts.forEach(function (d) {
+      if (d.college && colleges.indexOf(d.college) === -1) colleges.push(d.college);
+    });
+    sel.innerHTML = '<option value="">전체</option>' + colleges.map(function (c) {
+      return '<option>' + escapeHtml(c) + '</option>';
+    }).join('');
+    sel.value = cur;
+    renderCriteria();
+  }
+
+  function renderCriteria() {
+    var college = $('crit-college').value;
+    var q = ($('crit-search').value || '').trim();
+    var rows = (state.critDepts || []).filter(function (d) {
+      if (college && d.college !== college) return false;
+      if (q && d.name.indexOf(q) === -1) return false;
+      return true;
+    });
+    var tbody = $('crit-list');
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty">해당 학과가 없습니다.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(function (d) {
+      var span = d.year_from != null ? d.year_from + ' ~ ' + d.year_to + '학번' : '—';
+      var status = d.status && d.status !== '운영' ? ' <span class="muted">(' + escapeHtml(d.status) + ')</span>' : '';
+      var pdf = d.pdf_url
+        ? '<a href="' + escapeHtml(d.pdf_url) + '" target="_blank" rel="noopener">PDF</a>'
+        : '—';
+      return '<tr>' +
+        '<td><div class="row-title">' + escapeHtml(d.name) + status + '</div></td>' +
+        '<td class="muted">' + escapeHtml(d.college || '—') + '</td>' +
+        '<td class="muted">' + span + '</td>' +
+        '<td class="muted">' + d.rows + '</td>' +
+        '<td class="muted">' + pdf + '</td>' +
+        '<td class="actions"><button type="button" class="btn btn-sm btn-secondary" data-act="view-crit" data-id="' +
+        escapeHtml(d.name) + '">보기</button></td></tr>';
+    }).join('');
+  }
+
+  function dash(v) { return v == null || v === '' ? '—' : escapeHtml(String(v)); }
+
+  async function openCriteria(name) {
+    var r = await api('/api/admin/graduation/criteria/' + encodeURIComponent(name));
+    if (!r.ok) {
+      toast(koreanAuthError(r.data, r.status), 'error');
+      return;
+    }
+    state.critOpen = name;
+    var d = (state.critDepts || []).filter(function (x) { return x.name === name; })[0] || {};
+    $('crit-detail').style.display = '';
+    $('crit-detail-title').textContent = name;
+    $('crit-detail-meta').textContent = [d.college, d.phone ? '문의 ' + d.phone : null, '기준 ' + r.data.rows.length + '개']
+      .filter(Boolean).join(' · ');
+    $('crit-rows').innerHTML = r.data.rows.map(function (c) {
+      var same = c.major_single && c.major_single === c.major_primary && c.major_single === c.major_double;
+      var major = same ? c.major_single
+        : [c.major_single ? '단수 ' + c.major_single : null, c.major_primary ? '주 ' + c.major_primary : null,
+          c.major_double ? '복수 ' + c.major_double : null].filter(Boolean).join(' · ');
+      var general = [c.personality_self || c.personality, c.communication, c.liberal_foreign, c.digital, c.academic_basic, c.convergence]
+        .filter(function (v) { return v && v !== '-'; }).length;
+      var lang = [c.lang_test, c.lang_requirement].filter(function (v) { return v && v !== '-'; }).join(' ');
+      return '<tr>' +
+        '<td style="white-space:nowrap">' + escapeHtml(c.student_type) + (c.program ? '<div class="muted">' + escapeHtml(c.program) + '</div>' : '') + '</td>' +
+        '<td class="muted">' + escapeHtml(c.year_label || (c.year_from + '~' + c.year_to)) +
+        (c.affiliation ? '<div class="muted">당시 ' + escapeHtml(c.affiliation) + '</div>' : '') + '</td>' +
+        '<td>' + dash(c.total_credits) + '</td>' +
+        '<td class="muted">' + (major || '—') + '</td>' +
+        '<td class="muted">' + (general ? general + '개 영역' : '—') + '</td>' +
+        '<td class="muted">' + dash(c.volunteer) + '</td>' +
+        '<td class="muted">' + (lang ? escapeHtml(lang) : '—') + '</td>' +
+        '<td class="muted">' + dash(c.thesis) + '</td></tr>';
+    }).join('');
+    var first = r.data.rows[0];
+    if (first && !$('crit-prev-year').value) $('crit-prev-year').value = first.year_from;
+    $('crit-preview').textContent = '학번과 학생구분을 고르고 「카톡 미리보기」를 누르세요.';
+    $('crit-detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async function previewCriteria() {
+    if (!state.critOpen) return;
+    var year = $('crit-prev-year').value;
+    var type = $('crit-prev-type').value;
+    var r = await api('/api/admin/graduation/criteria/' + encodeURIComponent(state.critOpen) +
+      '?year=' + encodeURIComponent(year) + '&type=' + encodeURIComponent(type));
+    if (!r.ok) {
+      toast(koreanAuthError(r.data, r.status), 'error');
+      return;
+    }
+    $('crit-preview').textContent = r.data.preview || '학번을 입력해 주세요.';
   }
 
   function filteredGrads() {
@@ -823,6 +930,11 @@
     $('btn-grad-reset').addEventListener('click', resetGradForm);
     $('btn-grad-preview').addEventListener('click', previewKakao);
     $('btn-grad-reload').addEventListener('click', loadGrads);
+    $('btn-crit-reload').addEventListener('click', loadCriteria);
+    $('crit-college').addEventListener('change', renderCriteria);
+    $('crit-search').addEventListener('input', renderCriteria);
+    $('btn-crit-close').addEventListener('click', function () { $('crit-detail').style.display = 'none'; state.critOpen = null; });
+    $('btn-crit-preview').addEventListener('click', previewCriteria);
     $('filter-year').addEventListener('change', renderGradList);
     $('filter-dept').addEventListener('input', renderGradList);
 
@@ -844,7 +956,9 @@
       var act = t.getAttribute('data-act');
       var id = t.getAttribute('data-id');
       if (!act || !id) return;
-      if (act === 'edit-grad') {
+      if (act === 'view-crit') {
+        openCriteria(id);
+      } else if (act === 'edit-grad') {
         var g = findById(state.grads, id);
         if (g) fillGrad(g);
       } else if (act === 'del-grad') {

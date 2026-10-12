@@ -1,3 +1,4 @@
+import { loadCollegeTaxonomy } from './collegeTaxonomy';
 import fs from 'fs';
 import path from 'path';
 import { getDb } from '../db/database';
@@ -126,6 +127,57 @@ export function getGradDepartment(name: string): GradDepartment | undefined {
   return getDb().prepare('SELECT * FROM grad_departments WHERE name = ?').get(name) as
     | GradDepartment
     | undefined;
+}
+
+export interface CriteriaOverviewRow {
+  name: string;
+  college: string | null;
+  status: string | null;
+  pdf_url: string | null;
+  phone: string | null;
+  rows: number;
+  year_from: number | null;
+  year_to: number | null;
+  types: string[];
+}
+
+/** 관리자 화면: 학과별 공식 기준 현황 (단과대 · 학번 범위 · 행 수 · 원문 PDF) */
+export function listCriteriaOverview(): CriteriaOverviewRow[] {
+  ensureLoaded();
+  const db = getDb();
+  const tax = loadCollegeTaxonomy();
+  const collegeOf = new Map<string, string>();
+  for (const [college, depts] of Object.entries(tax.colleges)) for (const d of depts) collegeOf.set(d, college);
+  const depts = db.prepare('SELECT * FROM grad_departments ORDER BY dept_no').all() as GradDepartment[];
+  const stat = db.prepare(
+    `SELECT COUNT(*) AS n, MIN(year_from) AS f, MAX(year_to) AS t, GROUP_CONCAT(DISTINCT student_type) AS types
+     FROM graduation_criteria WHERE department = ?`
+  );
+  return depts.map((d) => {
+    const s = stat.get(d.name) as { n: number; f: number | null; t: number | null; types: string | null };
+    return {
+      name: d.name,
+      college: collegeOf.get(d.name) ?? null,
+      status: d.status,
+      pdf_url: d.pdf_url,
+      phone: d.phone,
+      rows: s.n,
+      year_from: s.f,
+      year_to: s.t,
+      types: s.types ? s.types.split(',') : [],
+    };
+  });
+}
+
+/** 관리자 화면: 한 학과의 공식 기준 전체 행 */
+export function listCriteriaRows(department: string): GradCriteria[] {
+  ensureLoaded();
+  return getDb()
+    .prepare(
+      `SELECT * FROM graduation_criteria WHERE department = ?
+       ORDER BY CASE WHEN student_type LIKE '신입생%' THEN 0 ELSE 1 END, student_type, year_from, program`
+    )
+    .all(department) as GradCriteria[];
 }
 
 export function countCriteria(): { departments: number; rows: number } {

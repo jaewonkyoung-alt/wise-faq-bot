@@ -111,9 +111,72 @@
       <!-- Graduation -->
       <section id="page-graduation" class="page">
         <h1 class="page-title">졸업요건</h1>
-        <p class="page-desc">가이드에 없는 경우를 보충하는 수동 등록입니다. 가이드의 42개 학과는 공식 기준이 먼저 답변되고, 여기 등록한 값은 그 밖의 학과에만 쓰입니다.</p>
+        <p class="page-desc">학교 「학사제도 및 학업이수가이드」에서 가져온 공식 기준입니다. 카톡 답변은 이 값으로 나갑니다.</p>
 
-        <div class="split">
+        <div class="card">
+          <div class="card-head">
+            <h2>공식 졸업기준 <span class="muted" id="crit-summary"></span></h2>
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-crit-reload">새로고침</button>
+          </div>
+          <div class="filters">
+            <div class="field-wrap">
+              <label class="field" for="crit-college">단과대학</label>
+              <select id="crit-college"><option value="">전체</option></select>
+            </div>
+            <div class="field-wrap">
+              <label class="field" for="crit-search">학과 검색</label>
+              <input id="crit-search" type="search" placeholder="학과명 일부" />
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="data">
+              <thead>
+                <tr><th>학과</th><th>단과대학</th><th>학번 범위</th><th>기준 수</th><th>원문</th><th></th></tr>
+              </thead>
+              <tbody id="crit-list"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" id="crit-detail" style="display:none">
+          <div class="card-head">
+            <h2 id="crit-detail-title"></h2>
+            <button type="button" class="btn btn-sm btn-ghost" id="btn-crit-close">닫기</button>
+          </div>
+          <p class="muted" id="crit-detail-meta" style="margin:0 0 10px"></p>
+          <div class="table-wrap">
+            <table class="data">
+              <thead>
+                <tr><th>학생구분</th><th>학번</th><th>졸업학점</th><th>전공</th><th>교양</th><th>사회봉사</th><th>외국어</th><th>논문</th></tr>
+              </thead>
+              <tbody id="crit-rows"></tbody>
+            </table>
+          </div>
+          <div class="filters" style="margin-top:14px">
+            <div class="field-wrap">
+              <label class="field" for="crit-prev-year">학번</label>
+              <input id="crit-prev-year" type="number" placeholder="2021" />
+            </div>
+            <div class="field-wrap">
+              <label class="field" for="crit-prev-type">학생구분</label>
+              <select id="crit-prev-type">
+                <option>신입생-내국인</option><option>편입생-내국인</option>
+                <option>신입생-외국인</option><option>편입생-외국인</option>
+              </select>
+            </div>
+            <div class="field-wrap" style="align-self:flex-end">
+              <button type="button" class="btn btn-sm" id="btn-crit-preview">카톡 미리보기</button>
+            </div>
+          </div>
+          <div class="kakao-frame" style="margin-top:10px">
+            <div class="kakao-label">WISE FAQ</div>
+            <div class="kakao-bubble" id="crit-preview">학번과 학생구분을 고르고 「카톡 미리보기」를 누르세요.</div>
+          </div>
+        </div>
+
+        <details class="card">
+          <summary><strong>보충 등록</strong> <span class="muted">— 가이드에 없는 학과·과정만 (가이드 학과는 공식 기준이 먼저 답변됨)</span></summary>
+        <div class="split" style="margin-top:14px">
           <div>
             <div class="card">
               <h2 id="grad-form-title">졸업요건 추가</h2>
@@ -196,9 +259,9 @@
           </div>
         </div>
 
-        <div class="card">
+        <div class="card" style="margin-top:14px">
           <div class="card-head">
-            <h2>등록된 졸업요건</h2>
+            <h2>보충 등록 목록</h2>
             <button type="button" class="btn btn-sm btn-secondary" id="btn-grad-reload">목록 새로고침</button>
           </div>
           <div class="filters">
@@ -225,6 +288,7 @@
             </table>
           </div>
         </div>
+              </details>
       </section>
 
       <!-- Clubs -->

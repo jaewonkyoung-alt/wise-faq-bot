@@ -599,3 +599,13 @@ table.data .actions {
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
   .page-title { font-size: 1.25rem; }
 }
+
+/* 졸업요건 — 보충 등록 접기 */
+details.card > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 2px 0;
+}
+details.card > summary::-webkit-details-marker { display: none; }
+details.card > summary::before { content: '▸ '; color: var(--muted); }
+details.card[open] > summary::before { content: '▾ '; }

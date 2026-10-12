@@ -17,7 +17,15 @@ import {
   updateGraduation,
 } from '../services/graduationService';
 import { reloadGraduationKb, scanGraduationKb } from '../services/kbGraduation';
-import { countCriteria } from '../services/gradCriteria';
+import {
+  countCriteria,
+  findCriteria,
+  formatCriteriaAnswer,
+  formatCriteriaMiss,
+  listCriteriaOverview,
+  listCriteriaRows,
+} from '../services/gradCriteria';
+import type { StudentType } from '../types/gradCriteria';
 import { reloadRoomMaps, listBuildingCodes } from '../services/roomCode';
 
 import { checkAdmin } from '../middleware/adminAuth';
@@ -165,6 +173,32 @@ adminRouter.get('/graduation', (req, res) => {
   const rows = listGraduation();
   // criteria: 가이드에서 적재한 공식 기준 규모 (대시보드 표시용)
   res.json({ count: rows.length, requirements: rows, criteria: countCriteria() });
+});
+
+/* 공식 졸업기준 (학교 가이드에서 적재) — 조회 전용. 바꾸는 방법은 PDF 올리기(예정) */
+adminRouter.get('/graduation/criteria', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const departments = listCriteriaOverview();
+  res.json({ count: departments.length, rows: departments.reduce((a, d) => a + d.rows, 0), departments });
+});
+
+adminRouter.get('/graduation/criteria/:department', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const department = req.params.department;
+  const rows = listCriteriaRows(department);
+  if (rows.length === 0) {
+    res.status(404).json({ error: 'department not found' });
+    return;
+  }
+  // 카톡 미리보기: ?year=2021&type=신입생-내국인
+  const year = Number(req.query.year);
+  const type = (String(req.query.type || '') || '신입생-내국인') as StudentType;
+  let preview: string | null = null;
+  if (Number.isFinite(year) && year > 0) {
+    const hit = findCriteria(year, department, type);
+    preview = hit.length ? formatCriteriaAnswer(year, department, hit, type) : formatCriteriaMiss(year, department, type);
+  }
+  res.json({ department, rows, preview });
 });
 
 adminRouter.get('/graduation/:id', (req, res) => {
