@@ -1,4 +1,6 @@
-import { Router } from 'express';
+import express, { Router } from 'express';
+import { spawn } from 'child_process';
+import path from 'path';
 import {
   createClub,
   deleteClub,
@@ -26,6 +28,15 @@ import {
   listCriteriaRows,
 } from '../services/gradCriteria';
 import type { StudentType } from '../types/gradCriteria';
+import {
+  addPdf,
+  applyBatch,
+  departmentMarkdown,
+  discardBatch,
+  getBatch,
+  listBatches,
+  revertBatch,
+} from '../services/gradImport';
 import { reloadRoomMaps, listBuildingCodes } from '../services/roomCode';
 
 import { checkAdmin } from '../middleware/adminAuth';
@@ -181,6 +192,84 @@ adminRouter.get('/graduation/criteria', (req, res) => {
   const departments = listCriteriaOverview();
   res.json({ count: departments.length, rows: departments.reduce((a, d) => a + d.rows, 0), departments });
 });
+
+/* 공식 기준 내려받기 — 엑셀(전체) · 학과별 문서(MD) */
+adminRouter.get('/graduation/criteria.xlsx', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const rows = listCriteriaOverview().flatMap((d) => listCriteriaRows(d.name));
+  const py = process.env.GRAD_PYTHON || path.resolve(process.cwd(), 'tools/grad-extract/.venv/bin/python');
+  const child = spawn(py, [path.resolve(process.cwd(), 'tools/grad-extract/criteria_to_xlsx.py')]);
+  const chunks: Buffer[] = [];
+  child.stdout.on('data', (c: Buffer) => chunks.push(c));
+  child.on('error', () => res.status(500).json({ error: '엑셀 변환 도구(파이썬 환경)가 없습니다.' }));
+  child.on('close', (code) => {
+    if (res.headersSent) return;
+    if (code !== 0) {
+      res.status(500).json({ error: '엑셀을 만들지 못했습니다.' });
+      return;
+    }
+    const name = encodeURIComponent(`공식졸업기준_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${name}`);
+    res.send(Buffer.concat(chunks));
+  });
+  child.stdin.end(JSON.stringify({ rows }));
+});
+
+adminRouter.get('/graduation/criteria/:department/md', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const dept = req.params.department;
+  if (listCriteriaRows(dept).length === 0) {
+    res.status(404).json({ error: 'department not found' });
+    return;
+  }
+  res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+  res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(dept + '_졸업기준.md')}`);
+  res.send(departmentMarkdown(dept));
+});
+
+/* 공식 PDF 올리기 → 미리보기 → 적용 / 되돌리기 */
+adminRouter.post(
+  '/graduation/import',
+  express.raw({ type: 'application/pdf', limit: '30mb' }),
+  async (req, res) => {
+    if (!checkAdmin(req, res)) return;
+    const name = decodeURIComponent(String(req.header('x-file-name') || 'upload.pdf'));
+    const batchId = req.query.batch ? String(req.query.batch) : null;
+    try {
+      const batch = await addPdf(batchId, name, Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0));
+      res.status(201).json(batch);
+    } catch (e) {
+      res.status(400).json({ error: (e as Error).message });
+    }
+  }
+);
+
+adminRouter.get('/graduation/import', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  res.json({ batches: listBatches() });
+});
+
+adminRouter.get('/graduation/import/:id', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const b = getBatch(req.params.id);
+  if (!b) {
+    res.status(404).json({ error: 'batch not found' });
+    return;
+  }
+  res.json(b);
+});
+
+for (const [action, fn] of [['apply', applyBatch], ['revert', revertBatch], ['discard', discardBatch]] as const) {
+  adminRouter.post(`/graduation/import/:id/${action}`, (req, res) => {
+    if (!checkAdmin(req, res)) return;
+    try {
+      res.json((fn as (id: string) => unknown)(req.params.id));
+    } catch (e) {
+      res.status(400).json({ error: (e as Error).message });
+    }
+  });
+}
 
 adminRouter.get('/graduation/criteria/:department', (req, res) => {
   if (!checkAdmin(req, res)) return;

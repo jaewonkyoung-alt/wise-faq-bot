@@ -17,3 +17,7 @@ data/*.db-shm
 data/*.db-wal
 data/wise.db
 data/_backup/
+
+# python venv (tools/grad-extract)
+.venv/
+data/imports/

@@ -139,6 +139,7 @@
     if (name === 'graduation') {
       renderGradList();
       if (!state.critDepts) loadCriteria();
+      loadImportHistory();
     }
     if (name === 'clubs') renderClubList();
     if (name === 'unanswered') loadUnanswered();
@@ -402,6 +403,147 @@
       return;
     }
     $('crit-preview').textContent = r.data.preview || '학번을 입력해 주세요.';
+  }
+
+  /* ── 공식 PDF 올리기 → 미리보기 → 적용 / 되돌리기 ── */
+  async function uploadPdfs(files) {
+    files = Array.prototype.filter.call(files, function (f) { return /\.pdf$/i.test(f.name) || f.type === 'application/pdf'; });
+    if (!files.length) {
+      toast('PDF 파일만 올릴 수 있습니다.', 'error');
+      return;
+    }
+    var batchId = state.impBatch && state.impBatch.status === 'preview' ? state.impBatch.id : null;
+    for (var i = 0; i < files.length; i++) {
+      $('imp-result').innerHTML = '<p class="muted">변환 중… (' + (i + 1) + ' / ' + files.length + ') ' + escapeHtml(files[i].name) + '</p>';
+      var h = { 'Content-Type': 'application/pdf', 'x-file-name': encodeURIComponent(files[i].name) };
+      if (state.token) h['x-admin-token'] = state.token;
+      var res = await fetch('/api/admin/graduation/import' + (batchId ? '?batch=' + encodeURIComponent(batchId) : ''), {
+        method: 'POST', headers: h, body: files[i],
+      });
+      var data = await res.json().catch(function () { return null; });
+      if (!res.ok) {
+        toast((data && data.error) || ('올리기 실패 (' + res.status + ')'), 'error');
+        continue;
+      }
+      state.impBatch = data;
+      batchId = data.id;
+    }
+    renderImport();
+    loadImportHistory();
+  }
+
+  function diffSummary(d) {
+    if (!d) return '';
+    var parts = [];
+    if (d.changed.length) parts.push('값 변경 ' + d.changed.length + '곳');
+    if (d.added.length) parts.push('새 학번 구간 ' + d.added.length + '개');
+    if (d.removed.length) parts.push('없어지는 학번 구간 ' + d.removed.length + '개');
+    return parts.length ? parts.join(' · ') : '바뀌는 값 없음 (지금과 같음)';
+  }
+
+  function rowLabel(r) {
+    var y = r.year_from === r.year_to ? r.year_from : r.year_from + '~' + r.year_to;
+    return (r.program ? r.program + ' · ' : '') + y + '학번 · ' + r.student_type;
+  }
+
+  function renderImport() {
+    var b = state.impBatch;
+    if (!b) {
+      $('imp-result').innerHTML = '';
+      return;
+    }
+    var applicable = 0;
+    var html = b.files.map(function (f) {
+      var head = '<h3>' + escapeHtml(f.file) + (f.department ? ' → ' + escapeHtml(f.department) : '') + '</h3>';
+      if (f.error) return '<div class="imp-file">' + head + '<p class="imp-warn">' + escapeHtml(f.error) + '</p></div>';
+      applicable += 1;
+      var d = f.diff;
+      var out = head + '<p class="imp-ok">' + escapeHtml(diffSummary(d)) + (d && d.newDepartment ? ' · 새 학과' : '') + '</p>';
+      out += (f.warnings || []).map(function (w) { return '<p class="imp-warn">⚠ ' + escapeHtml(w) + '</p>'; }).join('');
+      var rows = [];
+      (d ? d.changed : []).forEach(function (c) {
+        c.fields.forEach(function (x) {
+          rows.push('<tr><td>' + escapeHtml(c.label) + '</td><td>' + escapeHtml(x.label) + '</td><td class="before">' +
+            escapeHtml(x.before == null ? '(없음)' : x.before) + '</td><td class="after">' + escapeHtml(x.after == null ? '(없음)' : x.after) + '</td></tr>');
+        });
+      });
+      (d ? d.added : []).forEach(function (r) {
+        rows.push('<tr><td>' + escapeHtml(rowLabel(r)) + '</td><td>새 구간</td><td class="before">—</td><td class="after">졸업학점 ' + escapeHtml(r.total_credits || '—') + '</td></tr>');
+      });
+      (d ? d.removed : []).forEach(function (r) {
+        rows.push('<tr><td>' + escapeHtml(rowLabel(r)) + '</td><td>없어짐</td><td class="before">졸업학점 ' + escapeHtml(r.total_credits || '—') + '</td><td class="after">—</td></tr>');
+      });
+      if (rows.length) {
+        out += '<div class="table-wrap"><table class="data"><thead><tr><th>학번 · 학생구분</th><th>항목</th><th>지금</th><th>PDF</th></tr></thead><tbody>' +
+          rows.join('') + '</tbody></table></div>';
+      }
+      return '<div class="imp-file">' + out + '</div>';
+    }).join('');
+    if (b.status === 'preview') {
+      html += '<div class="imp-actions">' +
+        (applicable ? '<button type="button" class="btn" data-act="imp-apply" data-id="' + escapeHtml(b.id) + '">적용</button>' : '') +
+        '<button type="button" class="btn btn-secondary" data-act="imp-discard" data-id="' + escapeHtml(b.id) + '">취소</button></div>';
+    } else {
+      html += '<p class="imp-ok">' + ({ applied: '적용됨 — 카톡 답변에 바로 반영되었습니다. 잘못 올렸다면 아래 기록에서 되돌릴 수 있습니다.', reverted: '되돌림 — 올리기 전 값으로 돌아갔습니다.', discarded: '취소됨 — 아무것도 바뀌지 않았습니다.' }[b.status] || b.status) + '</p>';
+    }
+    $('imp-result').innerHTML = html;
+  }
+
+  async function importAction(action, id) {
+    if (action === 'apply' && !window.confirm('카톡 답변이 바로 바뀝니다. 적용할까요?')) return;
+    if (action === 'revert' && !window.confirm('적용 전 값으로 되돌릴까요?')) return;
+    var r = await api('/api/admin/graduation/import/' + encodeURIComponent(id) + '/' + action, { method: 'POST' });
+    if (!r.ok) {
+      toast((r.data && r.data.error) || '실패', 'error');
+      return;
+    }
+    var b = r.data.batch || r.data;
+    if (state.impBatch && state.impBatch.id === b.id) state.impBatch = b;
+    renderImport();
+    toast({ apply: '적용했습니다', revert: '되돌렸습니다', discard: '취소했습니다' }[action], 'ok');
+    loadImportHistory();
+    state.critDepts = null;
+    loadCriteria();
+    if (state.critOpen && r.data.departments && r.data.departments.indexOf(state.critOpen) !== -1) openCriteria(state.critOpen);
+  }
+
+  async function loadImportHistory() {
+    var r = await api('/api/admin/graduation/import');
+    if (!r.ok) return;
+    var list = (r.data && r.data.batches) || [];
+    if (!list.length) {
+      $('imp-history').innerHTML = '<p class="muted">아직 올린 기록이 없습니다.</p>';
+      return;
+    }
+    var label = { preview: '미리보기', applied: '적용됨', reverted: '되돌림', discarded: '취소됨' };
+    $('imp-history').innerHTML = '<table class="data"><tbody>' + list.map(function (b) {
+      var depts = b.files.filter(function (f) { return f.department && !f.error; }).map(function (f) { return f.department; });
+      var t = new Date(b.reverted_at || b.applied_at || b.created_at);
+      var when = isNaN(t) ? '' : t.toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      return '<tr><td class="muted">' + escapeHtml(when) + '</td><td>' + escapeHtml(depts.join(', ') || '(학과 없음)') +
+        '</td><td class="muted">' + escapeHtml(label[b.status] || b.status) + '</td><td class="actions">' +
+        (b.status === 'applied' ? '<button type="button" class="btn btn-sm btn-secondary" data-act="imp-revert" data-id="' + escapeHtml(b.id) + '">되돌리기</button>' : '') +
+        '</td></tr>';
+    }).join('') + '</tbody></table>';
+  }
+
+  async function downloadAuthed(url, fallbackName) {
+    var h = {};
+    if (state.token) h['x-admin-token'] = state.token;
+    var res = await fetch(url, { headers: h });
+    if (!res.ok) {
+      var e = await res.json().catch(function () { return null; });
+      toast((e && e.error) || '내려받기 실패', 'error');
+      return;
+    }
+    var cd = res.headers.get('Content-Disposition') || '';
+    var m = cd.match(/filename\*=UTF-8''([^;]+)/);
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(await res.blob());
+    a.download = m ? decodeURIComponent(m[1]) : fallbackName;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
   }
 
   function filteredGrads() {
@@ -935,6 +1077,15 @@
     $('crit-search').addEventListener('input', renderCriteria);
     $('btn-crit-close').addEventListener('click', function () { $('crit-detail').style.display = 'none'; state.critOpen = null; });
     $('btn-crit-preview').addEventListener('click', previewCriteria);
+    $('imp-file').addEventListener('change', function (e) { uploadPdfs(e.target.files); e.target.value = ''; });
+    var dz = $('imp-drop');
+    ['dragenter', 'dragover'].forEach(function (t) { dz.addEventListener(t, function (e) { e.preventDefault(); dz.classList.add('drag'); }); });
+    ['dragleave', 'drop'].forEach(function (t) { dz.addEventListener(t, function (e) { e.preventDefault(); dz.classList.remove('drag'); }); });
+    dz.addEventListener('drop', function (e) { uploadPdfs(e.dataTransfer.files); });
+    $('btn-crit-xlsx').addEventListener('click', function () { downloadAuthed('/api/admin/graduation/criteria.xlsx', '공식졸업기준.xlsx'); });
+    $('btn-crit-md').addEventListener('click', function () {
+      if (state.critOpen) downloadAuthed('/api/admin/graduation/criteria/' + encodeURIComponent(state.critOpen) + '/md', state.critOpen + '.md');
+    });
     $('filter-year').addEventListener('change', renderGradList);
     $('filter-dept').addEventListener('input', renderGradList);
 
@@ -956,7 +1107,9 @@
       var act = t.getAttribute('data-act');
       var id = t.getAttribute('data-id');
       if (!act || !id) return;
-      if (act === 'view-crit') {
+      if (act === 'imp-apply' || act === 'imp-discard' || act === 'imp-revert') {
+        importAction(act.slice(4), id);
+      } else if (act === 'view-crit') {
         openCriteria(id);
       } else if (act === 'edit-grad') {
         var g = findById(state.grads, id);

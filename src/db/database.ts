@@ -159,6 +159,17 @@ function migrate(database: Database.Database): void {
     );
     CREATE INDEX IF NOT EXISTS idx_notice_deliveries_notice ON notice_deliveries(notice_id);
 
+    -- 관리자 'PDF 올리기': 올린 PDF 묶음 · 미리보기 결과 · 적용 전 값(되돌리기용)
+    CREATE TABLE IF NOT EXISTS grad_import_batches (
+      id TEXT PRIMARY KEY,
+      status TEXT NOT NULL DEFAULT 'preview',   -- preview | applied | reverted | discarded
+      files_json TEXT NOT NULL DEFAULT '[]',
+      before_json TEXT,
+      created_at TEXT NOT NULL,
+      applied_at TEXT,
+      reverted_at TEXT
+    );
+
     CREATE TABLE IF NOT EXISTS kakao_sessions (
       user_key TEXT PRIMARY KEY,
       flow TEXT NOT NULL DEFAULT 'menu',
@@ -178,6 +189,11 @@ function ensureClubColumns(database: Database.Database): void {
   const cols = (database.prepare(`PRAGMA table_info(clubs)`).all() as Array<{ name: string }>).map((c) => c.name);
   if (!cols.includes('summary')) {
     database.exec(`ALTER TABLE clubs ADD COLUMN summary TEXT NOT NULL DEFAULT ''`);
+  }
+  // 어느 임베딩 모델로 만든 벡터인지 — 모델이 바뀌면 시작할 때 다시 임베딩한다.
+  const ecols = (database.prepare(`PRAGMA table_info(embeddings)`).all() as Array<{ name: string }>).map((c) => c.name);
+  if (!ecols.includes('embed_model')) {
+    database.exec(`ALTER TABLE embeddings ADD COLUMN embed_model TEXT NOT NULL DEFAULT ''`);
   }
 }
 

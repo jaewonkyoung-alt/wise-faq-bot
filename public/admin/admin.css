@@ -609,3 +609,18 @@ details.card > summary {
 details.card > summary::-webkit-details-marker { display: none; }
 details.card > summary::before { content: '▸ '; color: var(--muted); }
 details.card[open] > summary::before { content: '▾ '; }
+
+/* 졸업요건 — 공식 PDF 올리기 */
+.dropzone {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 22px 12px; border: 1.5px dashed var(--muted); border-radius: 10px;
+  cursor: pointer; text-align: center;
+}
+.dropzone.drag { background: var(--surface-2); border-color: var(--text); }
+.imp-file { border-top: 1px solid var(--surface-2); padding: 12px 0 4px; }
+.imp-file h3 { margin: 0 0 4px; font-size: 0.95rem; }
+.imp-warn { color: var(--danger); font-size: 0.85rem; margin: 4px 0; }
+.imp-ok { color: var(--muted); font-size: 0.85rem; margin: 4px 0; }
+table.data td.before { color: var(--muted); text-decoration: line-through; }
+table.data td.after { font-weight: 650; }
+.imp-actions { display: flex; gap: 8px; margin-top: 12px; }

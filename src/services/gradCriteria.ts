@@ -14,7 +14,7 @@ import type { GradCriteria, GradDepartment, StudentType } from '../types/gradCri
 const SOURCE_DIR = path.resolve(process.cwd(), 'data/graduation-source');
 export const GUIDE_NAME = '2026 학사제도 및 학업이수가이드';
 
-const COLUMNS = [
+export const COLUMNS = [
   'dept_no', 'department', 'program', 'year_label', 'year_from', 'year_to', 'student_type',
   'affiliation', 'personality_self', 'personality', 'communication', 'liberal_foreign', 'digital',
   'academic_basic', 'convergence', 'foreign_common', 'major_single', 'major_primary', 'major_double',
