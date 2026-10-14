@@ -39,6 +39,7 @@ function headline(club: Club): string {
 
 /** 질문에 걸린 사전 항목 수 (0이면 키워드 질문이 아님) */
 export function keywordTopics(question: string): Entry[] {
+  if (process.env.CLUB_KEYWORDS === 'off') return []; // 평가용: 임베딩만의 성능을 잴 때 (npm run eval:clubs)
   return loadClubKeywords().filter((e) => e.q.test(question));
 }
 

@@ -6,9 +6,9 @@ import path from 'path';
 import { createApp } from './app';
 import { getDb, getDbPath } from './db/database';
 import { listClubs } from './services/clubStore';
-import { reindexAll } from './services/reindex';
+import { ensureEmbeddingsCurrent } from './services/reindex';
 import { createLlmProvider } from './llm/provider';
-import { getEmbedProvider } from './embeddings/embedder';
+import { embedModelId } from './embeddings/embedder';
 import { listGraduation } from './services/graduationService';
 import { countCriteria, importGradCriteria } from './services/gradCriteria';
 
@@ -39,16 +39,7 @@ async function ensureClubsSeeded(): Promise<void> {
     if (filled) console.log(`[wise-faq-bot] filled summary for ${filled} clubs`);
   }
   if (clubs.length > 0) {
-    const row = getDb()
-      .prepare('SELECT COUNT(*) AS c FROM embeddings')
-      .get() as { c: number };
-    if (row.c === 0) {
-      console.log('[wise-faq-bot] embeddings empty — reindexing…');
-      const result = await reindexAll();
-      console.log(
-        `[wise-faq-bot] reindex: ${result.clubs} clubs, ${result.chunks} chunks in ${result.ms}ms (${result.provider})`
-      );
-    }
+    await refreshEmbeddings();
     return;
   }
 
@@ -74,10 +65,24 @@ async function ensureClubsSeeded(): Promise<void> {
   for (const item of raw) {
     upsertClubByName(item);
   }
-  const result = await reindexAll();
-  console.log(
-    `[wise-faq-bot] seeded+reindex: ${result.clubs} clubs, ${result.chunks} chunks in ${result.ms}ms`
-  );
+  console.log(`[wise-faq-bot] seeded ${raw.length} clubs`);
+  await refreshEmbeddings();
+}
+
+/** 벡터가 없거나 다른 임베딩 모델로 만든 것이면 다시 만든다. 임베딩 서버가 꺼져 있어도 서버는 뜬다 (키워드 검색으로 답함). */
+async function refreshEmbeddings(): Promise<void> {
+  try {
+    const result = await ensureEmbeddingsCurrent();
+    if (result) {
+      console.log(
+        `[wise-faq-bot] reindex: ${result.clubs} clubs, ${result.chunks} chunks in ${result.ms}ms (${embedModelId()})`
+      );
+    }
+  } catch (e) {
+    // 맥이 켜질 때 서버가 Ollama 보다 먼저 뜰 수 있다 — 5분 뒤 다시 시도
+    console.warn(`[wise-faq-bot] embeddings not refreshed (${embedModelId()}): ${(e as Error).message} — keyword search only, retry in 5 min`);
+    setTimeout(() => void refreshEmbeddings(), 5 * 60 * 1000).unref();
+  }
 }
 
 /**
@@ -109,7 +114,7 @@ async function main() {
     console.log(`[wise-faq-bot] Phase-1: graduation (primary) + clubs`);
     console.log(`[wise-faq-bot] db: ${getDbPath()}`);
     console.log(
-      `[wise-faq-bot] llm=${createLlmProvider().name} embed=${getEmbedProvider()} clubs=${clubs} graduation=${grads}`
+      `[wise-faq-bot] llm=${createLlmProvider().name} embed=${embedModelId()} clubs=${clubs} graduation=${grads}`
     );
     console.log(`[wise-faq-bot] listening on http://localhost:${PORT}`);
     console.log(`[wise-faq-bot] health:      GET /health`);

@@ -3,8 +3,10 @@
  * Mock: deterministic bag-of-char n-gram hash vectors (no network).
  * OpenAI / Gemini: real embedding APIs when keys are set.
  *
+ * Ollama: 로컬 임베딩 모델 (기본 qwen3-embedding:0.6b, 1024차원) — 키 없이 이 Mac에서 돈다.
+ *
  * When LLM_PROVIDER=openrouter, embeddings default to mock (chat-only models
- * like openai/gpt-oss-120b). Override with EMBED_PROVIDER=mock|openai|gemini.
+ * like openai/gpt-oss-120b). Override with EMBED_PROVIDER=mock|openai|gemini|ollama.
  */
 
 const MOCK_DIM = 256;
@@ -108,7 +110,37 @@ async function geminiEmbed(text: string): Promise<number[]> {
   return values;
 }
 
-export type EmbedProvider = 'mock' | 'openai' | 'gemini';
+const OLLAMA_URL = () => (process.env.OLLAMA_URL || 'http://127.0.0.1:11434').replace(/\/$/, '');
+const OLLAMA_MODEL = () => process.env.OLLAMA_EMBEDDING_MODEL || 'qwen3-embedding:0.6b';
+// 카톡 스킬은 5초 안에 답해야 한다. 질문 임베딩이 이보다 늦으면 키워드 검색만으로 답한다.
+const QUERY_TIMEOUT_MS = () => Number(process.env.EMBED_QUERY_TIMEOUT_MS) || 3000;
+
+async function ollamaEmbed(texts: string[], timeoutMs?: number): Promise<number[][]> {
+  const res = await fetch(`${OLLAMA_URL()}/api/embed`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    // 모델(639MB)을 메모리에 붙잡아 두어 첫 질문도 느리지 않게 한다.
+    body: JSON.stringify({ model: OLLAMA_MODEL(), input: texts, keep_alive: '24h' }),
+    signal: timeoutMs ? AbortSignal.timeout(timeoutMs) : undefined,
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Ollama embeddings failed: ${res.status} ${body}`);
+  }
+  const data = (await res.json()) as { embeddings?: number[][] };
+  if (!data.embeddings || data.embeddings.length !== texts.length) throw new Error('Ollama embedding missing values');
+  return data.embeddings;
+}
+
+/** qwen3-embedding 은 질문 쪽에만 지시문을 붙이도록 학습됐다 (문서 쪽은 그대로). */
+function queryText(text: string): string {
+  if (getEmbedProvider() === 'ollama' && /qwen3-embedding/i.test(OLLAMA_MODEL())) {
+    return `Instruct: Given a student's question, retrieve the university club that matches it\nQuery: ${text}`;
+  }
+  return text;
+}
+
+export type EmbedProvider = 'mock' | 'openai' | 'gemini' | 'ollama';
 
 export function getEmbedProvider(): EmbedProvider {
   // Explicit override: chat (e.g. openrouter) can stay separate from embeddings.
@@ -116,6 +148,7 @@ export function getEmbedProvider(): EmbedProvider {
   if (override === 'mock') return 'mock';
   if (override === 'openai' && process.env.OPENAI_API_KEY) return 'openai';
   if (override === 'gemini' && process.env.GEMINI_API_KEY) return 'gemini';
+  if (override === 'ollama') return 'ollama';
 
   const p = (process.env.LLM_PROVIDER || 'mock').toLowerCase();
   // OpenRouter default chat model (gpt-oss-120b) is chat-only — keep mock embeddings.
@@ -125,14 +158,37 @@ export function getEmbedProvider(): EmbedProvider {
   return 'mock';
 }
 
+/** 저장된 벡터가 어느 모델로 만든 것인지 — 바뀌면 다시 임베딩해야 한다. */
+export function embedModelId(): string {
+  const p = getEmbedProvider();
+  if (p === 'ollama') return `ollama:${OLLAMA_MODEL()}`;
+  if (p === 'openai') return `openai:${process.env.OPENAI_EMBEDDING_MODEL || 'text-embedding-3-small'}`;
+  if (p === 'gemini') return `gemini:${process.env.GEMINI_EMBEDDING_MODEL || 'text-embedding-004'}`;
+  return `mock:${MOCK_DIM}`;
+}
+
+/** 검색 질문 임베딩 — 시간 제한이 있다. 실패하면 null (호출 쪽이 키워드 검색으로 대신한다). */
+export async function embedQuery(text: string): Promise<number[] | null> {
+  try {
+    if (getEmbedProvider() === 'ollama') return (await ollamaEmbed([queryText(text)], QUERY_TIMEOUT_MS()))[0];
+    return await embedText(text);
+  } catch (e) {
+    console.warn(`[embed] query embedding failed (${embedModelId()}): ${(e as Error).message}`);
+    return null;
+  }
+}
+
+/** 문서(동아리 소개) 임베딩 */
 export async function embedText(text: string): Promise<number[]> {
   const provider = getEmbedProvider();
+  if (provider === 'ollama') return (await ollamaEmbed([text]))[0];
   if (provider === 'openai') return openaiEmbed(text);
   if (provider === 'gemini') return geminiEmbed(text);
   return mockEmbed(text);
 }
 
 export async function embedBatch(texts: string[]): Promise<number[][]> {
+  if (getEmbedProvider() === 'ollama') return texts.length ? ollamaEmbed(texts) : [];
   const out: number[][] = [];
   for (const t of texts) {
     out.push(await embedText(t));

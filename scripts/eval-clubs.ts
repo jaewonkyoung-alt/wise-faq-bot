@@ -5,6 +5,8 @@
  *
  *   npm run eval:clubs                 # 임시 DB, 현재 검색 방식
  *   CLUBS_SEED=경로 npm run eval:clubs # 다른 시드로 비교
+ *   EMBED_PROVIDER=ollama npm run eval:clubs   # 로컬 임베딩(qwen3-embedding:0.6b)
+ *   CLUB_KEYWORDS=off npm run eval:clubs       # 키워드 사전 끄고 임베딩만
  */
 import dotenv from 'dotenv';
 import fs from 'fs';
@@ -18,6 +20,7 @@ import { getDb } from '../src/db/database';
 import { upsertClubByName } from '../src/services/clubStore';
 import { reindexAll } from '../src/services/reindex';
 import { ask } from '../src/services/askService';
+import { embedModelId } from '../src/embeddings/embedder';
 
 export const CLUB_CASES: Array<[string, string[]]> = [
   ['별 보는 동아리 있어?', ['푸르체리마']],
@@ -96,7 +99,7 @@ async function main(): Promise<void> {
   const raw = JSON.parse(fs.readFileSync(seed, 'utf-8'));
   for (const c of raw) upsertClubByName(c);
   const idx = await reindexAll();
-  console.log(`seed ${path.basename(seed)} · ${idx.clubs} clubs · ${idx.chunks} chunks (${idx.provider})\n`);
+  console.log(`seed ${path.basename(seed)} · ${idx.clubs} clubs · ${idx.chunks} chunks (${embedModelId()}) · 키워드 사전 ${process.env.CLUB_KEYWORDS === 'off' ? '끔' : '켬'}\n`);
 
   const hit = await runCases('기본 30문항 (사전 작성에 참고)', CLUB_CASES);
   const held = await runCases('새 질문 20문항 (사전 수정 없이 1회 측정)', HELDOUT_CASES);
