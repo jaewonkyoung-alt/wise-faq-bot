@@ -155,8 +155,20 @@ export function buildAskSkillResponse(
   utterance: string
 ): KakaoSkillResponse {
   void utterance;
-  const text = result.answer.slice(0, 900);
-  return simpleText(text, defaultClubReplies());
+  if (result.answer.length <= 900) return simpleText(result.answer, defaultClubReplies());
+  // 길면 문단 경계에서 말풍선을 나눈다 (글자 수로 자르면 동아리 소개가 중간에 끊긴다)
+  const bubbles: string[] = [];
+  let cur = '';
+  for (const para of result.answer.split('\n\n')) {
+    if (cur && (cur + '\n\n' + para).length > 900) {
+      bubbles.push(cur);
+      cur = para;
+    } else {
+      cur = cur ? cur + '\n\n' + para : para;
+    }
+  }
+  if (cur) bubbles.push(cur);
+  return multiText(bubbles, defaultClubReplies());
 }
 
 /** 본문 simpleText + 링크 버튼 카드 (지도 위치 등). 본문은 한 번만 보낸다. */

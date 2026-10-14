@@ -112,6 +112,15 @@ export function heuristicDecide(question: string): ToolCallDecision {
       'WISE',
       '동국대',
       '동국대학교',
+      '어떤',
+      '무슨',
+      '뭐',
+      '뭐가',
+      '있나요',
+      '있어요',
+      '있니',
+      '추천',
+      '추천해줘',
     ]);
     const tokens = q
       .replace(/[?？]/g, ' ')
@@ -131,6 +140,10 @@ export function heuristicDecide(question: string): ToolCallDecision {
 
     // If listing all / by category without specific name
     if (/목록|리스트|어떤\s*동아리|동아리\s*있어|동아리\s*알려/.test(q)) {
+      // "체스 동아리 있어?" · "별 보는 동아리 있어?" — 분과가 아닌 다른 말이 남으면 목록이 아니라 그 활동을 찾는 질문
+      if (!category && tokens.length > 0) {
+        return { route: 'semantic_search', semantic: { query: q, top_k: 3 } };
+      }
       delete structured.name;
     }
 
@@ -166,7 +179,7 @@ function composeFromFacts(input: {
 }): string {
   if (input.route === 'refuse' || !input.facts.trim()) {
     return (
-      '확인되지 않음. 현재 MVP는 동국대학교 WISE 캠퍼스 동아리(클럽) 정보만 답변합니다.\n' +
+      '여기서는 WISE 캠퍼스 동아리에 관한 질문만 답할 수 있어요. 졸업요건 · 지도 · 공지는 메뉴에서 골라 주세요.\n' +
       (input.citationsNote || '')
     );
   }

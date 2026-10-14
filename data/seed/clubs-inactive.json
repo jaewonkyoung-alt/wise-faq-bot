@@ -1,0 +1,27 @@
+{
+  "note": "학교 홈페이지 동아리 목록(2013년 무렵 정보)에만 있고 최근 활동이 확인되지 않는 동아리. 2026-10-15 에브리타임 동아리·학회 게시판 검색으로 재확인(1차 2026-09-29). 봇은 이 이름을 물으면 '활동 미확인'으로 안내하고 비슷한 활동 동아리를 알려 준다.",
+  "checked_at": "2026-10-15",
+  "clubs": [
+    { "name": "동국문학회", "field": "교양(문학)", "since": 1979, "last_seen": "2025-04 가입 방법을 묻는 학생 글 1건(ET 375599568). 동아리가 올린 글 없음", "instead": [] },
+    { "name": "소낙비", "field": "교양(영화)", "since": 1989, "last_seen": "게시판 검색 결과 없음", "instead": [] },
+    { "name": "CAMP", "field": "교양(여행·봉사)", "since": 2010, "last_seen": "게시판 검색 결과 없음", "instead": [] },
+    { "name": "파티벅스", "field": "교양(파티)", "since": 2004, "last_seen": "게시판 검색 결과 없음", "instead": ["MIX"] },
+    { "name": "삘미락", "field": "교양(맛집)", "since": 2012, "last_seen": "게시판 검색 결과 없음", "instead": ["HYGGE"] },
+    { "name": "OURock", "field": "문예(밴드)", "since": 1995, "last_seen": "게시판 검색 결과 없음", "instead": ["바라밀", "솔메리아"] },
+    { "name": "大自願봉사단", "aliases": ["대자원봉사단", "자원봉사단"], "field": "봉사", "since": 1986, "last_seen": "게시판 검색 결과 없음", "instead": ["RCY", "로타랙트", "한울회"] },
+    { "name": "동국레오클럽", "aliases": ["레오클럽"], "field": "봉사", "since": 2001, "last_seen": "게시판 검색 결과 없음", "instead": ["RCY", "로타랙트"] },
+    { "name": "글로벌봉사단", "field": "봉사", "since": 2009, "last_seen": "게시판 검색 결과 없음", "instead": ["LOHOS"] },
+    { "name": "YOUTH-JC", "aliases": ["YOUTH JC", "유스JC"], "field": "봉사", "since": 1981, "last_seen": "게시판 검색 결과 없음", "instead": [] },
+    { "name": "적룡회", "field": "봉사(해병 전우회)", "since": 1993, "last_seen": "게시판 검색 결과 없음", "instead": [] },
+    { "name": "호우회", "field": "봉사", "since": 1982, "last_seen": "게시판 검색 결과 없음", "instead": [] },
+    { "name": "딜레마", "field": "체육(축구)", "since": 1991, "last_seen": "마지막 모집 글 2019년 무렵(ET 67559232)", "instead": ["아이보리", "휴(HUE)"] },
+    { "name": "한맥", "field": "체육(야구)", "since": 1987, "last_seen": "게시판 검색 결과 없음", "instead": ["동국 애슬레틱스"] },
+    { "name": "DELL", "field": "체육(야구)", "since": 1989, "last_seen": "마지막 모집 글 2023년(ET 286856806)", "instead": ["동국 애슬레틱스"] },
+    { "name": "겨레사랑", "field": "학술", "since": 1990, "last_seen": "게시판 검색 결과 없음", "instead": [] },
+    { "name": "AMOW", "field": "학술(경영·경제)", "since": 2000, "last_seen": "2023-03 '모집 계획 없나요?' 학생 글(ET 290399467)", "instead": [] },
+    { "name": "뉴스위크", "field": "학술(영어)", "since": 1986, "last_seen": "게시판 검색 결과 없음", "instead": [] },
+    { "name": "DUCO", "field": "학술(컴퓨터)", "since": 1987, "last_seen": "게시판 검색 결과 없음", "instead": ["디벨로퍼"] },
+    { "name": "DMF", "field": "가동아리(영상제작)", "since": 2013, "last_seen": "마지막 모집 글 2019~2020년 무렵(ET 87147651)", "instead": ["셔터"] },
+    { "name": "R20", "field": "가동아리(재능기부)", "since": 2013, "last_seen": "게시판 검색 결과 없음", "instead": [] }
+  ]
+}

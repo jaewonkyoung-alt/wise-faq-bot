@@ -112,6 +112,18 @@ export function findClubByExactName(utterance: string, clubs: Club[] = listClubs
 }
 
 /** 동아리 한 곳 상세 — 소개 · 분과 · 연락처 · 활동 시간 · 장소 · 활동 · 출처 */
+/** 출처 주소 → 사람이 읽는 이름. 검색 답변에는 주소 대신 이것만 붙인다 (주소는 동아리 상세에서). */
+export function sourceLabel(url: string): string {
+  if (/everytime\.kr\/418785/.test(url)) return '에브리타임 동아리·학회 게시판 모집 글';
+  const ig = url.match(/instagram\.com\/([A-Za-z0-9_.]+)/);
+  if (ig) return `인스타그램 @${ig[1]}`;
+  try {
+    return `홈페이지 ${new URL(url).host.replace(/^www\./, '')}`;
+  } catch {
+    return url;
+  }
+}
+
 export function clubDetailText(c: Club): string {
   const kind = c.intro.split(/[.\n]/)[0];
   const lines = [`【${c.name}】 ${c.category} · ${kind}`];
@@ -122,7 +134,7 @@ export function clubDetailText(c: Club): string {
   if (c.contact) lines.push(`연락: ${c.contact}`);
   lines.push(`활동: ${c.activities}`);
   const src = /everytime\.kr\/418785/.test(c.source_url)
-    ? '에브리타임 동아리·학회 게시판 모집 글 (2025-08~2026-09 수집)'
+    ? `${sourceLabel(c.source_url)} (2025-08~2026-09 수집)`
     : c.source_url;
   lines.push('', `출처: ${src}`);
   return lines.join('\n').slice(0, 1000);
