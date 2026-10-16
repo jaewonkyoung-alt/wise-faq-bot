@@ -8,7 +8,7 @@ import { getDb, getDbPath } from './db/database';
 import { listClubs } from './services/clubStore';
 import { ensureEmbeddingsCurrent } from './services/reindex';
 import { createLlmProvider } from './llm/provider';
-import { embedModelId } from './embeddings/embedder';
+import { embedModelId, embedQuery, getEmbedProvider } from './embeddings/embedder';
 import { listGraduation } from './services/graduationService';
 import { countCriteria, importGradCriteria } from './services/gradCriteria';
 
@@ -72,6 +72,8 @@ async function ensureClubsSeeded(): Promise<void> {
 /** 벡터가 없거나 다른 임베딩 모델로 만든 것이면 다시 만든다. 임베딩 서버가 꺼져 있어도 서버는 뜬다 (키워드 검색으로 답함). */
 async function refreshEmbeddings(): Promise<void> {
   try {
+    // 임베딩 모델을 미리 불러 둔다 — 첫 학생 질문이 모델 로딩(약 2초)을 기다리지 않게
+    if (getEmbedProvider() !== 'mock') await embedQuery('warm-up');
     const result = await ensureEmbeddingsCurrent();
     if (result) {
       console.log(

@@ -119,8 +119,9 @@ async function ollamaEmbed(texts: string[], timeoutMs?: number): Promise<number[
   const res = await fetch(`${OLLAMA_URL()}/api/embed`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    // 모델(639MB)을 메모리에 붙잡아 두어 첫 질문도 느리지 않게 한다.
-    body: JSON.stringify({ model: OLLAMA_MODEL(), input: texts, keep_alive: '24h' }),
+    // 모델(639MB)을 메모리에서 내리지 않는다 (-1). 내려가면 첫 질문이 다시 불러오느라 2초 가까이 걸려
+    // 카톡 제한 안에 못 들어오고 키워드 검색으로 넘어간다 (10/15 확인).
+    body: JSON.stringify({ model: OLLAMA_MODEL(), input: texts, keep_alive: -1 }),
     signal: timeoutMs ? AbortSignal.timeout(timeoutMs) : undefined,
   });
   if (!res.ok) {
