@@ -69,7 +69,7 @@ body{width:390px;height:%(h)dpx;font-family:'Apple SD Gothic Neo','Malgun Gothic
 """
 
 
-def kakao(name, turns, file="kakao_responses_w5.json", height=844):
+def kakao(name, turns, file="kakao_responses_w5.json", height=844, raw=False):
     R = json.load(open(os.path.join(SRC, file), encoding="utf-8"))
     body = []
     for i, (k, j) in enumerate(turns):
@@ -80,7 +80,7 @@ def kakao(name, turns, file="kakao_responses_w5.json", height=844):
         tpl = x["bot"]["template"]
         for o in tpl["outputs"]:
             if "simpleText" in o:
-                txt = re.sub(r" \(updated_at: [^)]+\)", "", o["simpleText"]["text"])
+                txt = o["simpleText"]["text"] if raw else re.sub(r" \(updated_at: [^)]+\)", "", o["simpleText"]["text"])
                 parts.append(f'<div class="b">{html.escape(txt)}</div>')
             elif "basicCard" in o:
                 c = o["basicCard"]
