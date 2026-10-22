@@ -57,8 +57,13 @@ ok "설치 완료"
 step "3/7 Python 도구 (졸업요건 PDF 변환 · 동아리 엑셀)"
 VENV="tools/grad-extract/.venv"
 PY_OK=0
-if command -v python3 >/dev/null && python3 -c 'import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)'; then
-  [ -x "$VENV/bin/python" ] || python3 -m venv "$VENV"
+# 컴퓨터에 있는 Python 중 가장 새 버전 (3.9 이상) — 맥 기본 python3 는 3.9 일 수 있다
+PYBIN=""
+for c in python3.14 python3.13 python3.12 python3.11 python3.10 python3; do
+  if command -v "$c" >/dev/null && "$c" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 9) else 1)' 2>/dev/null; then PYBIN="$c"; break; fi
+done
+if [ -n "$PYBIN" ]; then
+  [ -x "$VENV/bin/python" ] || "$PYBIN" -m venv "$VENV"
   "$VENV/bin/python" -m pip install --quiet --upgrade pip >/dev/null 2>&1 || true
   if "$VENV/bin/python" -m pip install --quiet -r tools/requirements.txt; then
     PY_OK=1; ok "$("$VENV/bin/python" --version) · pdfplumber · openpyxl"

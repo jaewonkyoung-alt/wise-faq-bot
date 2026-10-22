@@ -1,3 +1,6 @@
 # 졸업요건 PDF 변환 · 동아리 엑셀 (scripts/setup.sh 가 tools/grad-extract/.venv 에 설치)
-pdfplumber==0.11.10
+# pdfplumber 0.11.10 은 Python 3.10 이상이 필요 — 맥 기본 python3(3.9)에서는 0.11.8 을 쓴다.
+# 두 버전 모두 원본 PDF 42개 → 523행, 검수 데이터와 차이 0건 (pdf_to_criteria.py --selftest, 10/22).
+pdfplumber==0.11.10 ; python_version >= "3.10"
+pdfplumber==0.11.8 ; python_version < "3.10"
 openpyxl==3.1.5
