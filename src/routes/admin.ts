@@ -48,6 +48,14 @@ import {
   splitWords,
   updateKeywordEntry,
 } from '../services/clubKeywords';
+import {
+  applyClubImport,
+  discardClubImport,
+  exportClubsXlsx,
+  listClubImports,
+  previewClubImport,
+  revertClubImport,
+} from '../services/clubImport';
 
 export const adminRouter = Router();
 
@@ -111,6 +119,52 @@ function bodyToGrad(body: Record<string, unknown>): GraduationInput | null {
 adminRouter.get('/clubs', (req, res) => {
   if (!checkAdmin(req, res)) return;
   res.json({ count: listClubs().length, clubs: listClubs() });
+});
+
+/* ── 동아리 엑셀 내려받기 · 올리기 (미리보기 → 적용 → 되돌리기) — '/clubs/:id' 보다 먼저 ── */
+adminRouter.get('/clubs.xlsx', async (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  try {
+    const buf = await exportClubsXlsx();
+    const name = encodeURIComponent(`동아리_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${name}`);
+    res.send(buf);
+  } catch (e) {
+    res.status(500).json({ error: (e as Error).message });
+  }
+});
+
+adminRouter.post(
+  '/clubs/import',
+  express.raw({ type: () => true, limit: '10mb' }),
+  async (req, res) => {
+    if (!checkAdmin(req, res)) return;
+    const name = decodeURIComponent(String(req.headers['x-file-name'] || 'clubs.xlsx'));
+    try {
+      res.status(201).json(await previewClubImport(name, req.body as Buffer));
+    } catch (e) {
+      res.status(400).json({ error: (e as Error).message });
+    }
+  }
+);
+
+adminRouter.get('/clubs/import', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  res.json({ batches: listClubImports() });
+});
+
+adminRouter.post('/clubs/import/:id/:action', async (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  try {
+    const { id, action } = req.params;
+    if (action === 'apply') res.json(await applyClubImport(id));
+    else if (action === 'revert') res.json({ batch: await revertClubImport(id) });
+    else if (action === 'discard') res.json({ batch: discardClubImport(id) });
+    else res.status(404).json({ error: 'unknown action' });
+  } catch (e) {
+    res.status(400).json({ error: (e as Error).message });
+  }
 });
 
 /* ── 동아리 검색 키워드 사전 (학생 표현 -> 동아리 분야) — '/clubs/:id' 보다 먼저 ── */

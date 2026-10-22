@@ -320,6 +320,24 @@
         <p class="page-desc">동아리 정보를 등록하면 저장 시 자동으로 재임베딩됩니다.</p>
 
         <div class="card">
+          <div class="card-head">
+            <h2>엑셀로 한꺼번에 고치기</h2>
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-club-xlsx">엑셀 내려받기</button>
+          </div>
+          <p class="muted" style="margin:0 0 10px">내려받은 엑셀에서 값을 고치거나 맨 아래에 새 동아리를 추가해 올리면 바뀌는 칸만 보여 드립니다. 「적용」을 눌러야 카톡 답변이 바뀝니다. 엑셀에서 지운 동아리는 삭제되지 않습니다.</p>
+          <label class="dropzone" id="cimp-drop" for="cimp-file">
+            <input type="file" id="cimp-file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden />
+            <strong>고친 엑셀을 여기에 끌어다 놓거나 눌러서 선택</strong>
+            <span class="muted">.xlsx 파일 하나</span>
+          </label>
+          <div id="cimp-result"></div>
+          <details style="margin-top:12px">
+            <summary class="muted">올리기 기록 (되돌리기)</summary>
+            <div id="cimp-history" style="margin-top:8px"></div>
+          </details>
+        </div>
+
+        <div class="card">
           <h2 id="club-form-title">동아리 추가</h2>
           <input type="hidden" id="c_editId" />
           <div class="grid grid-2">

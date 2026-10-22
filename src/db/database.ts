@@ -160,6 +160,19 @@ function migrate(database: Database.Database): void {
     CREATE INDEX IF NOT EXISTS idx_notice_deliveries_notice ON notice_deliveries(notice_id);
 
     -- 관리자 'PDF 올리기': 올린 PDF 묶음 · 미리보기 결과 · 적용 전 값(되돌리기용)
+    -- 동아리 엑셀 올리기 (8주차): 미리보기 → 적용 → 되돌리기
+    CREATE TABLE IF NOT EXISTS club_import_batches (
+      id TEXT PRIMARY KEY,
+      status TEXT NOT NULL DEFAULT 'preview',   -- preview | applied | reverted | discarded
+      file TEXT NOT NULL DEFAULT '',
+      rows_json TEXT NOT NULL DEFAULT '[]',
+      diff_json TEXT NOT NULL DEFAULT '{}',
+      before_json TEXT,
+      created_at TEXT NOT NULL,
+      applied_at TEXT,
+      reverted_at TEXT
+    );
+
     CREATE TABLE IF NOT EXISTS grad_import_batches (
       id TEXT PRIMARY KEY,
       status TEXT NOT NULL DEFAULT 'preview',   -- preview | applied | reverted | discarded

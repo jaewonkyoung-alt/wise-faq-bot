@@ -27,7 +27,8 @@
     "test:club-answers": "tsx scripts/test-club-answers.ts",
     "clubs:apply-updates": "tsx scripts/apply-club-updates.ts",
     "test:unanswered": "tsx scripts/test-unanswered.ts",
-    "test:notice-trash": "tsx scripts/test-notice-trash.ts"
+    "test:notice-trash": "tsx scripts/test-notice-trash.ts",
+    "test:club-import": "tsx scripts/test-club-import.ts"
   },
   "engines": {
     "node": ">=18"

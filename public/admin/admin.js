@@ -144,6 +144,7 @@
     if (name === 'clubs') {
       renderClubList();
       if (!state.keywords) loadKeywords();
+      loadClubImportHistory();
     }
     if (name === 'unanswered') loadUnanswered();
     if (name === 'notices') loadNotices();
@@ -949,6 +950,108 @@
     $('kw_field').focus();
   }
 
+  /* ── 동아리 엑셀 올리기: 미리보기 → 적용 → 되돌리기 ── */
+  async function uploadClubXlsx(file) {
+    if (!file) return;
+    if (!/\.xlsx$/i.test(file.name)) {
+      toast('엑셀(.xlsx) 파일만 올릴 수 있습니다.', 'error');
+      return;
+    }
+    $('cimp-result').innerHTML = '<p class="muted">읽는 중… ' + escapeHtml(file.name) + '</p>';
+    var h = { 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'x-file-name': encodeURIComponent(file.name) };
+    if (state.token) h['x-admin-token'] = state.token;
+    var res = await fetch('/api/admin/clubs/import', { method: 'POST', headers: h, body: file });
+    var data = await res.json().catch(function () { return null; });
+    if (!res.ok) {
+      $('cimp-result').innerHTML = '<p class="imp-warn">' + escapeHtml((data && data.error) || '올리기 실패') + '</p>';
+      return;
+    }
+    state.clubImport = data;
+    renderClubImport();
+    loadClubImportHistory();
+  }
+
+  function renderClubImport() {
+    var b = state.clubImport;
+    if (!b) {
+      $('cimp-result').innerHTML = '';
+      return;
+    }
+    var d = b.diff;
+    var parts = [];
+    if (d.changed.length) parts.push('값 변경 ' + d.changed.length + '곳');
+    if (d.added.length) parts.push('새 동아리 ' + d.added.length + '곳');
+    if (d.errors.length) parts.push('거부 ' + d.errors.length + '줄');
+    var html = '<div class="imp-file"><h3>' + escapeHtml(b.file) + '</h3><p class="imp-ok">' +
+      escapeHtml(parts.length ? parts.join(' · ') : '바뀌는 값 없음 (지금과 같음)') + ' · 같음 ' + d.same + '곳</p>';
+    d.errors.forEach(function (e) {
+      html += '<p class="imp-warn">⚠ ' + e.row + '번째 줄 ' + escapeHtml(e.name) + ': ' + escapeHtml(e.message) + ' — 이 줄은 반영하지 않습니다</p>';
+    });
+    d.warnings.forEach(function (e) {
+      html += '<p class="imp-ok">· ' + escapeHtml(e.name) + ': ' + escapeHtml(e.message) + '</p>';
+    });
+    var rows = [];
+    d.changed.forEach(function (c) {
+      c.fields.forEach(function (f) {
+        rows.push('<tr><td>' + escapeHtml(c.name) + '</td><td>' + escapeHtml(f.label) + '</td><td class="before">' +
+          escapeHtml(f.before || '(빈칸)') + '</td><td class="after">' + escapeHtml(f.after || '(빈칸)') + '</td></tr>');
+      });
+    });
+    d.added.forEach(function (a) {
+      rows.push('<tr><td>' + escapeHtml(a.name) + '</td><td>새 동아리</td><td class="before">—</td><td class="after">추가</td></tr>');
+    });
+    if (rows.length) {
+      html += '<div class="table-wrap"><table class="data"><thead><tr><th>동아리</th><th>항목</th><th>지금</th><th>엑셀</th></tr></thead><tbody>' + rows.join('') + '</tbody></table></div>';
+    }
+    if (d.missing.length) {
+      html += '<p class="imp-ok">엑셀에 없는 동아리 ' + d.missing.length + '곳은 그대로 둡니다: ' + escapeHtml(d.missing.slice(0, 8).join(', ')) + (d.missing.length > 8 ? ' …' : '') + '</p>';
+    }
+    html += '</div>';
+    if (b.status === 'preview') {
+      html += '<div class="imp-actions">' +
+        (d.changed.length || d.added.length ? '<button type="button" class="btn" data-act="cimp-apply" data-id="' + escapeHtml(b.id) + '">적용</button>' : '') +
+        '<button type="button" class="btn btn-secondary" data-act="cimp-discard" data-id="' + escapeHtml(b.id) + '">취소</button></div>';
+    } else {
+      html += '<p class="imp-ok">' + ({ applied: '적용됨 — 카톡 답변에 바로 반영되었습니다. 잘못 올렸다면 아래 기록에서 되돌릴 수 있습니다.', reverted: '되돌림 — 올리기 전 값으로 돌아갔습니다.', discarded: '취소됨 — 아무것도 바뀌지 않았습니다.' }[b.status] || b.status) + '</p>';
+    }
+    $('cimp-result').innerHTML = html;
+  }
+
+  async function clubImportAction(action, id) {
+    if (action === 'apply' && !window.confirm('카톡 답변이 바로 바뀝니다. 적용할까요?')) return;
+    if (action === 'revert' && !window.confirm('이 엑셀을 올리기 전 값으로 되돌릴까요? 이 엑셀로 추가한 동아리는 삭제됩니다.')) return;
+    var r = await api('/api/admin/clubs/import/' + encodeURIComponent(id) + '/' + action, { method: 'POST' });
+    if (!r.ok) {
+      toast((r.data && r.data.error) || '실패', 'error');
+      return;
+    }
+    var b = r.data.batch;
+    if (state.clubImport && state.clubImport.id === b.id) state.clubImport = b;
+    renderClubImport();
+    toast({ apply: '적용했습니다 (추가 ' + (r.data.added || 0) + ' · 변경 ' + (r.data.changed || 0) + ')', revert: '되돌렸습니다', discard: '취소했습니다' }[action], 'ok');
+    loadClubImportHistory();
+    loadClubs();
+  }
+
+  async function loadClubImportHistory() {
+    var r = await api('/api/admin/clubs/import');
+    if (!r.ok) return;
+    var list = (r.data && r.data.batches) || [];
+    if (!list.length) {
+      $('cimp-history').innerHTML = '<p class="muted">아직 올린 기록이 없습니다.</p>';
+      return;
+    }
+    var label = { preview: '미리보기', applied: '적용됨', reverted: '되돌림', discarded: '취소됨' };
+    $('cimp-history').innerHTML = '<table class="data"><tbody>' + list.map(function (b) {
+      var t = new Date(b.reverted_at || b.applied_at || b.created_at);
+      var when = isNaN(t) ? '' : t.toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      return '<tr><td class="muted">' + escapeHtml(when) + '</td><td>' + escapeHtml(b.file) + '</td><td class="muted">변경 ' + b.diff.changed.length +
+        ' · 추가 ' + b.diff.added.length + '</td><td class="muted">' + escapeHtml(label[b.status] || b.status) + '</td><td class="actions">' +
+        (b.status === 'applied' ? '<button type="button" class="btn btn-sm btn-secondary" data-act="cimp-revert" data-id="' + escapeHtml(b.id) + '">되돌리기</button>' : '') +
+        '</td></tr>';
+    }).join('') + '</tbody></table>';
+  }
+
   /* ── 키워드 사전 ── */
   async function loadKeywords() {
     var r = await api('/api/admin/clubs/keywords');
@@ -1326,6 +1429,12 @@
       });
     });
     $('btn-kw-reload').addEventListener('click', loadKeywords);
+    $('btn-club-xlsx').addEventListener('click', function () { downloadAuthed('/api/admin/clubs.xlsx', '동아리.xlsx'); });
+    $('cimp-file').addEventListener('change', function (e) { uploadClubXlsx(e.target.files[0]); e.target.value = ''; });
+    var cdz = $('cimp-drop');
+    ['dragenter', 'dragover'].forEach(function (t) { cdz.addEventListener(t, function (e) { e.preventDefault(); cdz.classList.add('drag'); }); });
+    ['dragleave', 'drop'].forEach(function (t) { cdz.addEventListener(t, function (e) { e.preventDefault(); cdz.classList.remove('drag'); }); });
+    cdz.addEventListener('drop', function (e) { uploadClubXlsx(e.dataTransfer.files[0]); });
     $('btn-kw-save').addEventListener('click', saveKeyword);
     $('btn-kw-preview').addEventListener('click', previewKeyword);
     $('btn-kw-reset').addEventListener('click', resetKeyword);
@@ -1347,7 +1456,9 @@
       var act = t.getAttribute('data-act');
       var id = t.getAttribute('data-id');
       if (!act || !id) return;
-      if (act === 'u-resolved' || act === 'u-ignored' || act === 'u-new') {
+      if (act === 'cimp-apply' || act === 'cimp-discard' || act === 'cimp-revert') {
+        clubImportAction(act.slice(5), id);
+      } else if (act === 'u-resolved' || act === 'u-ignored' || act === 'u-new') {
         setGroupStatus(id, act.slice(2));
       } else if (act === 'u-dict') {
         dictFromUnanswered(id);
