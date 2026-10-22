@@ -20,6 +20,9 @@ cd wise-faq-bot
 ./scripts/setup.sh --start
 ```
 
+> 이 레포는 **비공개**입니다. 초대받은 GitHub 계정으로 받습니다: 초대 메일에서 수락 → `brew install gh` → `gh auth login` → `gh repo clone jaewonkyoung-alt/wise-faq-bot`
+> (또는 위 `git clone` 실행 시 GitHub 로그인 창에서 로그인)
+
 확인한 환경: macOS (Apple Silicon) · Node 22 / 24 · Python 3.9 (맥 기본) / 3.10 · Ollama 있음 / 없음 — 빈 홈 폴더에서 GitHub 클론부터 설치 · `npm test` 전체 통과 (10/22).
 
 이 한 번으로 다음이 끝나고, 마지막에 관리자 화면 주소와 토큰을 알려 줍니다.
