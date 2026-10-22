@@ -1,0 +1,3 @@
+# 졸업요건 PDF 변환 · 동아리 엑셀 (scripts/setup.sh 가 tools/grad-extract/.venv 에 설치)
+pdfplumber==0.11.10
+openpyxl==3.1.5

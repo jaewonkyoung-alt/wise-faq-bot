@@ -1,9 +1,51 @@
-# Kakao Skill setup
+# 카카오톡 연결 (처음 한 번)
 
-POST /api/kakao/skill is a thin adapter around ask().
-Response formatting: src/kakao/responseBuilder.ts (Skill JSON v2.0).
+서버(`./scripts/setup.sh`)는 자동으로 준비되지만, 카카오톡과 이어 주는 일은 카카오 계정이 필요해 사람이 한 번 해야 합니다.
+순서: **① 외부 공개 주소 → ② 카카오톡 채널 · 오픈빌더 봇 → ③ 스킬 등록 · 블록 연결 → ④ 배포 · 확인**.
 
-Local smoke: POST a userRequest.utterance to that path.
-Help utterances return club-domain hints.
+## ① 외부 공개 주소 (서버를 인터넷에 열기)
 
-Production channel configuration is out of Phase-1 scope.
+카카오 서버가 이 컴퓨터의 `http://localhost:3000/api/kakao/skill` 에 접속할 수 있어야 합니다.
+
+**ngrok (졸업작품에서 쓴 방법, 무료)**
+1. https://ngrok.com 가입 → 대시보드에서 무료 고정 도메인(dev domain) 1개 발급, authtoken 복사.
+2. `brew install ngrok` → `ngrok config add-authtoken <토큰>`
+3. 관리자 화면은 열지 않고 카카오 스킬 주소만 열도록 정책 파일과 함께 실행합니다.
+   ```bash
+   ngrok http 3000 --url=<발급받은-도메인> --traffic-policy-file=deploy/ngrok-policy.yml
+   ```
+4. 상시 실행 · 자동 재시작은 [deploy/README.md](../deploy/README.md) 참고 (launchd).
+
+**Cloudflare 고정 터널 (장기 운영 권장)**: 소유 도메인을 Cloudflare 에 연결 → `cloudflared tunnel create wise-faq` → DNS 라우팅.
+서버 코드는 그대로이고 아래 스킬 주소만 바뀝니다.
+
+`.env` 에 공개 주소를 적어 두면 졸업요건 답변의 「학과 원문 PDF」 같은 링크 버튼이 이 주소로 만들어집니다.
+```
+PUBLIC_BASE_URL=https://<공개-주소>
+```
+
+## ② 카카오톡 채널 · 오픈빌더 봇
+
+1. https://center-pf.kakao.com 에서 카카오톡 채널 만들기 (예: `WISE FAQ`).
+2. https://chatbot.kakao.com (카카오 i 오픈빌더)에서 봇 만들기 → 위 채널과 연결.
+
+## ③ 스킬 등록 · 블록 연결
+
+1. 오픈빌더 → **스킬** → 생성
+   - URL: `https://<공개-주소>/api/kakao/skill`
+   - (선택) 헤더 `x-kakao-skill-secret` 에 임의의 값을 넣고, 같은 값을 `.env` 의 `KAKAO_SKILL_SECRET` 에 적으면 다른 곳에서 온 요청을 막습니다.
+   - **스킬 테스트**에서 `메뉴` 를 보내 응답이 오는지 확인.
+2. **시나리오 → 폴백 블록**: 봇 응답을 「스킬데이터 사용」으로 바꾸고 위 스킬 선택. 학생이 보내는 모든 말이 서버로 갑니다.
+3. **웰컴 블록**도 같은 스킬로 연결하면 채널에 처음 들어온 학생에게 메뉴가 바로 나옵니다.
+
+## ④ 배포 · 확인
+
+1. 오픈빌더 **봇 테스트**에서 확인: `메뉴` · `25학번 컴퓨터공학과 졸업요건` · `S504` · `별 보는 동아리 있어?` · `공지`
+2. **배포** → 휴대폰 카카오톡에서 채널을 찾아 같은 질문으로 확인.
+3. 이후 데이터 수정은 관리자 화면(`http://localhost:3000/admin`)에서 하면 카톡에 바로 반영되고, 오픈빌더는 다시 배포할 필요가 없습니다.
+
+## 참고
+
+- 응답 형식: `src/kakao/responseBuilder.ts` (스킬 응답 2.0). 말풍선 1개 1,000자 · 최대 3개 제한에 맞춰 나눕니다.
+- 카카오는 스킬 응답을 5초까지 기다립니다. 이 서버는 보통 수 ms ~ 0.3초 안에 답합니다.
+- 공지 알림은 인증 채널이 아니라 푸시를 못 보내므로, 구독한 학생이 다음에 말을 걸 때 새 공지를 먼저 붙여 줍니다.

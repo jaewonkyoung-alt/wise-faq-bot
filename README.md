@@ -1,91 +1,88 @@
 # WISE FAQ Bot
 
-동국대학교 WISE 캠퍼스 FAQ 카카오톡 봇 (졸업작품 Phase-1).
+동국대학교 WISE 캠퍼스 학생 질문에 카카오톡으로 답하는 FAQ 챗봇과, **개발자가 아닌 관리자도 데이터를 고칠 수 있는 관리자 화면**입니다.
+(컴퓨터공학종합설계 졸업작품 · 2021212843 경재원)
 
-Kakao Open Builder Skill → Express가 **졸업요건 · 동아리 · 지도(호실 코드)** 를 답합니다.
+| 메뉴 | 학생이 받는 답 | 관리자가 고치는 방법 |
+|---|---|---|
+| 졸업요건 | 학번 · 학과 · 학생구분(신입 · 편입, 내 · 외국인)에 맞는 공식 졸업기준 (42개 학과) | 학교가 낸 학과별 졸업기준 **PDF를 올리면** 바뀐 칸만 보여 주고, 적용 · 되돌리기 |
+| 동아리 | "별 보는 동아리 있어?" 같은 자유 질문 → 동아리 소개 · 정기 활동 · 연락 (61곳) | 입력 칸 또는 **엑셀 내려받기 · 올리기**, 키워드 사전 · 미답변 보완 |
+| 지도 | 호실 코드(`S504`) · 건물 이름 → 위치와 카카오맵 버튼 | 학교 홈페이지 수집 데이터 (`data/kb/지도`) |
+| 공지 | 전교생 공통 공지 · 새 공지 알림 | 등록하면 바로 반영, 기간이 끝나면 **자동 휴지통** · 30일 뒤 삭제 |
 
-## What it is
+## 퀵스타트
 
-| 메뉴 | 동작 |
-|------|------|
-| **졸업요건** (primary) | 입학연도 → 학과 슬롯. 폴더 KB `data/kb/졸업요건` 우선, 없으면 SQLite |
-| **동아리** | Hybrid RAG (`/api/ask`) |
-| **지도** | 호실 코드 파싱 (예: `S504`). stub 아님 |
-
-자세한 구조: [ARCHITECTURE.md](./ARCHITECTURE.md) · 보안: [SECURITY.md](./SECURITY.md)
-
-## Docs (1st presentation aligned)
-
-| Doc | Content |
-|------|------|
-| [docs/presentation/1st-review.md](./docs/presentation/1st-review.md) | Slide-by-slide outline (1st review) |
-| [docs/verification.md](./docs/verification.md) | Metrics: target, testset, measurement method |
-| [docs/scope.md](./docs/scope.md) | Current vs later (Kakao FAQ, folder KB, graduation/clubs/map, tunnel hosting) |
-| [docs/architecture.md](./docs/architecture.md) | System overview, hybrid flow, use case (mermaid) |
-| [docs/artifacts/](./docs/artifacts/) | Gantt, usecase, ERD, sequence, tech-stack stubs |
-
-**1st presentation deck filename:** `2021212843_경재원_1차발표.pptx`  
-(copy: [docs/presentation/2021212843_경재원_1차발표.pptx](./docs/presentation/2021212843_경재원_1차발표.pptx), ~47KB)
-
-## Stack
-
-- Express + TypeScript
-- SQLite (`better-sqlite3`)
-- Folder KB `data/kb/` → `/kb/...`
-- Kakao Open Builder + Admin UI (`/admin`)
-
-
-- Seed/PLACEHOLDER data is demo-only; see [docs/scope.md](./docs/scope.md).
-- Hosting may use a tunnel (`PUBLIC_BASE_URL`); school transfer is later.
-
-## Setup
+필요한 것: **Node.js 18 이상** (macOS: `brew install node`), **Python 3.9 이상** (PDF · 엑셀 기능), 선택: [Ollama](https://ollama.com) (동아리 의미 검색)
 
 ```bash
-npm install
-cp .env.example .env
-# set a strong ADMIN_TOKEN
-npm run seed
-npm run build
-npm start
+git clone https://github.com/jaewonkyoung-alt/wise-faq-bot.git
+cd wise-faq-bot
+./scripts/setup.sh --start
 ```
 
-### Env
+이 한 번으로 다음이 끝나고, 마지막에 관리자 화면 주소와 토큰을 알려 줍니다.
 
-| 변수 | 필수 | 설명 |
-|------|------|------|
-| `ADMIN_TOKEN` | yes | `/api/admin/*`, `/api/unanswered` — header `x-admin-token` |
-| `PUBLIC_BASE_URL` | PDF buttons | HTTPS public URL, no trailing slash (tunnel hosting OK) |
-| `KAKAO_SKILL_SECRET` | prod recommended | header `x-kakao-skill-secret` when set |
-| `LLM_PROVIDER` | no | default `mock`; see `.env.example` |
+1. Node 패키지 · Python 도구(PDF 변환 · 엑셀) 설치
+2. `.env` 생성 — 관리자 토큰은 무작위로 만듦
+3. Ollama 가 있으면 임베딩 모델(`qwen3-embedding:0.6b`, 약 640MB) 준비. 없으면 키워드 사전 검색만 사용
+4. 빌드 → DB 초기화 (졸업기준 42개 학과 · 동아리 61곳 · 지도 287개 호실)
+5. 동작 점검 (졸업요건 · 동아리 · 지도 질문에 실제로 답하는지)
 
-Never commit `.env`. Rotate tokens if leaked.
+| 하고 싶은 일 | 명령 |
+|---|---|
+| 서버 켜기 | `npm start` → 관리자 화면 http://localhost:3000/admin |
+| Mac 이 켜질 때 자동 실행 | `./scripts/setup.sh --service` |
+| 전체 테스트 | `npm test` (15종, 임시 DB 사용 — 운영 데이터를 바꾸지 않음) |
+| 코드 고친 뒤 반영 | `npm run build` 후 서버 다시 켜기 |
 
-## Folder KB (`data/kb`)
+**사람이 한 번 해야 하는 일 — 카카오톡 연결**: 외부 공개 주소(ngrok · Cloudflare 터널) → 카카오톡 채널 · 오픈빌더 봇 → 스킬 등록.
+단계별 안내: [docs/kakao-setup.md](docs/kakao-setup.md)
+
+## 관리자 화면
+
+| 화면 | 할 수 있는 일 |
+|---|---|
+| 대시보드 | 데이터 개수, **데이터 점검** (빠진 데이터를 찾아 무엇을 고칠지 한국어로 안내) |
+| 졸업요건 | 공식 기준 학과별 보기 · 카톡 답변 미리보기, **PDF 올리기 → 바뀐 칸 미리보기 → 적용 · 되돌리기**, 엑셀 · 문서(MD) 내려받기 |
+| 동아리 | 한 곳씩 고치기, **엑셀로 한꺼번에 고치기** (미리보기 · 적용 · 되돌리기), **검색 키워드 사전** 편집 |
+| 공지 | 등록 · 고정 · 게시 기간, 카톡 미리보기, 알림 전달 현황, **휴지통** (복원 · 완전 삭제) |
+| 미답변 | 봇이 답하지 못한 질문을 묶어서 보기, 해결 · 무시, 동아리 질문은 **사전에 추가** |
+
+관리자 화면은 이 컴퓨터(`localhost`)에서만 엽니다. 외부 공개 주소로는 카카오 스킬 주소만 열리게 합니다 (`deploy/ngrok-policy.yml`).
+
+## AI 를 쓰는 곳
+
+- **동아리 자유 질문**: 질문과 동아리 소개를 숫자 1,024개(벡터)로 바꿔 뜻이 비슷한 동아리를 찾는 **임베딩** 검색.
+  이 컴퓨터의 Ollama 에서 `qwen3-embedding:0.6b`(약 6억 매개변수)를 실행 — 외부 API · 비용 없음, 질문이 밖으로 나가지 않음.
+  학생 표현과 동아리 분야를 잇는 **키워드 사전**과 함께 쓴다 (질문 50개 평가: 임베딩만 42/50, 함께 50/50).
+  답변 문장은 DB 값으로 만들고 생성형 AI 가 쓰지 않으므로 없는 정보를 지어내지 않는다.
+- **졸업요건 PDF**: AI 가 아니라 표의 선 · 글자 좌표로 칸을 복원하는 **고정 규칙**으로 읽는다. 원본 42개를 검수 데이터 523행과 대조해 차이 0건.
+  최종 반영은 관리자가 미리보기를 보고 결정한다.
+
+## 설정 (.env)
+
+| 변수 | 설명 |
+|---|---|
+| `ADMIN_TOKEN` | 관리자 화면 · API 비밀번호 (설치 때 무작위 생성). 비어 있으면 관리자 API 가 모두 막힘 |
+| `PORT` | 기본 3000 |
+| `DATABASE_PATH` | 기본 `./data/wise.db` (커밋 안 함) |
+| `EMBED_PROVIDER` | `ollama` (로컬 임베딩) · `mock` (키워드 사전 위주) |
+| `PUBLIC_BASE_URL` | 외부 공개 주소 — 카톡 PDF 링크 버튼용 |
+| `KAKAO_SKILL_SECRET` | 설정하면 오픈빌더 스킬 헤더 `x-kakao-skill-secret` 이 같은 요청만 받음 |
+
+`.env` 는 커밋하지 않습니다. 전체 목록은 [.env.example](.env.example).
+
+## 구조
 
 ```
-data/kb/
-  졸업요건/<학과>/<입학연도>/info.md (+ optional *.pdf)
-  동아리/<분과>/<동아리명>/info.md
-  지도/buildings.json
+src/            서버 (Express + TypeScript, SQLite)
+  routes/         카카오 스킬 · 관리자 API
+  services/       졸업요건 · 동아리 검색 · 지도 · 공지 · 미답변 · PDF/엑셀 올리기 · 데이터 점검
+public/admin/   관리자 화면
+data/           졸업기준 원천 데이터 · 동아리 시드 · 지도 · 키워드 사전 (data/kb/README.md)
+tools/          PDF 추출 · 동아리 엑셀 · 지도 수집 · 발표 자료 생성
+scripts/        setup.sh · 테스트 · 평가
+deploy/         상시 실행 · 터널 설정
 ```
 
-- PDFs at `/kb/...`; Kakao webLink needs `PUBLIC_BASE_URL`.
-- `/kb` is public static — no private docs.
-- Seed/PLACEHOLDER rows are demo — replace with official catalogs ([docs/scope.md](./docs/scope.md)).
-
-## Admin
-
-- UI `/admin`
-- Unanswered `GET/DELETE /api/unanswered` needs same admin gate
-
-## Tests
-
-```bash
-npm run build
-npm run test:room-code
-npm run test:kakao-grad
-```
-
-## Security
-
-See [SECURITY.md](./SECURITY.md). Fail-closed admin; unanswered admin-gated.
+문서: [ARCHITECTURE.md](ARCHITECTURE.md) · [SECURITY.md](SECURITY.md) · [HANDOFF.md](HANDOFF.md) (인수인계) · [deploy/README.md](deploy/README.md) · [data/kb/README.md](data/kb/README.md)
