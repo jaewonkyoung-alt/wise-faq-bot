@@ -112,6 +112,12 @@ async function main() {
   const clubs = listClubs().length;
   const grads = countCriteria().departments + listGraduation().length;
 
+  // Ollama 가 따로 재시작되면 임베딩 모델이 메모리에서 내려간다 (10/18 확인).
+  // 5분마다 짧은 문장을 임베딩해 모델을 올려 둔다 — 첫 학생 질문이 모델 로딩(약 2초)을 기다리지 않게.
+  if (getEmbedProvider() === 'ollama') {
+    setInterval(() => void embedQuery('keep-warm'), 5 * 60 * 1000).unref();
+  }
+
   app.listen(PORT, () => {
     console.log(`[wise-faq-bot] Phase-1: graduation (primary) + clubs`);
     console.log(`[wise-faq-bot] db: ${getDbPath()}`);
