@@ -130,7 +130,7 @@ echo "  관리자 화면 : http://localhost:$PORT_NOW/admin"
 echo "  관리자 토큰 : $(env_get ADMIN_TOKEN)   (.env 의 ADMIN_TOKEN, 다른 사람과 공유하지 마세요)"
 echo "  서버 켜기   : npm start          (상시 실행은 ./scripts/setup.sh --service)"
 echo "  테스트      : npm test"
-echo "  카카오톡 연결 · 외부 공개 주소는 README 「카카오톡 연결」을 따라 한 번만 설정하세요."
+echo "  카카오톡 연결 · 외부 공개 주소는 docs/kakao-setup.md 를 따라 한 번만 설정하세요."
 [ "$PY_OK" = 1 ] || echo "  (Python 도구가 없어 PDF 올리기 · 동아리 엑셀은 꺼져 있습니다)"
 
 # ── 상시 실행 (macOS launchd) ──
