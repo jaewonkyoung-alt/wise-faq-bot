@@ -53,9 +53,11 @@ import {
   discardClubImport,
   exportClubsXlsx,
   listClubImports,
+  phoneFieldOf,
   previewClubImport,
   revertClubImport,
 } from '../services/clubImport';
+import { runKbCheck } from '../services/kbCheck';
 
 export const adminRouter = Router();
 
@@ -231,6 +233,11 @@ adminRouter.post('/clubs', async (req, res) => {
     });
     return;
   }
+  const phone = phoneFieldOf(input as unknown as Record<string, unknown>);
+  if (phone) {
+    res.status(400).json({ error: `개인 휴대폰 번호는 넣지 않습니다 (${phone}) — 동아리 인스타그램 · 신청 폼으로 바꿔 주세요` });
+    return;
+  }
   const club = createClub(input);
   const reindex = await reindexClub(club.id);
   res.status(201).json({ club, reindex });
@@ -244,6 +251,11 @@ adminRouter.put('/clubs/:id', async (req, res) => {
     return;
   }
   const body = req.body || {};
+  const phone = phoneFieldOf(body);
+  if (phone) {
+    res.status(400).json({ error: `개인 휴대폰 번호는 넣지 않습니다 (${phone}) — 동아리 인스타그램 · 신청 폼으로 바꿔 주세요` });
+    return;
+  }
   const club = updateClub(req.params.id, {
     name: body.name,
     category: body.category,
@@ -465,30 +477,16 @@ adminRouter.delete('/graduation/:id', (req, res) => {
 
 /* ── Folder KB scan ── */
 
+/** 데이터 점검: 폴더 · DB 를 다시 읽고 빠진 데이터를 한국어로 알려 준다 (FR-11) */
 adminRouter.get('/kb/scan', (req, res) => {
   if (!checkAdmin(req, res)) return;
-  const grad = reloadGraduationKb();
-  reloadRoomMaps();
+  const result = runKbCheck();
   const buildings = listBuildingCodes();
   res.json({
     ok: true,
-    scannedAt: grad.scannedAt,
-    graduation: {
-      departments: grad.departments,
-      years: grad.years,
-      entryCount: grad.entries.length,
-      entries: grad.entries.map((e) => ({
-        department: e.department,
-        year: e.year,
-        hasPdf: !!e.pdfPublicPath,
-        pdfPublicPath: e.pdfPublicPath,
-      })),
-    },
-    map: {
-      buildingCount: buildings.length,
-      buildings,
-    },
-    tip: '폴더 변경은 이 스캔 또는 서버 재시작 후 반영됩니다. 경로: data/kb/',
+    ...result,
+    warningCount: result.sections.reduce((a, s) => a + s.warnings.length, 0),
+    map: { buildingCount: buildings.length },
   });
 });
 

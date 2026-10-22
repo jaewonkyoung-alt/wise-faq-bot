@@ -88,6 +88,11 @@ export function reloadRoomMaps(): void {
   loadPlaces();
 }
 
+/** 데이터 점검용: 호실 목록 (코드 → 건물 · 이름) */
+export function listRooms(): Array<{ code: string; building: string }> {
+  return Object.entries(loadRooms()).map(([code, r]) => ({ code, building: String((r as { building?: string }).building || '') }));
+}
+
 export function listPlaces(): CampusPlace[] {
   return loadPlaces().places;
 }

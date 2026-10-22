@@ -24,6 +24,12 @@ export const CLUB_FIELD_LABELS: Record<Field, string> = {
 const REQUIRED: Field[] = ['name', 'category', 'intro', 'activities', 'source_url'];
 const PHONE = /01[016789][-.\s]?\d{3,4}[-.\s]?\d{4}/;
 
+/** 개인 휴대폰 번호가 들어 있는 칸 이름 (없으면 null) — 엑셀 · 입력 칸 모두 같은 규칙 */
+export function phoneFieldOf(input: Partial<Record<string, unknown>>): string | null {
+  const f = CLUB_FIELDS.find((k) => PHONE.test(val(input[k])));
+  return f ? CLUB_FIELD_LABELS[f] : null;
+}
+
 type Row = Partial<Record<Field, string>> & { row: number };
 
 export interface ClubImportDiff {

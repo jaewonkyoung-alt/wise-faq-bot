@@ -54,27 +54,7 @@
       <!-- Dashboard -->
       <section id="page-dashboard" class="page active">
         <h1 class="page-title">대시보드</h1>
-        <p class="page-desc">동국대 WISE FAQ · 졸업요건(1차) + 동아리 RAG</p>
-
-        <div class="alert alert-info">
-          <strong>졸업요건 공식 기준</strong> — 카카오톡 졸업요건 답변은 「2026 학사제도 및 학업이수가이드」에서 가져온
-          42개 학과 · 2020~2026학번 기준으로 나갑니다. 기준이 바뀌면 「졸업요건」 메뉴에서 학과 PDF를 올리고 미리보기를 확인한 뒤 적용하세요.
-        </div>
-        <div class="alert alert-info">
-          졸업요건을 저장하면 <strong>카카오톡 답변이 즉시</strong> 반영됩니다. (재인덱싱 불필요)
-          동아리는 저장 시 자동 재임베딩되며, 필요 시 전체 재인덱싱을 실행하세요.
-        </div>
-        <div class="alert alert-info">
-          <strong>폴더 지식베이스</strong> — 경로 <code>data/kb/</code>
-          (졸업요건 / 동아리 / 지도). 폴더·파일을 추가한 뒤
-          <strong>KB 재스캔</strong>을 누르거나 서버를 재시작하면 반영됩니다.
-          PDF는 <code>/kb/...</code> 로 제공되며, 카카오 버튼용 절대 URL은
-          <code>PUBLIC_BASE_URL</code>을 설정하세요.
-          <div style="margin-top:0.75rem;display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
-            <button type="button" class="btn btn-sm" id="btn-kb-scan">KB 재스캔</button>
-            <span id="kb-scan-status" class="muted" style="font-size:0.85rem"></span>
-          </div>
-        </div>
+        <p class="page-desc">카카오톡 챗봇에 나가는 졸업요건 · 동아리 · 지도 · 공지 데이터를 여기서 관리합니다. 저장하면 다음 질문부터 바로 반영됩니다.</p>
 
         <div class="stats">
           <div class="stat">
@@ -99,9 +79,28 @@
           </div>
         </div>
 
+        <div class="alert alert-info">
+          <strong>무엇을 어디서 고치나요?</strong>
+          <ul style="margin:6px 0 0 18px;padding:0;line-height:1.7">
+            <li><strong>졸업요건</strong> — 학교가 새 졸업기준 PDF를 내면 「졸업요건」에서 PDF를 올리고, 바뀐 칸을 확인한 뒤 적용</li>
+            <li><strong>동아리</strong> — 한 곳은 「동아리」 입력 칸에서, 여러 곳은 엑셀로 내려받아 고친 뒤 올리기</li>
+            <li><strong>답을 못 한 질문</strong> — 「미답변」에서 보고, 동아리 질문은 「사전에 추가」로 키워드 사전 보완</li>
+            <li><strong>공지</strong> — 「공지」에서 등록. 게시 기간이 끝나면 자동으로 휴지통, 30일 뒤 삭제</li>
+          </ul>
+        </div>
+
         <div class="card">
           <div class="card-head">
-            <h2>서버 상태 (/health)</h2>
+            <h2>데이터 점검 <span class="muted" id="kb-scan-status"></span></h2>
+            <button type="button" class="btn btn-sm" id="btn-kb-scan">지금 점검</button>
+          </div>
+          <p class="muted" style="margin:0 0 8px">파일과 DB를 다시 읽고, 카톡 답변에 빠진 데이터가 있으면 무엇을 고쳐야 하는지 알려 드립니다.</p>
+          <div id="kb-check"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>서버 상태 <span class="muted">(개발자용 · /health)</span></h2>
             <button type="button" class="btn btn-sm btn-secondary" id="btn-refresh-health">새로고침</button>
           </div>
           <pre class="health-box" id="health-box">로딩 중…</pre>
@@ -317,7 +316,7 @@
       <!-- Clubs -->
       <section id="page-clubs" class="page">
         <h1 class="page-title">동아리</h1>
-        <p class="page-desc">동아리 정보를 등록하면 저장 시 자동으로 재임베딩됩니다.</p>
+        <p class="page-desc">동아리를 저장하면 검색용 벡터(임베딩)도 자동으로 다시 만들어 다음 질문부터 반영됩니다.</p>
 
         <div class="card">
           <div class="card-head">
@@ -347,10 +346,10 @@
             </div>
             <div class="field-wrap">
               <label class="field" for="c_category">분과 *</label>
-              <input id="c_category" type="text" placeholder="학술/IT, 공연/음악, 봉사…" />
+              <input id="c_category" type="text" placeholder="학술 · 체육 · 문화예술 · 봉사 · 취미 · 종교 · 취업" />
             </div>
             <div class="field-wrap">
-              <label class="field" for="c_contact">연락처</label>
+              <label class="field" for="c_contact">연락처 (개인 휴대폰 번호 대신 인스타 · 신청 폼)</label>
               <input id="c_contact" type="text" />
             </div>
             <div class="field-wrap">
@@ -358,7 +357,7 @@
               <input id="c_meeting" type="text" />
             </div>
             <div class="field-wrap">
-              <label class="field" for="c_location">장소</label>
+              <label class="field" for="c_location">동아리방</label>
               <input id="c_location" type="text" />
             </div>
             <div class="field-wrap">
@@ -371,17 +370,17 @@
             <input id="c_summary" type="text" maxlength="90" placeholder="예: 천체관측 중앙동아리입니다. 학생회관 옥상에서 망원경으로 별을 봅니다." />
           </div>
           <div class="field-wrap" style="margin-top:12px">
-            <label class="field" for="c_intro">소개 * (semantic)</label>
+            <label class="field" for="c_intro">소개 * (분야 · 다른 이름 — 검색에 쓰임)</label>
             <textarea id="c_intro"></textarea>
           </div>
           <div class="field-wrap" style="margin-top:12px">
-            <label class="field" for="c_activities">활동 * (semantic)</label>
+            <label class="field" for="c_activities">활동 * (활동 · 대상 · 회비 · 모집 — 검색에 쓰임)</label>
             <textarea id="c_activities"></textarea>
           </div>
           <div class="btn-row">
-            <button type="button" class="btn" id="btn-club-save">저장 + 재임베딩</button>
+            <button type="button" class="btn" id="btn-club-save">저장</button>
             <button type="button" class="btn btn-secondary" id="btn-club-reset">초기화</button>
-            <button type="button" class="btn btn-ghost" id="btn-reindex">전체 재인덱싱</button>
+            <button type="button" class="btn btn-ghost" id="btn-reindex" title="데이터 점검에서 검색 벡터가 빠졌다고 나올 때만">전체 다시 임베딩</button>
           </div>
         </div>
 
@@ -395,7 +394,7 @@
               <thead>
                 <tr>
                   <th>동아리</th>
-                  <th>모임 / 장소</th>
+                  <th>정기 모임 / 동아리방</th>
                   <th></th>
                 </tr>
               </thead>

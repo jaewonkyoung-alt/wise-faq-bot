@@ -135,6 +135,7 @@
     if (name === 'dashboard') {
       loadHealth();
       updateStats();
+      scanKb();
     }
     if (name === 'graduation') {
       renderGradList();
@@ -174,20 +175,20 @@
 
   async function scanKb() {
     var status = $('kb-scan-status');
-    if (status) status.textContent = '스캔 중…';
-    try {
-      var r = await api('/api/admin/kb/scan');
-      var g = r.data && r.data.graduation;
-      var msg = g
-        ? ('OK · 졸업요건 ' + g.entryCount + '건 · 학과 ' + (g.departments || []).join(', '))
-        : 'OK';
-      if (status) status.textContent = msg;
-      if ($('health-box')) {
-        $('health-box').textContent = JSON.stringify(r.data, null, 2);
-      }
-    } catch (e) {
-      if (status) status.textContent = '실패: ' + e;
+    status.textContent = '· 점검 중…';
+    var r = await api('/api/admin/kb/scan');
+    if (!r.ok) {
+      status.textContent = '· 점검 실패';
+      return;
     }
+    var d = r.data;
+    status.textContent = '· ' + (d.warningCount ? '확인할 것 ' + d.warningCount + '건' : '문제 없음') + ' (' + shortTime(d.scannedAt) + ')';
+    $('kb-check').innerHTML = (d.sections || []).map(function (sec) {
+      return '<div class="imp-file"><h3>' + escapeHtml(sec.title) + '</h3>' +
+        sec.facts.map(function (f) { return '<p class="imp-ok">✓ ' + escapeHtml(f) + '</p>'; }).join('') +
+        sec.warnings.map(function (w) { return '<p class="imp-warn">⚠ ' + escapeHtml(w) + '</p>'; }).join('') +
+        '</div>';
+    }).join('');
   }
 
   /* ── Graduation format (mirrors server formatGraduationAnswer) ── */
@@ -793,7 +794,7 @@
       toast(koreanAuthError(r.data, r.status), 'error');
       return;
     }
-    toast(id ? '동아리가 수정·재임베딩되었습니다.' : '동아리가 추가·재임베딩되었습니다.', 'ok');
+    toast(id ? '동아리를 고쳤습니다 — 다음 질문부터 반영' : '동아리를 추가했습니다 — 다음 질문부터 반영', 'ok');
     resetClubForm();
     await loadClubs();
   }

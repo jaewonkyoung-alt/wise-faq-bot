@@ -28,7 +28,8 @@
     "clubs:apply-updates": "tsx scripts/apply-club-updates.ts",
     "test:unanswered": "tsx scripts/test-unanswered.ts",
     "test:notice-trash": "tsx scripts/test-notice-trash.ts",
-    "test:club-import": "tsx scripts/test-club-import.ts"
+    "test:club-import": "tsx scripts/test-club-import.ts",
+    "test:kb-check": "tsx scripts/test-kb-check.ts"
   },
   "engines": {
     "node": ">=18"
