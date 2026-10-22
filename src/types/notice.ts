@@ -7,6 +7,8 @@ export interface Notice {
   published: boolean;
   starts_at: string | null;
   ends_at: string | null;
+  /** 휴지통에 들어간 시각 (null = 게시 목록). 30일 뒤 완전히 삭제 */
+  trashed_at: string | null;
   created_at: string;
   updated_at: string;
 }

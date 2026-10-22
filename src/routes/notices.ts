@@ -7,6 +7,11 @@ import {
   isSafeLink,
   listNotices,
   listPublishedNotices,
+  restoreNotice,
+  sweepNotices,
+  trashNotice,
+  daysUntilPurge,
+  TRASH_KEEP_DAYS,
   updateNotice,
 } from '../services/noticeService';
 import { countSubscribers, deliveryCounts } from '../services/noticeSubscription';
@@ -43,11 +48,22 @@ function bodyToNotice(body: Record<string, unknown>): NoticeInput | null {
   };
 }
 
+/** ?trash=1 이면 휴지통. 목록을 보여 주기 전에 기간이 끝난 공지를 휴지통으로 옮기고 30일 지난 것을 지운다. */
 adminNoticeRouter.get('/notices', (req, res) => {
   if (!checkAdmin(req, res)) return;
-  const notices = listNotices();
+  const sweep = sweepNotices();
+  const trash = req.query.trash === '1';
+  const notices = listNotices({ trash }).map((n) => ({ ...n, days_left: daysUntilPurge(n) }));
   // 알림 구독자 수 · 공지별 전달 인원 (관리자 화면 표시용)
-  res.json({ count: notices.length, notices, subscribers: countSubscribers(), delivered: deliveryCounts() });
+  res.json({
+    count: notices.length,
+    notices,
+    trash_count: trash ? notices.length : listNotices({ trash: true }).length,
+    trash_keep_days: TRASH_KEEP_DAYS,
+    sweep,
+    subscribers: countSubscribers(),
+    delivered: deliveryCounts(),
+  });
 });
 
 adminNoticeRouter.get('/notices/:id', (req, res) => {
@@ -98,12 +114,37 @@ adminNoticeRouter.put('/notices/:id', (req, res) => {
   res.json({ notice });
 });
 
+/** 삭제 = 휴지통으로 (복원 가능). ?purge=1 이면 휴지통에 있는 공지를 완전히 삭제. */
 adminNoticeRouter.delete('/notices/:id', (req, res) => {
   if (!checkAdmin(req, res)) return;
-  const ok = deleteNotice(req.params.id);
-  if (!ok) {
+  const notice = getNoticeById(req.params.id);
+  if (!notice) {
     res.status(404).json({ error: 'notice not found' });
     return;
   }
-  res.json({ deleted: true, id: req.params.id });
+  if (req.query.purge === '1') {
+    if (!notice.trashed_at) {
+      res.status(409).json({ error: '휴지통에 있는 공지만 완전히 삭제할 수 있습니다.' });
+      return;
+    }
+    deleteNotice(notice.id);
+    res.json({ deleted: true, id: notice.id });
+    return;
+  }
+  if (notice.trashed_at) {
+    res.status(409).json({ error: '이미 휴지통에 있습니다.' });
+    return;
+  }
+  trashNotice(notice.id);
+  res.json({ trashed: true, id: notice.id });
+});
+
+adminNoticeRouter.post('/notices/:id/restore', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  const r = restoreNotice(req.params.id);
+  if (!r.restored) {
+    res.status(404).json({ error: '휴지통에 없는 공지입니다.' });
+    return;
+  }
+  res.json({ ...r, notice: getNoticeById(req.params.id) });
 });

@@ -183,6 +183,13 @@ function migrate(database: Database.Database): void {
   ensureKakaoSessionColumns(database);
   ensureClubColumns(database);
   ensureUnansweredColumns(database);
+  ensureNoticeColumns(database);
+}
+
+/** 공지 휴지통 (8주차): 기간이 끝난 공지는 자동으로 휴지통, 30일 뒤 삭제 */
+function ensureNoticeColumns(database: Database.Database): void {
+  const cols = (database.prepare(`PRAGMA table_info(notices)`).all() as Array<{ name: string }>).map((c) => c.name);
+  if (!cols.includes('trashed_at')) database.exec(`ALTER TABLE notices ADD COLUMN trashed_at TEXT`);
 }
 
 /** 미답변 처리 상태 (8주차): new 새 질문 · resolved 해결 · ignored 무시 */

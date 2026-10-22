@@ -129,7 +129,9 @@ async function main() {
   check('메뉴 버튼 유지', skillJson.template.quickReplies.length >= 4);
 
   const removed = await admin(`/api/admin/notices/${createdId}`, { method: 'DELETE' });
-  check('삭제 → 200', removed.status === 200, removed.status);
+  check('삭제 → 휴지통으로 (200)', removed.status === 200 && (await removed.json()).trashed === true, removed.status);
+  const purged = await admin(`/api/admin/notices/${createdId}?purge=1`, { method: 'DELETE' });
+  check('휴지통에서 완전히 삭제 → 200', purged.status === 200, purged.status);
   const removedAgain = await admin(`/api/admin/notices/${createdId}`, { method: 'DELETE' });
   check('없는 공지 삭제 → 404', removedAgain.status === 404, removedAgain.status);
 

@@ -11,6 +11,7 @@ import { createLlmProvider } from './llm/provider';
 import { embedModelId, embedQuery, getEmbedProvider } from './embeddings/embedder';
 import { listGraduation } from './services/graduationService';
 import { countCriteria, importGradCriteria } from './services/gradCriteria';
+import { sweepNotices } from './services/noticeService';
 
 const PORT = Number(process.env.PORT) || 3000;
 
@@ -111,6 +112,14 @@ async function main() {
   const app = createApp();
   const clubs = listClubs().length;
   const grads = countCriteria().departments + listGraduation().length;
+
+  // 공지 휴지통: 기간이 끝난 공지는 휴지통으로, 휴지통 30일 지난 공지는 삭제 — 시작할 때와 매시간
+  const sweep = () => {
+    const r = sweepNotices();
+    if (r.trashed || r.purged) console.log(`[wise-faq-bot] notices: ${r.trashed} moved to trash, ${r.purged} purged`);
+  };
+  sweep();
+  setInterval(sweep, 60 * 60 * 1000).unref();
 
   // Ollama 가 따로 재시작되면 임베딩 모델이 메모리에서 내려간다 (10/18 확인).
   // 5분마다 짧은 문장을 임베딩해 모델을 올려 둔다 — 첫 학생 질문이 모델 로딩(약 2초)을 기다리지 않게.

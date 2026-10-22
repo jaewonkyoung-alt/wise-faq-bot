@@ -12,6 +12,7 @@ function rowToNotice(row: Record<string, unknown>): Notice {
     published: Number(row.published) === 1,
     starts_at: row.starts_at == null ? null : String(row.starts_at),
     ends_at: row.ends_at == null ? null : String(row.ends_at),
+    trashed_at: row.trashed_at == null ? null : String(row.trashed_at),
     created_at: String(row.created_at),
     updated_at: String(row.updated_at),
   };
@@ -24,14 +25,61 @@ export function isSafeLink(value: unknown): boolean {
   return /^https?:\/\/\S+$/i.test(s);
 }
 
-export function listNotices(): Notice[] {
+/** 관리자 목록 — 게시 목록(휴지통 제외) 또는 휴지통 */
+export function listNotices(opts: { trash?: boolean } = {}): Notice[] {
   const rows = getDb()
     .prepare(
       `SELECT * FROM notices
-       ORDER BY pinned DESC, datetime(updated_at) DESC`
+       WHERE ${opts.trash ? 'trashed_at IS NOT NULL' : 'trashed_at IS NULL'}
+       ORDER BY ${opts.trash ? 'datetime(trashed_at) DESC' : 'pinned DESC, datetime(updated_at) DESC'}`
     )
     .all() as Record<string, unknown>[];
   return rows.map(rowToNotice);
+}
+
+/* ── 휴지통 (8주차) ──
+ * 관리자가 지난 공지를 일일이 지우지 않아도 되게: 게시 기간이 끝나면 휴지통으로 옮기고,
+ * 휴지통에 들어간 지 30일이 지나면 완전히 삭제한다. 그 사이에는 복원할 수 있다.
+ */
+export const TRASH_KEEP_DAYS = 30;
+
+export function sweepNotices(now = new Date()): { trashed: number; purged: number } {
+  const db = getDb();
+  const iso = now.toISOString();
+  const trashed = db
+    .prepare(`UPDATE notices SET trashed_at = ? WHERE trashed_at IS NULL AND ends_at IS NOT NULL AND ends_at != '' AND ends_at < ?`)
+    .run(iso, iso).changes;
+  const cutoff = new Date(now.getTime() - TRASH_KEEP_DAYS * 86400000).toISOString();
+  const old = db.prepare(`SELECT id FROM notices WHERE trashed_at IS NOT NULL AND trashed_at < ?`).all(cutoff) as Array<{ id: string }>;
+  for (const o of old) deleteNotice(o.id);
+  return { trashed, purged: old.length };
+}
+
+export function trashNotice(id: string, now = new Date()): boolean {
+  return getDb().prepare('UPDATE notices SET trashed_at = ? WHERE id = ? AND trashed_at IS NULL').run(now.toISOString(), id).changes > 0;
+}
+
+/**
+ * 복원. 기간이 이미 끝난 공지는 그대로 두면 바로 다시 휴지통으로 가므로
+ * 종료일을 비우고 '게시 안 함'(초안)으로 돌린다 — 관리자가 기간을 고친 뒤 다시 게시한다.
+ */
+export function restoreNotice(id: string, now = new Date()): { restored: boolean; asDraft: boolean } {
+  const n = getNoticeById(id);
+  if (!n || !n.trashed_at) return { restored: false, asDraft: false };
+  const expired = !!n.ends_at && n.ends_at < now.toISOString();
+  getDb()
+    .prepare(
+      `UPDATE notices SET trashed_at = NULL, updated_at = ?${expired ? ", ends_at = NULL, published = 0" : ''} WHERE id = ?`
+    )
+    .run(now.toISOString(), id);
+  return { restored: true, asDraft: expired };
+}
+
+/** 휴지통에서 남은 날 (자동 삭제까지) */
+export function daysUntilPurge(n: Notice, now = new Date()): number | null {
+  if (!n.trashed_at) return null;
+  const left = new Date(n.trashed_at).getTime() + TRASH_KEEP_DAYS * 86400000 - now.getTime();
+  return Math.max(0, Math.ceil(left / 86400000));
 }
 
 export function getNoticeById(id: string): Notice | undefined {
@@ -51,6 +99,7 @@ export function listPublishedNotices(limit = 5, now = new Date()): Notice[] {
     .prepare(
       `SELECT * FROM notices
        WHERE published = 1
+         AND trashed_at IS NULL
          AND (starts_at IS NULL OR starts_at = '' OR starts_at <= ?)
          AND (ends_at   IS NULL OR ends_at   = '' OR ends_at   >= ?)
        ORDER BY pinned DESC, datetime(updated_at) DESC
@@ -71,14 +120,15 @@ export function createNotice(input: NoticeInput): Notice {
     published: input.published !== false,
     starts_at: input.starts_at?.trim() || null,
     ends_at: input.ends_at?.trim() || null,
+    trashed_at: null,
     created_at: now,
     updated_at: now,
   };
   getDb()
     .prepare(
       `INSERT INTO notices
-       (id, title, body, link_url, pinned, published, starts_at, ends_at, created_at, updated_at)
-       VALUES (@id, @title, @body, @link_url, @pinned, @published, @starts_at, @ends_at, @created_at, @updated_at)`
+       (id, title, body, link_url, pinned, published, starts_at, ends_at, trashed_at, created_at, updated_at)
+       VALUES (@id, @title, @body, @link_url, @pinned, @published, @starts_at, @ends_at, @trashed_at, @created_at, @updated_at)`
     )
     .run({
       ...notice,

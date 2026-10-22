@@ -157,7 +157,7 @@
     $('stat-clubs').textContent = String(state.clubs.length);
     $('stat-unanswered').textContent = state.uCounts ? String(state.uCounts.new || 0) : String(state.unanswered.length);
     var sn = document.getElementById('stat-notices');
-    if (sn) sn.textContent = String(state.notices.length);
+    if (sn) sn.textContent = String(state.noticeLiveCount != null ? state.noticeLiveCount : state.notices.length);
     var ss = document.getElementById('stat-subscribers');
     if (ss) ss.textContent = state.subscribers == null ? '—' : String(state.subscribers);
   }
@@ -603,7 +603,7 @@
           '">수정</button> ' +
           '<button type="button" class="btn btn-sm btn-danger" data-act="del-grad" data-id="' +
           escapeHtml(r.id) +
-          '">삭제</button>' +
+          '">휴지통으로</button>' +
           '</td></tr>'
         );
       })
@@ -1103,11 +1103,31 @@
   function renderNoticeList() {
     var tbody = $('n_list');
     if (!state.notices.length) {
-      tbody.innerHTML = '<tr><td colspan="5" class="empty">등록된 공지가 없습니다.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="empty">' + (state.noticeTab === 'trash' ? '휴지통이 비어 있습니다.' : '등록된 공지가 없습니다.') + '</td></tr>';
+      $('n-cnt-trash').textContent = state.noticeTrashCount ? String(state.noticeTrashCount) : '';
       return;
     }
+    var trash = state.noticeTab === 'trash';
+    document.querySelectorAll('#n-tabs .seg-btn').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-ntab') === (trash ? 'trash' : 'live'));
+    });
+    $('n-cnt-trash').textContent = state.noticeTrashCount ? String(state.noticeTrashCount) : '';
+    $('n-th-period').textContent = trash ? '휴지통 이동' : '게시 기간';
+    $('n-th-extra').textContent = trash ? '자동 삭제' : '알림 전달';
     tbody.innerHTML = state.notices
       .map(function (n) {
+        if (trash) {
+          return (
+            '<tr><td><div class="row-title">' + escapeHtml(n.title) + '</div><div class="muted">' +
+            escapeHtml(String(n.body).slice(0, 60)) + '</div></td>' +
+            '<td class="muted">휴지통</td>' +
+            '<td class="muted">' + escapeHtml(String(n.trashed_at || '').slice(0, 10)) + ' 이동</td>' +
+            '<td class="muted" style="white-space:nowrap">' + escapeHtml(String(n.days_left)) + '일 뒤 자동 삭제</td>' +
+            '<td class="actions"><button type="button" class="btn btn-sm btn-secondary" data-act="restore-notice" data-id="' + escapeHtml(n.id) +
+            '">복원</button> <button type="button" class="btn btn-sm btn-danger" data-act="purge-notice" data-id="' + escapeHtml(n.id) +
+            '">완전히 삭제</button></td></tr>'
+          );
+        }
         var period =
           (n.starts_at ? String(n.starts_at).slice(0, 10) : '—') +
           ' ~ ' +
@@ -1133,9 +1153,9 @@
           '<button type="button" class="btn btn-sm btn-secondary" data-act="edit-notice" data-id="' +
           escapeHtml(n.id) +
           '">수정</button> ' +
-          '<button type="button" class="btn btn-sm btn-danger" data-act="del-notice" data-id="' +
+          '<button type="button" class="btn btn-sm btn-ghost" data-act="del-notice" data-id="' +
           escapeHtml(n.id) +
-          '">삭제</button>' +
+          '">휴지통으로</button>' +
           '</td></tr>'
         );
       })
@@ -1143,7 +1163,7 @@
   }
 
   async function loadNotices() {
-    var r = await api('/api/admin/notices');
+    var r = await api('/api/admin/notices' + (state.noticeTab === 'trash' ? '?trash=1' : ''));
     if (!r.ok) {
       if (r.status === 401) {
         lock();
@@ -1154,6 +1174,9 @@
       return;
     }
     state.notices = (r.data && r.data.notices) || [];
+    state.noticeTrashCount = (r.data && r.data.trash_count) || 0;
+    if (state.noticeTab !== 'trash') state.noticeLiveCount = state.notices.length;
+    if (r.data && r.data.sweep && r.data.sweep.trashed) toast('기간이 끝난 공지 ' + r.data.sweep.trashed + '건을 휴지통으로 옮겼습니다', 'ok');
     state.subscribers = r.data && typeof r.data.subscribers === 'number' ? r.data.subscribers : null;
     state.delivered = (r.data && r.data.delivered) || {};
     var nsub = document.getElementById('n_subscribers');
@@ -1183,13 +1206,34 @@
   }
 
   async function removeNotice(id) {
-    if (!window.confirm('이 공지를 삭제할까요?')) return;
+    if (!window.confirm('이 공지를 휴지통으로 옮길까요? 30일 안에는 복원할 수 있습니다.')) return;
     var r = await api('/api/admin/notices/' + id, { method: 'DELETE' });
     if (!r.ok) {
-      toast('삭제 실패', 'error');
+      toast((r.data && r.data.error) || '삭제 실패', 'error');
       return;
     }
-    toast('삭제됨', 'ok');
+    toast('휴지통으로 옮겼습니다', 'ok');
+    loadNotices();
+  }
+
+  async function restoreNoticeUi(id) {
+    var r = await api('/api/admin/notices/' + id + '/restore', { method: 'POST' });
+    if (!r.ok) {
+      toast((r.data && r.data.error) || '복원 실패', 'error');
+      return;
+    }
+    toast(r.data.asDraft ? '복원했습니다 — 기간이 지난 공지라 초안(게시 안 함)으로 돌렸습니다. 기간을 고친 뒤 게시하세요.' : '복원했습니다', 'ok');
+    loadNotices();
+  }
+
+  async function purgeNotice(id) {
+    if (!window.confirm('휴지통에서 완전히 삭제합니다. 되돌릴 수 없습니다. 계속할까요?')) return;
+    var r = await api('/api/admin/notices/' + id + '?purge=1', { method: 'DELETE' });
+    if (!r.ok) {
+      toast((r.data && r.data.error) || '삭제 실패', 'error');
+      return;
+    }
+    toast('완전히 삭제했습니다', 'ok');
     loadNotices();
   }
 
@@ -1289,6 +1333,12 @@
     $('btn-notice-save').addEventListener('click', saveNotice);
     $('btn-notice-reset').addEventListener('click', resetNoticeForm);
     $('btn-notice-reload').addEventListener('click', loadNotices);
+    document.querySelectorAll('#n-tabs .seg-btn').forEach(function (b) {
+      b.addEventListener('click', function () {
+        state.noticeTab = b.getAttribute('data-ntab');
+        loadNotices();
+      });
+    });
     $('btn-notice-preview').addEventListener('click', previewNotices);
 
     document.addEventListener('click', function (e) {
@@ -1324,6 +1374,10 @@
         if (n) fillNotice(n);
       } else if (act === 'del-notice') {
         removeNotice(id);
+      } else if (act === 'restore-notice') {
+        restoreNoticeUi(id);
+      } else if (act === 'purge-notice') {
+        purgeNotice(id);
       }
     });
   }
