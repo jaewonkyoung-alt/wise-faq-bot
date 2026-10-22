@@ -141,7 +141,10 @@
       if (!state.critDepts) loadCriteria();
       loadImportHistory();
     }
-    if (name === 'clubs') renderClubList();
+    if (name === 'clubs') {
+      renderClubList();
+      if (!state.keywords) loadKeywords();
+    }
     if (name === 'unanswered') loadUnanswered();
     if (name === 'notices') loadNotices();
   }
@@ -152,7 +155,7 @@
     var gc = state.gradCriteria;
     $('stat-grad').textContent = gc ? gc.departments + '개 학과' + (state.grads.length ? ' + 수동 ' + state.grads.length : '') : String(state.grads.length);
     $('stat-clubs').textContent = String(state.clubs.length);
-    $('stat-unanswered').textContent = String(state.unanswered.length);
+    $('stat-unanswered').textContent = state.uCounts ? String(state.uCounts.new || 0) : String(state.unanswered.length);
     var sn = document.getElementById('stat-notices');
     if (sn) sn.textContent = String(state.notices.length);
     var ss = document.getElementById('stat-subscribers');
@@ -829,38 +832,58 @@
     }
   }
 
+  /* ── 미답변 (FR-12): 같은 질문 묶음 · 처리 상태 · 키워드 사전으로 보완 ── */
+  var U_STATUS_LABEL = { new: '새 질문', resolved: '해결', ignored: '무시' };
+
+  function shortTime(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return String(iso || '');
+    return d.toLocaleString('ko-KR', { timeZone: 'Asia/Seoul', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
   function renderUnanswered() {
     var tbody = $('u_list');
-    if (!state.unanswered.length) {
-      tbody.innerHTML = '<tr><td colspan="5" class="empty">미답변 로그가 없습니다.</td></tr>';
+    var c = state.uCounts || {};
+    ['new', 'resolved', 'ignored'].forEach(function (k) {
+      $('u-cnt-' + k).textContent = c[k] ? String(c[k]) : '';
+    });
+    document.querySelectorAll('#u-tabs .seg-btn').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-ustatus') === state.uStatus);
+    });
+    var groups = state.unanswered || [];
+    if (!groups.length) {
+      var empty = { new: '새로 쌓인 미답변 질문이 없습니다.', resolved: '해결한 질문이 없습니다.', ignored: '무시한 질문이 없습니다.' };
+      tbody.innerHTML = '<tr><td colspan="5" class="empty">' + empty[state.uStatus] + '</td></tr>';
       return;
     }
-    tbody.innerHTML = state.unanswered
-      .map(function (u) {
+    tbody.innerHTML = groups
+      .map(function (g) {
+        var key = escapeHtml(g.key);
+        var acts = [];
+        if (g.status === 'new') {
+          if (g.area === '동아리' || g.area === '기타') {
+            acts.push('<button type="button" class="btn btn-sm" data-act="u-dict" data-id="' + key + '">사전에 추가</button>');
+          }
+          acts.push('<button type="button" class="btn btn-sm btn-secondary" data-act="u-resolved" data-id="' + key + '">해결</button>');
+          acts.push('<button type="button" class="btn btn-sm btn-ghost" data-act="u-ignored" data-id="' + key + '">무시</button>');
+        } else {
+          acts.push('<button type="button" class="btn btn-sm btn-ghost" data-act="u-new" data-id="' + key + '">새 질문으로</button>');
+        }
         return (
-          '<tr>' +
-          '<td class="muted">' +
-          escapeHtml(u.id) +
-          '</td>' +
-          '<td>' +
-          escapeHtml(u.question) +
-          '</td>' +
-          '<td class="muted">' +
-          escapeHtml(u.reason) +
-          '</td>' +
-          '<td class="muted">' +
-          escapeHtml(u.route || '—') +
-          '</td>' +
-          '<td class="muted">' +
-          escapeHtml(formatSeoul(u.created_at)) +
-          '</td></tr>'
+          '<tr><td><span class="row-title">' + escapeHtml(g.question) + '</span>' +
+          (g.count > 1 ? ' <span class="badge badge-ph">' + g.count + '번</span>' : '') +
+          '</td><td class="muted" style="white-space:nowrap">' + escapeHtml(g.area) +
+          '</td><td class="muted">' + escapeHtml(g.reason) +
+          '</td><td class="muted" style="white-space:nowrap">' + escapeHtml(shortTime(g.last_at)) +
+          '</td><td class="actions">' + acts.join(' ') + '</td></tr>'
         );
       })
       .join('');
   }
 
   async function loadUnanswered() {
-    var r = await api('/api/unanswered');
+    state.uStatus = state.uStatus || 'new';
+    var r = await api('/api/unanswered?status=' + state.uStatus);
     if (!r.ok) {
       if (r.status === 401) {
         lock();
@@ -870,9 +893,165 @@
       toast(koreanAuthError(r.data, r.status) || '미답변 로드 실패', 'error');
       return;
     }
-    state.unanswered = (r.data && r.data.items) || [];
+    state.unanswered = (r.data && r.data.groups) || [];
+    state.uCounts = (r.data && r.data.counts) || {};
     renderUnanswered();
     updateStats();
+  }
+
+  function findGroup(key) {
+    return (state.unanswered || []).filter(function (g) { return g.key === key; })[0];
+  }
+
+  async function setGroupStatus(key, status, quiet) {
+    var g = findGroup(key);
+    if (!g) return;
+    var r = await api('/api/unanswered/status', { method: 'POST', body: { ids: g.ids, status: status } });
+    if (!r.ok) {
+      toast((r.data && r.data.error) || '처리 실패', 'error');
+      return;
+    }
+    if (!quiet) toast('「' + g.question + '」 → ' + U_STATUS_LABEL[status], 'ok');
+    loadUnanswered();
+  }
+
+  async function clearHandled() {
+    if (!window.confirm('해결 · 무시로 처리한 기록을 지웁니다. 새 질문은 남습니다. 계속할까요?')) return;
+    var r = await api('/api/unanswered?handled=1', { method: 'DELETE' });
+    if (!r.ok) {
+      toast('비우기 실패', 'error');
+      return;
+    }
+    toast('처리한 기록 ' + r.data.deleted + '건을 지웠습니다', 'ok');
+    loadUnanswered();
+  }
+
+  /** 질문에서 사전에 넣을 만한 말만 남긴다 ("총 쏘는 동아리 없나?" → "총, 쏘는") */
+  var KW_STOP = /^(동아리|동아리는|동아리가|클럽|모임|있어|있나|있나요|있어요|없나|없나요|없어|뭐|뭐가|뭐야|어디|어떤|무슨|하는|할|하고|싶어|싶은|싶다|알려줘|추천|추천해줘|좀|우리|학교|동국대|wise)$/i;
+  function suggestWords(q) {
+    return q.replace(/[?？!.,~]/g, ' ').split(/\s+/)
+      .filter(function (w) { return w && !KW_STOP.test(w); })
+      .map(function (w) { return w.length > 2 ? w.replace(/(은|는|이|가|을|를|에서|에|도)$/, '') : w; })
+      .filter(function (w) { return w && !KW_STOP.test(w); });
+  }
+
+  function dictFromUnanswered(key) {
+    var g = findGroup(key);
+    if (!g) return;
+    resetKeyword();
+    state.kwResolve = { ids: g.ids, question: g.question };
+    $('kw_words').value = suggestWords(g.question).join(', ');
+    var from = $('kw-from');
+    from.style.display = '';
+    from.textContent = '미답변 「' + g.question + '」에서 왔습니다. 학생 표현을 다듬고 분야를 적어 저장하면 이 질문을 「해결」로 표시합니다.';
+    showPage('clubs');
+    $('kw-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('kw_field').focus();
+  }
+
+  /* ── 키워드 사전 ── */
+  async function loadKeywords() {
+    var r = await api('/api/admin/clubs/keywords');
+    if (!r.ok) {
+      toast((r.data && r.data.error) || '사전 로드 실패', 'error');
+      return;
+    }
+    state.keywords = (r.data && r.data.entries) || [];
+    renderKeywords();
+  }
+
+  function renderKeywords() {
+    var list = state.keywords || [];
+    $('kw-summary').textContent = '· ' + list.length + '개 항목';
+    if (!list.length) {
+      $('kw_list').innerHTML = '<tr><td colspan="4" class="empty">사전 항목이 없습니다.</td></tr>';
+      return;
+    }
+    $('kw_list').innerHTML = list
+      .map(function (e) {
+        var words = e.simple ? e.words.join(', ') : e.q;
+        var field = e.simple ? (e.c ? e.fieldWords.join(', ') : '(왼쪽과 같음)') : (e.c || '(왼쪽과 같음)');
+        var clubs = e.clubs.length ? e.clubs.join(', ') : '<span class="imp-warn">연결되는 동아리 없음</span>';
+        var acts = (e.simple ? '<button type="button" class="btn btn-sm btn-secondary" data-act="kw-edit" data-id="' + e.index + '">수정</button> ' : '<span class="badge badge-ph" title="예외 규칙이 들어 있어 화면에서 고칠 수 없습니다">고급</span> ') +
+          '<button type="button" class="btn btn-sm btn-danger" data-act="kw-del" data-id="' + e.index + '">삭제</button>';
+        return '<tr><td>' + escapeHtml(words) + '</td><td class="muted">' + escapeHtml(field) + '</td><td class="muted">' +
+          (e.clubs.length ? escapeHtml(e.clubs.join(', ')) : clubs) + '</td><td class="actions">' + acts + '</td></tr>';
+      })
+      .join('');
+  }
+
+  function resetKeyword() {
+    $('kw_index').value = '';
+    $('kw_q').value = '';
+    $('kw_words').value = '';
+    $('kw_field').value = '';
+    $('kw-preview').textContent = '';
+    $('kw-from').style.display = 'none';
+    $('btn-kw-save').textContent = '사전에 저장';
+    state.kwResolve = null;
+  }
+
+  function editKeyword(index) {
+    var e = (state.keywords || [])[Number(index)];
+    if (!e) return;
+    resetKeyword();
+    $('kw_index').value = String(e.index);
+    $('kw_q').value = e.q;
+    $('kw_words').value = e.words.join(', ');
+    $('kw_field').value = e.c ? e.fieldWords.join(', ') : '';
+    $('btn-kw-save').textContent = '수정 저장';
+    $('kw-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async function previewKeyword() {
+    var r = await api('/api/admin/clubs/keywords/preview', { method: 'POST', body: { words: $('kw_words').value, field: $('kw_field').value } });
+    if (!r.ok) {
+      $('kw-preview').textContent = (r.data && r.data.error) || '미리보기 실패';
+      return null;
+    }
+    var clubs = r.data.clubs || [];
+    $('kw-preview').textContent = clubs.length
+      ? '연결되는 동아리: ' + clubs.join(', ')
+      : '연결되는 동아리가 없습니다 — 분야 칸에 동아리 소개에 실제로 적힌 말(예: 천체, 검도)을 넣어 주세요.';
+    return clubs;
+  }
+
+  async function saveKeyword() {
+    var clubs = await previewKeyword();
+    if (clubs === null) return;
+    if (!clubs.length && !window.confirm('연결되는 동아리가 없습니다. 그래도 저장할까요?')) return;
+    var idx = $('kw_index').value;
+    var body = { words: $('kw_words').value, field: $('kw_field').value, q: $('kw_q').value };
+    var r = idx
+      ? await api('/api/admin/clubs/keywords/' + idx, { method: 'PUT', body: body })
+      : await api('/api/admin/clubs/keywords', { method: 'POST', body: body });
+    if (!r.ok) {
+      toast((r.data && r.data.error) || '저장 실패', 'error');
+      return;
+    }
+    state.keywords = r.data.entries || [];
+    renderKeywords();
+    var resolve = state.kwResolve;
+    resetKeyword();
+    toast(idx ? '사전을 고쳤습니다' : '사전에 추가했습니다 — 다음 질문부터 적용', 'ok');
+    if (resolve) {
+      await api('/api/unanswered/status', { method: 'POST', body: { ids: resolve.ids, status: 'resolved' } });
+      toast('「' + resolve.question + '」를 해결로 표시했습니다', 'ok');
+    }
+  }
+
+  async function deleteKeyword(index) {
+    var e = (state.keywords || [])[Number(index)];
+    if (!e) return;
+    if (!window.confirm('「' + (e.simple ? e.words.join(', ') : e.q) + '」 항목을 사전에서 지울까요?')) return;
+    var r = await api('/api/admin/clubs/keywords/' + e.index + '?q=' + encodeURIComponent(e.q), { method: 'DELETE' });
+    if (!r.ok) {
+      toast((r.data && r.data.error) || '삭제 실패', 'error');
+      return;
+    }
+    state.keywords = r.data.entries || [];
+    renderKeywords();
+    toast('사전에서 지웠습니다', 'ok');
   }
 
   /* ── Notices ── */
@@ -1095,6 +1274,17 @@
     $('btn-reindex').addEventListener('click', reindexAll);
 
     $('btn-unanswered-reload').addEventListener('click', loadUnanswered);
+    $('btn-unanswered-clear').addEventListener('click', clearHandled);
+    document.querySelectorAll('#u-tabs .seg-btn').forEach(function (b) {
+      b.addEventListener('click', function () {
+        state.uStatus = b.getAttribute('data-ustatus');
+        loadUnanswered();
+      });
+    });
+    $('btn-kw-reload').addEventListener('click', loadKeywords);
+    $('btn-kw-save').addEventListener('click', saveKeyword);
+    $('btn-kw-preview').addEventListener('click', previewKeyword);
+    $('btn-kw-reset').addEventListener('click', resetKeyword);
 
     $('btn-notice-save').addEventListener('click', saveNotice);
     $('btn-notice-reset').addEventListener('click', resetNoticeForm);
@@ -1107,7 +1297,15 @@
       var act = t.getAttribute('data-act');
       var id = t.getAttribute('data-id');
       if (!act || !id) return;
-      if (act === 'imp-apply' || act === 'imp-discard' || act === 'imp-revert') {
+      if (act === 'u-resolved' || act === 'u-ignored' || act === 'u-new') {
+        setGroupStatus(id, act.slice(2));
+      } else if (act === 'u-dict') {
+        dictFromUnanswered(id);
+      } else if (act === 'kw-edit') {
+        editKeyword(id);
+      } else if (act === 'kw-del') {
+        deleteKeyword(id);
+      } else if (act === 'imp-apply' || act === 'imp-discard' || act === 'imp-revert') {
         importAction(act.slice(4), id);
       } else if (act === 'view-crit') {
         openCriteria(id);

@@ -32,6 +32,7 @@ import {
   resolveCollege,
 } from './collegeTaxonomy';
 import { logUnanswered } from './unanswered';
+import { keywordTopics } from './clubKeywords';
 import { formatNoticesForKakao, listPublishedNotices } from './noticeService';
 import {
   formatNoticeBanner,
@@ -565,6 +566,14 @@ async function dialog(
     }
   }
 
+  // '주짓수 배우고 싶어'처럼 '동아리'라는 말이 없어도 키워드 사전에 걸리면 동아리 검색으로 보낸다
+  if (keywordTopics(utterance).length > 0) {
+    const result = await ask(utterance);
+    return buildAskSkillResponse(result, utterance);
+  }
+
+  // 어느 기능에도 걸리지 않은 말 — 관리자가 미답변 화면에서 보고 데이터 · 사전을 보완한다
+  if (utterance && utterance.length >= 2) logUnanswered(utterance, 'menu_fallback', 'menu');
   resetToMenu(userKey);
   return simpleText(
     '메뉴에서 선택해 주세요.\n졸업요건 · 동아리 · 지도 · 공지',

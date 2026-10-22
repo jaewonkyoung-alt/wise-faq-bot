@@ -25,7 +25,8 @@
     "test:grad-import": "tsx scripts/test-grad-import.ts",
     "import:graduation": "tsx scripts/import-graduation.ts",
     "test:club-answers": "tsx scripts/test-club-answers.ts",
-    "clubs:apply-updates": "tsx scripts/apply-club-updates.ts"
+    "clubs:apply-updates": "tsx scripts/apply-club-updates.ts",
+    "test:unanswered": "tsx scripts/test-unanswered.ts"
   },
   "engines": {
     "node": ">=18"

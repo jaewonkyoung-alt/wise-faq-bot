@@ -385,6 +385,45 @@
             </table>
           </div>
         </div>
+        <div class="card" id="kw-card">
+          <div class="card-head">
+            <h2>검색 키워드 사전 <span class="muted" id="kw-summary"></span></h2>
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-kw-reload">새로고침</button>
+          </div>
+          <p class="muted" style="margin:0 0 12px">학생이 동아리 소개와 다른 말로 물을 때 이어 주는 사전입니다. 예: '별, 망원경' → 분야 '천체' → 푸르체리마. 단어는 쉼표로 나눕니다. 저장하면 다음 질문부터 바로 적용됩니다.</p>
+          <div id="kw-from" class="alert alert-info" style="display:none"></div>
+          <input type="hidden" id="kw_index" />
+          <input type="hidden" id="kw_q" />
+          <div class="grid grid-2">
+            <div class="field-wrap">
+              <label class="field" for="kw_words">학생이 쓰는 표현 *</label>
+              <input id="kw_words" type="text" placeholder="별, 천체, 망원경" />
+            </div>
+            <div class="field-wrap">
+              <label class="field" for="kw_field">동아리 소개에 적힌 분야 (비우면 왼쪽과 같음)</label>
+              <input id="kw_field" type="text" placeholder="천체" />
+            </div>
+          </div>
+          <p class="muted" id="kw-preview" style="margin:10px 0 0"></p>
+          <div class="btn-row">
+            <button type="button" class="btn" id="btn-kw-save">사전에 저장</button>
+            <button type="button" class="btn btn-secondary" id="btn-kw-preview">연결되는 동아리 보기</button>
+            <button type="button" class="btn btn-ghost" id="btn-kw-reset">초기화</button>
+          </div>
+          <div class="table-wrap" style="margin-top:14px">
+            <table class="data">
+              <thead>
+                <tr>
+                  <th>학생이 쓰는 표현</th>
+                  <th>분야</th>
+                  <th>연결되는 동아리</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="kw_list"></tbody>
+            </table>
+          </div>
+        </div>
       </section>
 
       <!-- Notices -->
@@ -471,22 +510,29 @@
       <!-- Unanswered -->
       <section id="page-unanswered" class="page">
         <h1 class="page-title">미답변</h1>
-        <p class="page-desc">봇이 답하지 못한 질문 로그입니다. (공개 API)</p>
+        <p class="page-desc">봇이 답하지 못한 질문입니다. 같은 질문은 묶어서 보여 줍니다. 데이터나 키워드 사전을 보완했으면 「해결」, 챗봇 범위 밖 질문이면 「무시」로 정리하세요.</p>
 
         <div class="card">
           <div class="card-head">
-            <h2>미답변 로그</h2>
-            <button type="button" class="btn btn-sm btn-secondary" id="btn-unanswered-reload">새로고침</button>
+            <div class="seg" id="u-tabs">
+              <button type="button" class="seg-btn active" data-ustatus="new">새 질문 <span id="u-cnt-new"></span></button>
+              <button type="button" class="seg-btn" data-ustatus="resolved">해결 <span id="u-cnt-resolved"></span></button>
+              <button type="button" class="seg-btn" data-ustatus="ignored">무시 <span id="u-cnt-ignored"></span></button>
+            </div>
+            <div>
+              <button type="button" class="btn btn-sm btn-ghost" id="btn-unanswered-clear">처리한 기록 비우기</button>
+              <button type="button" class="btn btn-sm btn-secondary" id="btn-unanswered-reload">새로고침</button>
+            </div>
           </div>
           <div class="table-wrap">
             <table class="data">
               <thead>
                 <tr>
-                  <th>ID</th>
                   <th>질문</th>
-                  <th>사유</th>
-                  <th>경로</th>
-                  <th>시각</th>
+                  <th>분야</th>
+                  <th>이유</th>
+                  <th>마지막</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody id="u_list"></tbody>

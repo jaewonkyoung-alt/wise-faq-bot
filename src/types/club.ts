@@ -40,5 +40,6 @@ export interface UnansweredQuestion {
   question: string;
   reason: string;
   route: string | null;
+  status?: 'new' | 'resolved' | 'ignored';
   created_at: string;
 }

@@ -145,6 +145,7 @@ async function runSemantic(args: SemanticSearchArgs, question: string): Promise<
   facts: string;
   citations: Citation[];
   scores: { club_id: string; score: number }[];
+  similarOnly?: boolean;
 }> {
   const topK = args.top_k ?? 3;
   // 임베딩 서버(Ollama)가 꺼졌거나 느리면 queryVec 가 null — 키워드 사전 점수만으로 고른다.
@@ -239,6 +240,7 @@ async function runSemantic(args: SemanticSearchArgs, question: string): Promise<
     facts,
     citations: accepted.map((r) => citationOf(r.club)),
     scores: ranked.map((r) => ({ club_id: r.club.id, score: r.score })),
+    similarOnly: kw.size === 0,
   };
 }
 
@@ -322,7 +324,9 @@ export async function ask(question: string): Promise<AskResult> {
   // semantic_search
   const args: SemanticSearchArgs = decision.semantic || { query: q, top_k: 3 };
   if (!args.query) args.query = q;
-  const { facts, citations, scores } = await runSemantic(args, q);
+  const { facts, citations, scores, similarOnly } = await runSemantic(args, q);
+  // 딱 맞는 동아리 없이 '비슷한 동아리'로만 안내한 질문도 관리자가 사전을 보완할 수 있게 남긴다
+  if (facts && similarOnly) logUnanswered(q, 'similar_only', 'semantic_search');
   if (!facts) {
     logUnanswered(q, 'low similarity or no embeddings', 'semantic_search');
     return {

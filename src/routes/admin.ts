@@ -40,6 +40,14 @@ import {
 import { reloadRoomMaps, listBuildingCodes } from '../services/roomCode';
 
 import { checkAdmin } from '../middleware/adminAuth';
+import {
+  addKeywordEntry,
+  deleteKeywordEntry,
+  listKeywordEntries,
+  previewKeywordEntry,
+  splitWords,
+  updateKeywordEntry,
+} from '../services/clubKeywords';
 
 export const adminRouter = Router();
 
@@ -103,6 +111,51 @@ function bodyToGrad(body: Record<string, unknown>): GraduationInput | null {
 adminRouter.get('/clubs', (req, res) => {
   if (!checkAdmin(req, res)) return;
   res.json({ count: listClubs().length, clubs: listClubs() });
+});
+
+/* ── 동아리 검색 키워드 사전 (학생 표현 -> 동아리 분야) — '/clubs/:id' 보다 먼저 ── */
+adminRouter.get('/clubs/keywords', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  res.json({ entries: listKeywordEntries(listClubs()) });
+});
+
+adminRouter.post('/clubs/keywords/preview', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  try {
+    res.json({ clubs: previewKeywordEntry(splitWords(req.body?.words), splitWords(req.body?.field), listClubs()) });
+  } catch (e) {
+    res.status(400).json({ error: (e as Error).message });
+  }
+});
+
+adminRouter.post('/clubs/keywords', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  try {
+    const index = addKeywordEntry(splitWords(req.body?.words), splitWords(req.body?.field));
+    res.status(201).json({ index, entries: listKeywordEntries(listClubs()) });
+  } catch (e) {
+    res.status(400).json({ error: (e as Error).message });
+  }
+});
+
+adminRouter.put('/clubs/keywords/:index', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  try {
+    updateKeywordEntry(Number(req.params.index), String(req.body?.q || ''), splitWords(req.body?.words), splitWords(req.body?.field));
+    res.json({ entries: listKeywordEntries(listClubs()) });
+  } catch (e) {
+    res.status(409).json({ error: (e as Error).message });
+  }
+});
+
+adminRouter.delete('/clubs/keywords/:index', (req, res) => {
+  if (!checkAdmin(req, res)) return;
+  try {
+    deleteKeywordEntry(Number(req.params.index), String(req.query.q || ''));
+    res.json({ entries: listKeywordEntries(listClubs()) });
+  } catch (e) {
+    res.status(409).json({ error: (e as Error).message });
+  }
 });
 
 adminRouter.get('/clubs/:id', (req, res) => {

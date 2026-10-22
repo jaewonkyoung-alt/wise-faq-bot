@@ -624,3 +624,9 @@ details.card[open] > summary::before { content: '▾ '; }
 table.data td.before { color: var(--muted); text-decoration: line-through; }
 table.data td.after { font-weight: 650; }
 .imp-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+/* 미답변 — 상태 탭 */
+.seg { display: inline-flex; gap: 4px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 3px; }
+.seg-btn { border: 0; background: transparent; border-radius: 8px; padding: 6px 12px; font: inherit; font-size: 0.85rem; color: var(--muted); cursor: pointer; }
+.seg-btn.active { background: var(--surface); color: var(--text); font-weight: 650; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); }
+.seg-btn span { font-size: 0.75rem; color: var(--brand); margin-left: 2px; }

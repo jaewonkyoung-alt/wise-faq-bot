@@ -182,6 +182,14 @@ function migrate(database: Database.Database): void {
   ensureGradColumns(database);
   ensureKakaoSessionColumns(database);
   ensureClubColumns(database);
+  ensureUnansweredColumns(database);
+}
+
+/** 미답변 처리 상태 (8주차): new 새 질문 · resolved 해결 · ignored 무시 */
+function ensureUnansweredColumns(database: Database.Database): void {
+  const cols = (database.prepare(`PRAGMA table_info(unanswered_questions)`).all() as Array<{ name: string }>).map((c) => c.name);
+  if (!cols.includes('status')) database.exec(`ALTER TABLE unanswered_questions ADD COLUMN status TEXT NOT NULL DEFAULT 'new'`);
+  if (!cols.includes('resolved_at')) database.exec(`ALTER TABLE unanswered_questions ADD COLUMN resolved_at TEXT`);
 }
 
 /** 동아리 한두 줄 소개 (목록에서 어떤 동아리인지 보여 줄 때) — 10/10 추가 */
