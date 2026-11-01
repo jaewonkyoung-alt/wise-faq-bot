@@ -80,6 +80,30 @@ async function main(): Promise<void> {
       body: JSON.stringify({ name: '폰동아리', category: '취미', intro: '동아리', activities: '활동', source_url: 'https://example.com', contact: '회장 010-1234-5678' }),
     });
     check('입력 칸에서도 개인 휴대폰 번호 거부', phone.status === 400 && /휴대폰/.test(((await phone.json()) as { error: string }).error));
+
+    /* 같은 이름 동아리 — 고칠 동아리를 새로 추가해 두 개가 생기지 않게 (8주차 사전 점검에서 발견) */
+    const dup = await fetch(`${base}/api/admin/clubs`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': TOKEN },
+      body: JSON.stringify({ name: ' 검 선 ', category: '체육', intro: '검도', activities: '활동', source_url: 'https://example.com' }),
+    });
+    const dupMsg = ((await dup.json()) as { error: string }).error;
+    check('이미 있는 이름(띄어쓰기 무시)으로 추가하면 409 · 「수정」 안내', dup.status === 409 && /이미 등록된 동아리/.test(dupMsg), dupMsg);
+    const clubs = ((await (await fetch(`${base}/api/admin/clubs`, { headers: { 'x-admin-token': TOKEN } })).json()) as { clubs: Array<{ id: string; name: string }> }).clubs;
+    check('거부된 추가는 동아리를 만들지 않음', clubs.filter((c) => c.name.replace(/\s+/g, '') === '검선').length === 1);
+    const shutter = clubs.find((c) => c.name === '셔터')!;
+    const rename = await fetch(`${base}/api/admin/clubs/${shutter.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': TOKEN },
+      body: JSON.stringify({ name: '검선' }),
+    });
+    check('다른 동아리 이름으로 바꾸기도 409', rename.status === 409);
+    const self = await fetch(`${base}/api/admin/clubs/${shutter.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': TOKEN },
+      body: JSON.stringify({ name: '셔터', meeting_time: '격주 토요일' }),
+    });
+    check('제 이름 그대로 저장은 통과', self.status === 200);
   } finally {
     server.close();
   }

@@ -337,12 +337,35 @@
         </div>
 
         <div class="card">
+          <div class="card-head">
+            <h2>등록된 동아리 <span class="muted" id="c_count"></span></h2>
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-club-reload">목록 새로고침</button>
+          </div>
+          <input id="c_search" type="search" placeholder="고칠 동아리 이름이나 분과로 찾기 (예: 검선, 체육)" style="margin-bottom:10px" />
+          <div class="table-wrap" style="max-height:420px;overflow:auto">
+            <table class="data">
+              <thead>
+                <tr>
+                  <th>동아리</th>
+                  <th>정기 모임 / 동아리방</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="c_list"></tbody>
+            </table>
+          </div>
+          <p class="muted" style="margin:10px 0 0">한 곳을 고치려면 「수정」 → 아래 칸에서 고친 뒤 저장. 여러 곳은 위 엑셀로 한꺼번에.
+            <button type="button" class="btn btn-sm btn-ghost" id="btn-reindex" title="데이터 점검에서 검색 벡터가 빠졌다고 나올 때만">검색 벡터 전체 다시 만들기</button></p>
+        </div>
+
+        <div class="card">
           <h2 id="club-form-title">동아리 추가</h2>
           <input type="hidden" id="c_editId" />
           <div class="grid grid-2">
             <div class="field-wrap">
               <label class="field" for="c_name">이름 *</label>
               <input id="c_name" type="text" />
+              <p class="imp-warn" id="c_dup" style="display:none;margin:6px 0 0"></p>
             </div>
             <div class="field-wrap">
               <label class="field" for="c_category">분과 *</label>
@@ -379,29 +402,10 @@
           </div>
           <div class="btn-row">
             <button type="button" class="btn" id="btn-club-save">저장</button>
-            <button type="button" class="btn btn-secondary" id="btn-club-reset">초기화</button>
-            <button type="button" class="btn btn-ghost" id="btn-reindex" title="데이터 점검에서 검색 벡터가 빠졌다고 나올 때만">전체 다시 임베딩</button>
+            <button type="button" class="btn btn-secondary" id="btn-club-reset">칸 비우기</button>
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-head">
-            <h2>등록된 동아리</h2>
-            <button type="button" class="btn btn-sm btn-secondary" id="btn-club-reload">목록 새로고침</button>
-          </div>
-          <div class="table-wrap">
-            <table class="data">
-              <thead>
-                <tr>
-                  <th>동아리</th>
-                  <th>정기 모임 / 동아리방</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody id="c_list"></tbody>
-            </table>
-          </div>
-        </div>
         <div class="card" id="kw-card">
           <div class="card-head">
             <h2>검색 키워드 사전 <span class="muted" id="kw-summary"></span></h2>

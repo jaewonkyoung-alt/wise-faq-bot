@@ -13,7 +13,8 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 dotenv.config();
-process.env.DATABASE_PATH = path.join(os.tmpdir(), `wise-eval-clubs-${process.pid}.db`);
+// eval-goals 가 문항만 가져갈 때는 DB 를 바꾸지 않는다
+if (require.main === module) process.env.DATABASE_PATH = path.join(os.tmpdir(), `wise-eval-clubs-${process.pid}.db`);
 process.env.LLM_PROVIDER = process.env.LLM_PROVIDER || 'mock';
 
 import { getDb } from '../src/db/database';
@@ -21,6 +22,8 @@ import { upsertClubByName } from '../src/services/clubStore';
 import { reindexAll } from '../src/services/reindex';
 import { ask } from '../src/services/askService';
 import { embedModelId } from '../src/embeddings/embedder';
+import { keywordScores } from '../src/services/clubKeywords';
+import { listClubs } from '../src/services/clubStore';
 
 export const CLUB_CASES: Array<[string, string[]]> = [
   ['별 보는 동아리 있어?', ['푸르체리마']],
@@ -79,17 +82,56 @@ export const HELDOUT_CASES: Array<[string, string[]]> = [
   ['볼링 치는 모임', ['D.U.B.C']],
 ];
 
+/** 키워드 사전 · 동아리 이름에 걸리는 말을 일부러 피해서 쓴 질문 (10/26) — 사전 밖 표현에서 임베딩이 하는 일을 따로 잰다.
+ *  끝을 '동아리'로 맞춰 질문 분류 단계에서 빠지지 않게 했다 (분류는 별도 문제). */
+export const UNSEEN_CASES: Array<[string, string[]]> = [
+  ['밤하늘 관측하러 같이 다닐 동아리', ['푸르체리마']],
+  ['핀 쓰러뜨리는 운동 동아리', ['D.U.B.C']],
+  ['노란 공을 라켓으로 치는 운동 동아리', ['DUTC']],
+  ['셔틀콕 치는 동아리', ['동국배드민턴']],
+  ['인공지능 프로젝트 팀원 구하는 동아리', ['디벨로퍼']],
+  ['덩크 연습하는 동아리', ['돌핀스', '동국농구부']],
+  ['물에서 하는 운동 동아리', ['마린']],
+  ['도복 입고 품새 연습하는 동아리', ['화랑선무부']],
+  ['죽도 들고 하는 무술 동아리', ['검선']],
+  ['화살로 과녁 맞히는 동아리', ['동궁']],
+  ['무대에서 배우처럼 공연하는 동아리', ['동국연극회']],
+  ['카드랑 주사위로 노는 동아리', ['DICE']],
+  ['구장에 응원하러 원정 가는 동아리', ['덕아웃']],
+  ['플로깅하며 환경정화 하는 동아리', ['한울회', '햇발', '로타랙트', '어깨동무']],
+  ['크로키 하는 동아리', ['팔레트']],
+  ['비트 만들고 가사 쓰는 동아리', ['힙합가']],
+  ['칵테일이랑 디제잉 하는 동아리', ['MIX']],
+  ['주말마다 공 차는 동아리', ['아이보리', '휴(HUE)', 'Warming-Up', 'DOLBBI', '노나매기', '설레발']],
+  ['네트 넘기는 스파이크 운동 동아리', ['DUV']],
+  ['아이디어로 회사 차려보는 동아리', ['무빙']],
+  ['캠퍼스 투어 기획하는 동아리', ['해봄']],
+  ['스타일링 좋아하는 동아리', ['피팅룸']],
+  ['산 오르는 동아리', ['동국산악부']],
+  ['찬양하고 성경 공부하는 동아리', ['CCC']],
+  ['항공 발권 자격증 준비하는 동아리', ['Valuable']],
+  ['코믹월드 같이 가는 동아리', ['또다른이야기']],
+  ['어쿠스틱 공연하는 동아리', ['세븐글라스', '소리창고', '뮤토피아']],
+  ['맛있는 식당 찾아다니는 동아리', ['HYGGE']],
+];
+
 async function runCases(title: string, cases: Array<[string, string[]]>): Promise<number> {
   console.log(`── ${title}`);
   let hit = 0;
+  let hit3 = 0;
+  let rr = 0;
   for (const [q, want] of cases) {
     const r = await ask(q);
     const top = r.citations[0]?.club_name ?? '(없음)';
     const ok = want.includes(top);
     if (ok) hit += 1;
+    // 답변에 함께 나온 동아리(최대 6곳) 중 기대 동아리가 처음 나온 순위 — Hit@3 · MRR
+    const rank = r.citations.findIndex((c) => want.includes(c.club_name)) + 1;
+    if (rank > 0 && rank <= 3) hit3 += 1;
+    if (rank > 0) rr += 1 / rank;
     console.log(`${ok ? 'O' : 'X'}  ${q.padEnd(28)} → ${top.padEnd(10)} [${r.route}]${ok ? '' : `  기대: ${want.slice(0, 3).join('/')}`}`);
   }
-  console.log(`정답 ${hit} / ${cases.length} (${Math.round((hit / cases.length) * 100)}%)\n`);
+  console.log(`정답 ${hit} / ${cases.length} (${Math.round((hit / cases.length) * 100)}%) · Hit@3 ${hit3} · MRR ${(rr / cases.length).toFixed(3)}\n`);
   return hit;
 }
 
@@ -104,13 +146,22 @@ async function main(): Promise<void> {
   const hit = await runCases('기본 30문항 (사전 작성에 참고)', CLUB_CASES);
   const held = await runCases('새 질문 20문항 (사전 수정 없이 1회 측정)', HELDOUT_CASES);
   console.log(`합계 ${hit + held} / ${CLUB_CASES.length + HELDOUT_CASES.length}`);
+  if (process.env.EVAL_UNSEEN === '1') {
+    const clubs = listClubs();
+    const leaked = UNSEEN_CASES.filter(([q]) => keywordScores(q, clubs).size > 0).map(([q]) => q);
+    if (leaked.length) console.log(`(사전에 걸려 제외: ${leaked.join(' · ')})`);
+    const clean = UNSEEN_CASES.filter(([q]) => !leaked.includes(q));
+    await runCases(`사전 밖 표현 ${clean.length}문항 (사전 · 동아리 이름에 안 걸림)`, clean);
+  }
   if (process.env.EVAL_MIN && hit < Number(process.env.EVAL_MIN)) {
     console.error(`기준 미달: ${hit} < ${process.env.EVAL_MIN}`);
     process.exit(1);
   }
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
+}

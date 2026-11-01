@@ -224,6 +224,19 @@ adminRouter.get('/clubs/:id', (req, res) => {
   res.json(club);
 });
 
+function eunNeun(word: string): string {
+  const code = word.charCodeAt(word.length - 1) - 0xac00;
+  return code >= 0 && code <= 11171 && code % 28 !== 0 ? '은' : '는';
+}
+
+/** 같은 이름(띄어쓰기 · 대소문자 무시)의 다른 동아리 — 관리자가 고칠 동아리를 새로 추가해 두 개가 생기는 것을 막는다 */
+function sameNameClub(name: unknown, exceptId?: string): string | null {
+  const key = String(name ?? '').replace(/\s+/g, '').toLowerCase();
+  if (!key) return null;
+  const hit = listClubs().find((c) => c.name.replace(/\s+/g, '').toLowerCase() === key && c.id !== exceptId);
+  return hit ? hit.name : null;
+}
+
 adminRouter.post('/clubs', async (req, res) => {
   if (!checkAdmin(req, res)) return;
   const input = bodyToInput(req.body || {});
@@ -236,6 +249,11 @@ adminRouter.post('/clubs', async (req, res) => {
   const phone = phoneFieldOf(input as unknown as Record<string, unknown>);
   if (phone) {
     res.status(400).json({ error: `개인 휴대폰 번호는 넣지 않습니다 (${phone}) — 동아리 인스타그램 · 신청 폼으로 바꿔 주세요` });
+    return;
+  }
+  const dup = sameNameClub(input.name);
+  if (dup) {
+    res.status(409).json({ error: `「${dup}」${eunNeun(dup)} 이미 등록된 동아리입니다. 목록에서 「수정」을 눌러 고쳐 주세요.` });
     return;
   }
   const club = createClub(input);
@@ -251,6 +269,11 @@ adminRouter.put('/clubs/:id', async (req, res) => {
     return;
   }
   const body = req.body || {};
+  const dup = body.name !== undefined ? sameNameClub(body.name, req.params.id) : null;
+  if (dup) {
+    res.status(409).json({ error: `「${dup}」라는 다른 동아리가 이미 있어 이 이름으로 바꿀 수 없습니다.` });
+    return;
+  }
   const phone = phoneFieldOf(body);
   if (phone) {
     res.status(400).json({ error: `개인 휴대폰 번호는 넣지 않습니다 (${phone}) — 동아리 인스타그램 · 신청 폼으로 바꿔 주세요` });

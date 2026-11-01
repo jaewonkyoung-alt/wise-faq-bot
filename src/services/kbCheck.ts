@@ -64,7 +64,7 @@ export function runKbCheck(): { scannedAt: string; sections: KbSection[] } {
     warnings: [],
   };
   const noEmb = (db.prepare('SELECT name FROM clubs c WHERE NOT EXISTS (SELECT 1 FROM embeddings e WHERE e.club_id = c.id AND e.embed_model = ?)').all(model) as Array<{ name: string }>).map((r) => r.name);
-  if (noEmb.length) c.warnings.push(`검색 벡터가 없는 동아리: ${list(noEmb)} — 「전체 재인덱싱」을 눌러 주세요 (임베딩 서버가 꺼져 있었을 수 있음)`);
+  if (noEmb.length) c.warnings.push(`검색 벡터가 없는 동아리: ${list(noEmb)} — 「동아리」 화면 목록 아래 「검색 벡터 전체 다시 만들기」를 눌러 주세요 (임베딩 서버가 꺼져 있었을 수 있음)`);
   if (other) c.warnings.push(`다른 임베딩 모델로 만든 벡터 ${other}조각 — 서버를 다시 시작하면 자동으로 다시 만듭니다`);
   const noSummary = clubs.filter((x) => !x.summary).map((x) => x.name);
   if (noSummary.length) c.warnings.push(`한두 줄 소개가 빈 동아리: ${list(noSummary)} — 목록에서 무슨 동아리인지 알 수 없습니다`);

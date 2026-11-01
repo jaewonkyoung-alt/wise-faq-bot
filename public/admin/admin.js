@@ -451,6 +451,17 @@
     return (r.program ? r.program + ' · ' : '') + y + '학번 · ' + r.student_type;
   }
 
+  /** 적용 · 되돌림 · 취소 뒤 안내 — 적용했으면 그 자리에 되돌리기 버튼 (기록을 펼쳐 찾지 않아도 되게) */
+  function statusLine(b, revertAct) {
+    var msg = { applied: '적용됨 — 카톡 답변에 바로 반영되었습니다.', reverted: '되돌림 — 올리기 전 값으로 돌아갔습니다.', discarded: '취소됨 — 아무것도 바뀌지 않았습니다.' }[b.status] || b.status;
+    var html = '<p class="imp-ok">' + escapeHtml(msg) + '</p>';
+    if (b.status === 'applied') {
+      html += '<div class="imp-actions"><button type="button" class="btn btn-secondary" data-act="' + revertAct + '" data-id="' + escapeHtml(b.id) +
+        '">잘못 올렸다면 되돌리기</button></div>';
+    }
+    return html;
+  }
+
   function renderImport() {
     var b = state.impBatch;
     if (!b) {
@@ -489,7 +500,7 @@
         (applicable ? '<button type="button" class="btn" data-act="imp-apply" data-id="' + escapeHtml(b.id) + '">적용</button>' : '') +
         '<button type="button" class="btn btn-secondary" data-act="imp-discard" data-id="' + escapeHtml(b.id) + '">취소</button></div>';
     } else {
-      html += '<p class="imp-ok">' + ({ applied: '적용됨 — 카톡 답변에 바로 반영되었습니다. 잘못 올렸다면 아래 기록에서 되돌릴 수 있습니다.', reverted: '되돌림 — 올리기 전 값으로 돌아갔습니다.', discarded: '취소됨 — 아무것도 바뀌지 않았습니다.' }[b.status] || b.status) + '</p>';
+      html += statusLine(b, 'imp-revert');
     }
     $('imp-result').innerHTML = html;
   }
@@ -702,6 +713,29 @@
       }
     );
     $('club-form-title').textContent = '동아리 추가';
+    $('btn-club-reset').textContent = '칸 비우기';
+    checkClubDup();
+  }
+
+  /** 추가 칸에 이미 있는 이름을 적으면 새로 만들지 말고 고치라고 안내 (같은 동아리가 두 개 생기지 않게) */
+  function normName(n) {
+    return String(n || '').replace(/\s+/g, '').toLowerCase();
+  }
+  function checkClubDup() {
+    var box = $('c_dup');
+    var name = normName($('c_name').value);
+    var editing = $('c_editId').value;
+    var same = name && state.clubs.find(function (c) { return normName(c.name) === name && c.id !== editing; });
+    if (!same) {
+      box.style.display = 'none';
+      box.innerHTML = '';
+      return;
+    }
+    box.style.display = '';
+    var last = same.name.charCodeAt(same.name.length - 1) - 0xac00;
+    var josa = last >= 0 && last <= 11171 && last % 28 !== 0 ? '은' : '는';
+    box.innerHTML = '「' + escapeHtml(same.name) + '」' + josa + ' 이미 있습니다. 새로 만들지 말고 ' +
+      '<button type="button" class="btn btn-sm btn-secondary" data-act="edit-club" data-id="' + escapeHtml(same.id) + '">이 동아리 고치기</button>';
   }
 
   function fillClub(c) {
@@ -715,9 +749,11 @@
     $('c_summary').value = c.summary || '';
     $('c_intro').value = c.intro || '';
     $('c_activities').value = c.activities || '';
-    $('club-form-title').textContent = '동아리 수정';
+    $('club-form-title').textContent = '동아리 수정 — ' + (c.name || '');
+    $('btn-club-reset').textContent = '수정 취소';
+    checkClubDup();
     showPage('clubs');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    $('club-form-title').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function renderClubList() {
@@ -726,7 +762,14 @@
       tbody.innerHTML = '<tr><td colspan="3" class="empty">등록된 동아리가 없습니다.</td></tr>';
       return;
     }
-    tbody.innerHTML = state.clubs
+    var q = normName($('c_search').value);
+    var shown = q ? state.clubs.filter(function (c) { return normName(c.name + c.category).indexOf(q) !== -1; }) : state.clubs;
+    $('c_count').textContent = q ? '· ' + shown.length + ' / ' + state.clubs.length + '곳' : '· ' + state.clubs.length + '곳';
+    if (!shown.length) {
+      tbody.innerHTML = '<tr><td colspan="3" class="empty">「' + escapeHtml($('c_search').value) + '」에 맞는 동아리가 없습니다. 새 동아리라면 아래에서 추가하세요.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = shown
       .map(function (c) {
         return (
           '<tr>' +
@@ -863,8 +906,12 @@
         var key = escapeHtml(g.key);
         var acts = [];
         if (g.status === 'new') {
-          if (g.area === '동아리' || g.area === '기타') {
+          // '기타'는 '주짓수 배우고 싶어'처럼 '동아리'라는 말 없이 물은 동아리 질문일 수 있다 — 아니면 「무시」
+          if (g.area === '동아리') {
             acts.push('<button type="button" class="btn btn-sm" data-act="u-dict" data-id="' + key + '">사전에 추가</button>');
+          } else if (g.area === '기타') {
+            acts.push('<button type="button" class="btn btn-sm btn-secondary" data-act="u-dict" data-id="' + key +
+              '" title="학식 · 기숙사처럼 챗봇이 다루지 않는 질문이면 「무시」를 누르세요">동아리 질문이면 사전에</button>');
           }
           acts.push('<button type="button" class="btn btn-sm btn-secondary" data-act="u-resolved" data-id="' + key + '">해결</button>');
           acts.push('<button type="button" class="btn btn-sm btn-ghost" data-act="u-ignored" data-id="' + key + '">무시</button>');
@@ -1013,7 +1060,7 @@
         (d.changed.length || d.added.length ? '<button type="button" class="btn" data-act="cimp-apply" data-id="' + escapeHtml(b.id) + '">적용</button>' : '') +
         '<button type="button" class="btn btn-secondary" data-act="cimp-discard" data-id="' + escapeHtml(b.id) + '">취소</button></div>';
     } else {
-      html += '<p class="imp-ok">' + ({ applied: '적용됨 — 카톡 답변에 바로 반영되었습니다. 잘못 올렸다면 아래 기록에서 되돌릴 수 있습니다.', reverted: '되돌림 — 올리기 전 값으로 돌아갔습니다.', discarded: '취소됨 — 아무것도 바뀌지 않았습니다.' }[b.status] || b.status) + '</p>';
+      html += statusLine(b, 'cimp-revert');
     }
     $('cimp-result').innerHTML = html;
   }
@@ -1326,8 +1373,18 @@
       toast((r.data && r.data.error) || '복원 실패', 'error');
       return;
     }
-    toast(r.data.asDraft ? '복원했습니다 — 기간이 지난 공지라 초안(게시 안 함)으로 돌렸습니다. 기간을 고친 뒤 게시하세요.' : '복원했습니다', 'ok');
-    loadNotices();
+    // 복원한 공지를 바로 고칠 수 있게: 게시 목록으로 돌아가 수정 칸에 연다 (기간 지난 공지는 종료일만 새로 정하면 다시 게시)
+    state.noticeTab = 'live';
+    await loadNotices();
+    var n = r.data.notice;
+    if (n && r.data.asDraft) {
+      fillNotice(n);
+      $('n_published').checked = true;
+      $('n_ends').focus();
+      toast('복원했습니다 — 아래 수정 칸에서 게시 종료일을 새로 정하고 저장하면 다시 게시됩니다.', 'ok');
+    } else {
+      toast('복원했습니다 — 게시 목록으로 돌아갔습니다.', 'ok');
+    }
   }
 
   async function purgeNotice(id) {
@@ -1418,6 +1475,8 @@
 
     $('btn-club-save').addEventListener('click', saveClub);
     $('btn-club-reset').addEventListener('click', resetClubForm);
+    $('c_search').addEventListener('input', renderClubList);
+    $('c_name').addEventListener('input', checkClubDup);
     $('btn-club-reload').addEventListener('click', loadClubs);
     $('btn-reindex').addEventListener('click', reindexAll);
 
