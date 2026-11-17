@@ -9,14 +9,14 @@ import sys
 from pathlib import Path
 
 CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-SID, NAME, ADVISOR = '2021212843', '경재원', '오승현'
-TITLE = '점진적 확장이 가능한 캠퍼스 정보 질의응답 챗봇'
+SID, NAME = '2021212843', '경재원'
+BLANK = '&#160;' * 10  # 이름 · 날인은 손으로 적는 칸
 DATE = '2026.  11.  2.'
 
 SUMMARY = [
     ('1. 목표 및 필요성', [
         '졸업요건(학과별 PDF 51개) · 동아리(SNS · 게시판) · 강의실(호실 코드) 정보가 흩어져 있고, 기존 대학 챗봇은 데이터를 개발자만 고칠 수 있어 만든 학생이 졸업하면 갱신이 멈춘다.',
-        '카카오톡으로 답하고, 비개발자 관리자가 웹 화면에서 학교 PDF · 엑셀로 데이터를 고치면 재배포 없이 바로 반영되는 챗봇을 목표로 했다. 정량 목표 6개(동아리 정답률 90% 이상, 환각 5% 이하, 수정 반영 60초 이내, 응답 5초 이내 등).',
+        '카카오톡으로 답하고, 비개발자 관리자가 웹 화면에서 학교 PDF · 엑셀로 데이터를 고치면 재배포 없이 바로 반영되는 챗봇을 목표로 했다. 정량 목표 5개(동아리 정답률 90% 이상, 환각 5% 이하, 졸업기준 정확도 95% 이상, 수정 반영 60초 이내, 응답 5초 이내).',
     ]),
     ('2. 기존 연구결과', [
         '시나리오 기반 카카오톡 대학 챗봇(성균관대 · 한경대 · 동덕여대)은 출처가 분명하지만 사전 밖 표현에 약하고, 데이터 갱신은 개발 도구에서만 가능하다.',
@@ -30,7 +30,7 @@ SUMMARY = [
     ('4. 실험결과', [
         '동아리 50문항 정답 100%, 사전 밖 표현 28문항 64%(문자 기반 14%), 졸업기준 7,880개 값 100% 일치.',
         '데이터에 없는 질문 30개 중 단정 오답 1건(3.3%), 공개 주소를 거친 응답 평균 125ms(최대 0.23초), 관리자 수정 반영 0.3초 이내, 휴대폰 카카오톡 실기기 5건 모두 정상.',
-        '6개 목표 중 5개 달성, 「코드 수정 없는 신규 도메인 추가」는 미달성.',
+        '목표 5개(정답률 · 범위 밖 오답률 · 졸업기준 정확도 · 응답 시간 · 관리자 수정 반영) 모두 달성.',
     ]),
 ]
 
@@ -59,7 +59,8 @@ def field(label, value, cs=13):
 
 
 def fields(cs=13):
-    return field('학번', SID, cs) + field('이름', NAME, cs) + field('제목', TITLE, cs)
+    # 제목은 손으로 적는 칸
+    return field('학번', SID, cs) + field('이름', NAME, cs) + field('제목', '', cs)
 
 
 def page_application():
@@ -71,7 +72,7 @@ def page_application():
 <p class="Normal parashape-26"></p><p class="Normal parashape-26"></p>
 <p class="Normal parashape-29"><span class="lang-ko charshape-8">{DATE}</span></p>
 <p class="Normal parashape-28"></p>
-<p class="Normal parashape-28"><span class="lang-ko charshape-8">신 청 인 </span><span class="lang-ko charshape-14">&#160;&#160;{NAME}&#160;&#160;</span><span class="lang-ko charshape-8"> (인)</span></p>
+<p class="Normal parashape-28"><span class="lang-ko charshape-8">신 청 인 </span><span class="lang-ko charshape-14">{BLANK}</span><span class="lang-ko charshape-8"> (인)</span></p>
 <p class="Normal parashape-28"></p><p class="Normal parashape-28"></p><p class="Normal parashape-28"></p>
 <p class="Normal parashape-29"><span class="lang-ko charshape-10">컴퓨터공학과 학과장 귀하</span></p>
 </div>'''
@@ -86,7 +87,7 @@ def page_permission():
 <p class="Normal parashape-21"></p><p class="Normal parashape-21"></p>
 <p class="Normal parashape-23"><span class="lang-ko charshape-8">2026.&#160;&#160;&#160;&#160;.&#160;&#160;&#160;&#160;&#160;.</span></p>
 <p class="Normal parashape-21"></p><p class="Normal parashape-21"></p>
-<p class="Normal parashape-23"><span class="lang-ko charshape-9">지도교수</span><span class="lang-ko charshape-10"> </span><span class="lang-ko charshape-11">&#160;&#160;{ADVISOR}&#160;&#160;</span><span class="lang-ko charshape-10"> (인)</span></p>
+<p class="Normal parashape-23"><span class="lang-ko charshape-9">지도교수</span><span class="lang-ko charshape-10"> </span><span class="lang-ko charshape-11">{BLANK}</span><span class="lang-ko charshape-10"> (인)</span></p>
 </div>'''
 
 

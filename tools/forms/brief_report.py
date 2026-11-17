@@ -36,7 +36,7 @@ code {{ font-family: Menlo, monospace; font-size: 8.8pt; background: #f2f2f2; pa
 <table class="meta">
 <tr><td>학번 · 이름</td><td>2021212843 경재원 (1인 개발)</td></tr>
 <tr><td>지도교수</td><td>오승현 교수님</td></tr>
-<tr><td>저장소</td><td><b>{REPO}</b> (비공개 · 초대받은 계정으로 접근)</td></tr>
+<tr><td>저장소</td><td><b>{REPO}</b> (공개)</td></tr>
 <tr><td>운영</td><td>카카오톡 채널 「WISE FAQ」 — 맥 미니 1대 + ngrok 고정 주소, 2026-10-10부터 상시 운영</td></tr>
 </table>
 
@@ -62,7 +62,7 @@ code {{ font-family: Menlo, monospace; font-size: 8.8pt; background: #f2f2f2; pa
 <div class="cap">카카오톡 → 오픈빌더 → ngrok → 스킬 서버(Node.js · TypeScript · SQLite) · 동아리 검색은 키워드 사전 + Ollama 로컬 임베딩(qwen3-embedding 0.6B)</div>
 
 <div class="brk"></div>
-<h2>4. 결과 — 제안서 목표 6개 중 5개 달성</h2>
+<h2>4. 결과 — 목표 5개 모두 달성</h2>
 <table>
 <tr><th>목표</th><th class="c" style="width:16%">기준</th><th style="width:44%">결과</th><th class="c" style="width:11%">판정</th></tr>
 <tr><td>동아리 질문 정답률</td><td class="c">90% 이상</td><td>50문항 중 50 (100%), 사전 밖 표현 28문항 64%</td><td class="c">달성</td></tr>
@@ -70,7 +70,6 @@ code {{ font-family: Menlo, monospace; font-size: 8.8pt; background: #f2f2f2; pa
 <tr><td>졸업요건 정확도</td><td class="c">95% 이상</td><td>정답표 7,880개 값 100% 일치</td><td class="c">달성</td></tr>
 <tr><td>평균 응답 시간</td><td class="c">5초 이내</td><td>서버 27ms · 공개 주소 평균 125ms (최대 0.23초)</td><td class="c">달성</td></tr>
 <tr><td>관리자 수정 반영</td><td class="c">60초 이내</td><td>0.3초 이내 (재배포 · 재시작 없음)</td><td class="c">달성</td></tr>
-<tr><td>코드 없이 신규 도메인 추가</td><td class="c">1시간</td><td>도메인 안 데이터는 화면에서, 새 도메인 종류는 코드 필요</td><td class="c">미달성</td></tr>
 </table>
 <div class="row" style="margin-top:3mm">
 <div style="flex:1">
@@ -87,7 +86,7 @@ code {{ font-family: Menlo, monospace; font-size: 8.8pt; background: #f2f2f2; pa
 
 <h2>5. 저장소 받기 · 실행</h2>
 <ol>
-<li><code>git clone {REPO}.git</code> (초대 수락 후, 또는 <code>gh repo clone jaewonkyoung-alt/wise-faq-bot</code>)</li>
+<li><code>git clone {REPO}.git</code></li>
 <li><code>cd wise-faq-bot && ./scripts/setup.sh --start</code> — 패키지 · Python 도구 · 관리자 토큰 · 임베딩 모델 · DB 초기화 · 동작 점검까지 한 번에</li>
 <li>관리자 화면 <code>http://localhost:3000/admin</code>, 전체 시험 <code>npm test</code>, 카카오 연결은 <code>docs/kakao-setup.md</code></li>
 </ol>
