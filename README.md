@@ -10,6 +10,23 @@
 | 지도 | 호실 코드(`S504`) · 건물 이름 → 위치와 카카오맵 버튼 | 학교 홈페이지 수집 데이터 (`data/kb/지도`) |
 | 공지 | 전교생 공통 공지 · 새 공지 알림 | 등록하면 바로 반영, 기간이 끝나면 **자동 휴지통** · 30일 뒤 삭제 |
 
+## 결과
+
+2026-10-10부터 카카오톡 채널로 상시 운영했고, 2026-11-13 졸업자격실험보고서와 A1 포스터를 학과에 제출했습니다.
+
+| 목표 | 기준 | 결과 |
+|---|---|---|
+| 동아리 정확도 | 90% 이상 | 50문항 50 (100%) · 사전 밖 표현 28문항 18 (64%) |
+| 환각 억제 | 오답 5% 이하 | 데이터에 없는 질문 30개 중 단정 오답 1 (3.3%) |
+| 졸업기준 정확도 | 95% 이상 | 7,880개 값 100% 일치 (42개 학과 PDF) |
+| 관리자 수정 반영 | 60초 이내 | 0.3초 이내, 재배포 없음 |
+| 응답 속도 | 평균 5초 이내 | 공개 주소 평균 125ms · 최대 0.23초 |
+
+- [결과 요약](docs/results.md) — 표 · 재현 명령 · 하지 못한 것
+- [최종 보고서](docs/report/졸업자격실험보고서.md) — 제출본(v12) 본문 전체 (표 53 · 그림 17)
+- [A1 포스터](docs/poster/README.md)
+- 주차별 진행: [4주](docs/progress/2026-W04-진행보고.md) · [5주](docs/progress/2026-W05-진행보고.md) · [6주](docs/progress/2026-W06-진행보고.md) · [7주](docs/progress/2026-W07-진행보고.md) · [8주](docs/progress/2026-W08-진행보고.md) · [9주 결과](docs/progress/2026-W09-결과보고.md) (원본 pptx 는 `slides/`)
+
 ## 퀵스타트
 
 필요한 것: **Node.js 18 이상** (macOS: `brew install node`), **Python 3.9 이상** (PDF · 엑셀 기능), 선택: [Ollama](https://ollama.com) (동아리 의미 검색)
@@ -19,9 +36,6 @@ git clone https://github.com/jaewonkyoung-alt/wise-faq-bot.git
 cd wise-faq-bot
 ./scripts/setup.sh --start
 ```
-
-> 이 레포는 **비공개**입니다. 초대받은 GitHub 계정으로 받습니다: 초대 메일에서 수락 → `brew install gh` → `gh auth login` → `gh repo clone jaewonkyoung-alt/wise-faq-bot`
-> (또는 위 `git clone` 실행 시 GitHub 로그인 창에서 로그인)
 
 확인한 환경: macOS (Apple Silicon) · Node 22 / 24 · Python 3.9 (맥 기본) / 3.10 · Ollama 있음 / 없음 — 빈 홈 폴더에서 GitHub 클론부터 설치 · `npm test` 전체 통과 (10/22).
 
@@ -53,7 +67,8 @@ cd wise-faq-bot
 | 공지 | 등록 · 고정 · 게시 기간, 카톡 미리보기, 알림 전달 현황, **휴지통** (복원 · 완전 삭제) |
 | 미답변 | 봇이 답하지 못한 질문을 묶어서 보기, 해결 · 무시, 동아리 질문은 **사전에 추가** |
 
-관리자 화면은 이 컴퓨터(`localhost`)에서만 엽니다. 외부 공개 주소로는 카카오 스킬 주소만 열리게 합니다 (`deploy/ngrok-policy.yml`).
+외부 공개 주소로는 카카오 스킬 주소와 `/health` 만 열립니다 (`deploy/ngrok-policy.yml`). 관리자 화면은 운영 컴퓨터와 **같은 내부망**에서 `http://<운영 컴퓨터 IP>:3000/admin` 으로 열리고, 데이터는 관리자 토큰이 있어야 읽고 고칠 수 있습니다.
+내부망 구간은 HTTP(암호화 없음)이므로 여러 사람이 함께 쓰는 무선망에서는 쓰지 마세요.
 
 ## AI 를 쓰는 곳
 
@@ -90,4 +105,4 @@ scripts/        setup.sh · 테스트 · 평가
 deploy/         상시 실행 · 터널 설정
 ```
 
-문서: [ARCHITECTURE.md](ARCHITECTURE.md) · [SECURITY.md](SECURITY.md) · [HANDOFF.md](HANDOFF.md) (인수인계) · [deploy/README.md](deploy/README.md) · [data/kb/README.md](data/kb/README.md)
+문서: [결과 요약](docs/results.md) · [최종 보고서](docs/report/졸업자격실험보고서.md) · [ARCHITECTURE.md](ARCHITECTURE.md) · [SECURITY.md](SECURITY.md) · [HANDOFF.md](HANDOFF.md) (인수인계) · [deploy/README.md](deploy/README.md) · [data/kb/README.md](data/kb/README.md) · [설계 문서](docs/design/README.md)
